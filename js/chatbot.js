@@ -117,7 +117,7 @@ function injectChatbotUI() {
                 transform: translateY(20px);
                 opacity: 0;
                 pointer-events: none;
-                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s, height 0.3s;
+                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Removed height/width transitions for smoother mobile resize */
                 z-index: 9999;
                 font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
             }
@@ -181,6 +181,7 @@ function injectChatbotUI() {
                 flex: 1;
                 padding: 20px;
                 overflow-y: auto;
+                overscroll-behavior: contain; /* Prevents scrolling the main page */
                 background: #f8fafc;
                 display: flex;
                 flex-direction: column;
