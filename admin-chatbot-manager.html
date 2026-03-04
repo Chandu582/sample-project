@@ -314,14 +314,25 @@
 
 
     <script>
-        // Check Admin Auth (Basic protection)
+        // Check Admin Auth (Robust protection)
         firebase.auth().onAuthStateChanged((user) => {
             const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
             const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-            if (!user || !isLoggedIn || userData.role !== 'admin') {
-                window.location.replace("admin-login.html");
+
+            if (user && isLoggedIn && userData.role === 'admin') {
+                // Asli test (Database verification)
+                db.collection('admins').doc(user.uid).get().then((doc) => {
+                    if (doc.exists && doc.data().role === 'SuperAdmin') {
+                        loadSettings(); // Load settings only if verified
+                    } else {
+                        firebase.auth().signOut().then(() => window.location.replace("admin-login.html"));
+                    }
+                }).catch(err => {
+                    console.error("Auth check failed:", err);
+                    window.location.replace("admin-login.html");
+                });
             } else {
-                loadSettings();
+                window.location.replace("admin-login.html");
             }
         });
 
