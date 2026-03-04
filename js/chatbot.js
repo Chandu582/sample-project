@@ -346,9 +346,11 @@ function injectChatbotUI() {
                 
                 #ai-chat-window {
                     width: calc(100% - 30px);
-                    height: 450px; /* Reduced height to fit modern phones */
+                    height: calc(100vh - 30px); /* Fallback */
+                    height: calc(100dvh - 30px); /* Dynamically stretches when keyboard closes */
+                    max-height: 800px;
                     right: 15px;
-                    bottom: 130px; /* Sits just above the Floating Button and keyboard */
+                    bottom: 15px; /* Sits naturally near the bottom edge */
                 }
                 .chat-footer {
                     padding: 10px 8px;
@@ -437,6 +439,16 @@ function setupChatbotEvents() {
     document.addEventListener("click", (event) => {
         if (isChatOpen && !chatWindow.contains(event.target) && !chatBtn.contains(event.target)) {
             closeChatbot();
+        }
+    });
+
+    // Handle keyboard pop-up/close to keep chat scrolled to bottom
+    window.visualViewport?.addEventListener("resize", () => {
+        if (isChatOpen) {
+            const chatBody = document.getElementById("chat-body");
+            if (chatBody) {
+                setTimeout(() => { chatBody.scrollTop = chatBody.scrollHeight; }, 50);
+            }
         }
     });
 
