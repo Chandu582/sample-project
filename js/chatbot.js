@@ -99,7 +99,7 @@ function injectChatbotUI() {
                     padding: 0;
                     width: 55px;
                     border-radius: 50%;
-                    bottom: 50px; /* Raised to prevent hiding behind screen edge */
+                    bottom: 90px; /* Raised significantly to clear all mobile toolbars */
                     right: 15px;
                 }
                 #ai-chat-btn .btn-text {
@@ -288,6 +288,38 @@ function injectChatbotUI() {
                 cursor: not-allowed;
             }
 
+            /* Voice Mic Button */
+            .mic-btn {
+                background: #f1f5f9;
+                color: #64748b;
+                border: none;
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                font-size: 18px;
+                flex-shrink: 0;
+            }
+            .mic-btn:hover {
+                background: #e2e8f0;
+                color: #f59e0b;
+                transform: scale(1.05);
+            }
+            .mic-btn.listening {
+                background: #fef3c7;
+                color: #ea580c;
+                animation: pulse-mic 1.2s infinite;
+            }
+            @keyframes pulse-mic {
+                0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+                70% { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+            }
+
             @keyframes popIn {
                 0% { opacity: 0; transform: translateY(10px) scale(0.95); }
                 100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -325,7 +357,10 @@ function injectChatbotUI() {
                         <div class="chat-status"><span class="status-dot"></span> Online</div>
                     </div>
                 </div>
-                <i class="fas fa-times" id="close-chat" style="cursor: pointer; font-size: 18px; opacity: 0.8;"></i>
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-volume-up" id="chatbot-speaker-btn" title="Read Last Reply Aloud" style="cursor: pointer; font-size: 18px; opacity: 0.8; margin-right: 15px; transition: 0.3s;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='inherit'"></i>
+                    <i class="fas fa-times" id="close-chat" title="Close Chat" style="cursor: pointer; font-size: 18px; opacity: 0.8; transition: 0.3s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='inherit'"></i>
+                </div>
             </div>
             
             <div class="chat-body" id="chat-body">
@@ -340,6 +375,7 @@ function injectChatbotUI() {
 
             <div class="chat-footer">
                 <input type="text" id="chat-input" class="chat-input" placeholder="Type your question..." autocomplete="off">
+                <button class="mic-btn" id="chatbot-mic-btn" title="Click to Speak"><i class="fas fa-microphone"></i></button>
                 <button class="chat-send-btn" id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -381,6 +417,14 @@ function setupChatbotEvents() {
 
     // Helper to close chat and reset button icon
     function closeChatbot() {
+        // Stop speaking immediately when closing the AI chat window
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+
+        // Ensure background music also stops
+        stopBackgroundMusic();
+
         isChatOpen = false;
         chatWindow.classList.remove("active");
         chatBtn.innerHTML = '<i class="fas fa-robot"></i><span class="btn-text">Ask AI</span>';
@@ -395,24 +439,41 @@ function setupChatbotEvents() {
     });
 }
 
+let publicNoticesContext = "";
+
 async function loadChatbotContext() {
     if (chatbotDb) {
         try {
+            // 1. Get Settings (Fees, Rules, Timings, API key)
             const doc = await chatbotDb.collection('settings').doc('chatbot_config').get();
             if (doc.exists) {
                 const data = doc.data();
                 if (data.context) {
                     systemContext = data.context;
-                    console.log("SUCCESS: Loaded Admin Context from Firebase:", systemContext);
-                } else {
-                    console.warn("WARNING: chatbot_config document exists, but 'context' field is empty.");
+                    console.log("SUCCESS: Loaded Admin Context from Firebase");
                 }
                 if (data.customApiKey) customApiKey = data.customApiKey;
-            } else {
-                console.log("No custom chatbot_config found in Firebase.");
             }
+
+            // 2. Fetch Latest Public Notices from Firebase
+            const noticeSnapshot = await chatbotDb.collection('notices')
+                .orderBy('timestamp', 'desc')
+                .limit(5)
+                .get();
+
+            if (!noticeSnapshot.empty) {
+                publicNoticesContext = "\n\nRECENT FIREBASE NOTICES:\n";
+                noticeSnapshot.forEach(nDoc => {
+                    const nData = nDoc.data();
+                    let dateStr = nData.date || "Recent";
+                    publicNoticesContext += `- [${dateStr}] ${nData.title}: ${nData.body}\n`;
+                });
+                systemContext += publicNoticesContext;
+                console.log("SUCCESS: Appended Firebase Notices to AI Context.");
+            }
+
         } catch (err) {
-            console.error("Could not load AI Context:", err);
+            console.error("Could not load AI Context or Notices:", err);
         }
     } else {
         console.warn("chatbotDb not found. AI Context cannot be loaded.");
@@ -425,6 +486,10 @@ async function handleUserMessage() {
     const inputField = document.getElementById("chat-input");
     const message = inputField.value.trim();
     if (!message) return;
+
+    // Instantly disable the send button to prevent double clicks during processing
+    const sendBtn = document.getElementById("chat-send-btn");
+    if (sendBtn) sendBtn.disabled = true;
 
     // 1. Show User Message
     addMessageToChat(message, 'user');
@@ -474,10 +539,22 @@ async function handleUserMessage() {
     // System prompt
     messages.push({
         role: "system",
-        content: `You are the friendly, enthusiastic, and highly persuasive AI Receptionist for St. Teresa English School. 
-CRITICAL RULE: Answer parents' questions politely based on the "SCHOOL INFORMATION CONTEXT" below. 
-If someone asks for your opinion (e.g., "Is this a good school?"), DO NOT say you don't know. Always respond positively: highlight that St. Teresa English School builds strong foundations with knowledge, discipline, and values. Encourage them to take admission.
-If asked about today's birthdays, notices, school toppers, or alumni, check the "DYNAMIC PAGE DATA" section below. Extract the names from the provided text and present them clearly and beautifully to the user.
+        content: `You are the highly intelligent, friendly, empathetic and persuasive female AI Receptionist for St. Teresa English School. Your primary goal is to completely satisfy the curiosity of parents and students with a warm, human-like touch. YOU MUST USE EXCITING AND FRIENDLY EMOJIS (like 😊✨🌟🎓🏫) in your responses to make them feel highly engaging and premium!
+CRITICAL RULES:
+1. NEVER assume the user's gender. Do NOT automatically call everyone "Madam" or "Sir". Use neutral, respectful terms like "Friend", "Aap", or "Dear Parent/Student". If you must use a formal title and don't know the gender, use "Sir/Madam" together. You can only use a specific gendered title if the user explicitly tells you their gender or name.
+2. NEVER repeat the exact same word or phrase multiple times in a row. Use varied, professional, natural human language.
+3. Answer questions politely and directly based ONLY on the "SCHOOL INFORMATION CONTEXT". NEVER hallucinate or make up fake numbers, fake fees, or fake class-wise time schedules if they are not explicitly written in the context.
+4. IF A PARENT WANTS TO WITHDRAW THEIR CHILD (T.C / Leaving School): Act like a highly empathetic human counselor, NEVER use a repetitive scripted response! First, express deep shock and sadness 🥺. Second, actively listen and gently ask what specific issue (studies, fees, behavior) caused this decision. Third, powerfully reassure them by highlighting St. Teresa's USPs: "We are a family, our teachers provide personal attention, and Principal Bindu P.K is always ready to personally solve any problem." Beg them (politely) to give the school one more chance to fix the issue. Make the parent feel extremely valued and heard so they change their mind!
+5. IF ASKED FOR YOUR OPINION ("Is this a good school?"): NEVER say you don't know. Always respond enthusiastically ✨, highlighting that St. Teresa builds strong foundations with knowledge, discipline, safety, and modern values, making it the perfect choice!
+6. If they ask about birthdays, notices, toppers, or alumni, check the "DYNAMIC PAGE DATA" section. Extract the names nicely and congratulate them 🎈.
+7. If the exact answer is truly not in the context, politely apologize 😔 and suggest they contact the school office at +91-7632852762.
+8. IF ASKED WHO CREATED/DEVELOPED/DESIGNED YOU OR THE WEBSITE: You MUST proudly say: "I, along with this wonderful school website, was designed and developed by **Mr. Chandan Sharma (Xevion byte)** 👨‍💻✨. You can view his amazing portfolio here: https://chandu582.github.io/my-portfolio/" don't say same sentence alwys i along this thing you made alwys new sentence by which they feel happy and satisfied.If someone asked about contact number then you say visit his portfolio website there you can find his contact number. if again he/she asked for contact number then you provide his contact number 9693776982.
+9. IF ASKED FOR JOKES, SONGS, GAMES, OR FUN FACTS: YOU MUST BE STRICTLY CHILD-FRIENDLY & SCHOOL-APPROPRIATE. 🚫 ABSOLUTELY NO ROMANTIC SONGS, ADULT JOKES, OR INAPPROPRIATE CONTENT. 🚫 Instead, sing kid's nursery rhymes, motivational student songs, or tell clean, funny school jokes! To stop being boring, NEVER EVER repeat the same joke or song twice. ALWAYS pick a completely new and unique one. Act highly entertaining and excited! 🤩🎶. CRITICAL: If you are telling a joke, you MUST include the exact tag [JOKE] at the very beginning of your response. If you are singing a song or reciting a poem, you MUST include the exact tag [SONG] at the very beginning of your response.
+10. STRICT LANGUAGE MATCHING: You MUST reply in the EXACT SAME LANGUAGE as the user's question. If the user asks in pure English, reply ONLY in pure English. If the user asks in Hindi or Hinglish (e.g., "fees kitni hai"), reply in Hindi/Hinglish. NEVER mix it up!
+11. STRICT TIMING RULE: If the context only gives a single general school timing (e.g., 9:00 AM to 2:35 PM), simply tell them THAT exact timing. DO NOT mathematically divide or hallucinate class-wise breakups (like Nursery 9-12, 1st 9-1) unless it is explicitly written in the context!
+12. STRICT FEE RULE: NEVER say that the Tuition Fee includes transport, ID Card, Belt, Diary, or Uniforms. ALWAYS clarify that Transport Fees and Extra Items (like ID card, diary, belt) are charged SEPARATELY. Provide their exact separate costs ONLY if they are listed in the context.
+13. ZERO HALLUCINATION ON SCHOLARSHIPS/PROGRAMS: NEVER proactively bring up scholarships, discounts, or financial aid. If a user SPECIFICALLY asks about a scholarship, ONLY provide information if it is clearly written in the "SCHOOL INFORMATION CONTEXT". If there is NO scholarship mentioned in the context, you MUST politely say: "Currently, we do not have any special scholarship programs running. Please visit the school office for any fee-related queries." NEVER invent fake names or criteria.
+14. Hostlers fee Rs 5000 per month.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
 
 SCHOOL INFORMATION CONTEXT:
 ${systemContext}
@@ -486,8 +563,12 @@ DYNAMIC PAGE DATA (Currently visible on the website):
 ${extraContext || 'No dynamic events today.'}`
     });
 
+    // Save to local history FIRST
+    conversationHistory.push({ role: 'user', text: message });
+
     // Add history (Limit to last 5 interactions to save tokens)
-    const recentHistory = conversationHistory.slice(-5);
+    // We only take the last 6 items since we just added the new user message
+    const recentHistory = conversationHistory.slice(-6);
     recentHistory.forEach(msg => {
         messages.push({
             role: msg.role === 'user' ? 'user' : 'assistant',
@@ -495,21 +576,14 @@ ${extraContext || 'No dynamic events today.'}`
         });
     });
 
-    // Add current message
-    messages.push({
-        role: "user",
-        content: message
-    });
-
-    // Save to local history
-    conversationHistory.push({ role: 'user', text: message });
-
     console.log("SENDING THIS CONTEXT TO AI:", systemContext);
 
     const requestBody = {
         model: "llama-3.1-8b-instant", // Fast and free model
         messages: messages,
-        temperature: 0.3, // Keep it factual
+        temperature: 0.7, // Higher for more creative & varied answers (especially jokes/songs)
+        frequency_penalty: 0.5, // Discourages repeating the same exact words
+        presence_penalty: 0.4, // Encourages talking about new topics completely
         max_tokens: 800
     };
 
@@ -534,15 +608,24 @@ ${extraContext || 'No dynamic events today.'}`
         // Save to local history
         conversationHistory.push({ role: 'bot', text: botReply });
 
-        // Format basic markdown (bold, lists)
-        const formattedReply = formatBotReply(botReply);
+        // Hide system tags but keep them in DOM for text-to-speech to detect later
+        let displayReply = botReply;
+        displayReply = displayReply.replace(/\[SONG\]/g, '<span style="display:none" class="speech-tag">[SONG]</span>');
+        displayReply = displayReply.replace(/\[JOKE\]/g, '<span style="display:none" class="speech-tag">[JOKE]</span>');
 
-        hideTypingIndicator();
+        // Format basic markdown (bold, lists)
+        const formattedReply = formatBotReply(displayReply);
+
         addMessageToChat(formattedReply, 'bot');
+
+        // Only Speak Response if user asked via Microphone
+        if (window.isVoiceMode) {
+            speakResponse(botReply);
+            window.isVoiceMode = false; // Reset for next message
+        }
 
     } catch (error) {
         console.error("Groq API Error:", error);
-        hideTypingIndicator();
 
         let errMsg = error.message;
         if (errMsg && (errMsg.includes("Quota") || errMsg.includes("429") || errMsg.includes("too many"))) {
@@ -552,13 +635,162 @@ ${extraContext || 'No dynamic events today.'}`
         }
 
         addMessageToChat(errMsg, 'bot');
+        speakResponse("Sorry, I am having trouble connecting right now.");
 
         // Remove the failed user message from history so it doesn't corrupt future context
         if (conversationHistory.length > 0 && conversationHistory[conversationHistory.length - 1].role === 'user') {
             conversationHistory.pop();
         }
+    } finally {
+        hideTypingIndicator(); // Always re-enable button and hide indicator
     }
 }
+
+// --- VOICE INTEGRATION LOGIC ---
+
+function speakResponse(text) {
+    if (!('speechSynthesis' in window)) return;
+
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    stopBackgroundMusic();
+
+    let isSong = text.includes('[SONG]');
+    let isJoke = text.includes('[JOKE]');
+
+    // Clean text by removing emojis and markdown formatting for cleaner speech
+    let cleanText = text.replace(/\[SONG\]/g, '').replace(/\[JOKE\]/g, '');
+    cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    cleanText = cleanText.replace(/[*_#`~]/g, '');
+
+    // Try to find a single consistent, premium female Indian/Hindi voice
+    const voices = window.speechSynthesis.getVoices();
+    let selectedVoice = null;
+
+    // Split text into smaller sentences to prevent browser speech cutoff on long texts
+    // BUT do NOT chunk songs/jokes because the pauses make it sound choppy (kat-kat-kar)
+    let sentences = [cleanText];
+    if (!isSong && !isJoke) {
+        sentences = cleanText.match(/[^.!?\n]+[.!?\n]*/g) || [cleanText];
+    }
+
+    // Priority order for the best Hindi + English mix female voices
+    const preferredVoices = ['Google हिन्दी', 'Microsoft Swara', 'Microsoft Neerja', 'Zira', 'Aditi', 'Veena', 'Female'];
+
+    for (let pref of preferredVoices) {
+        selectedVoice = voices.find(v => v.name.includes(pref));
+        if (selectedVoice) break;
+    }
+
+    if (isSong) startBackgroundMusic('song');
+    else if (isJoke) startBackgroundMusic('joke');
+
+    let sentencesSpoken = 0;
+
+    // Queue each sentence
+    sentences.forEach((sentence, index) => {
+        if (sentence.trim() === '') return;
+        const utterance = new SpeechSynthesisUtterance(sentence.trim());
+        utterance.lang = 'hi-IN'; // Force Hindi-India locale
+
+        // Make it sound rhythmic and sing-songy if it's a song/poem
+        // Milder pitch/rate adjustments because extreme ones make the TTS voice glitch/stutter
+        if (isSong) {
+            utterance.rate = 0.95;
+            utterance.pitch = 1.2;
+        } else if (isJoke) {
+            utterance.rate = 1.05;
+            utterance.pitch = 1.15;
+        } else {
+            utterance.rate = 1.0;
+            utterance.pitch = 1.1;
+        }
+
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+
+        utterance.onend = function () {
+            sentencesSpoken++;
+            if (sentencesSpoken === sentences.length - 1 || sentences.length === 1 || sentencesSpoken === sentences.filter(s => s.trim() !== '').length) {
+                stopBackgroundMusic();
+            }
+        };
+
+        window.speechSynthesis.speak(utterance);
+    });
+}
+
+// Setup Mic Event bindings must be added in setupChatbotEvents() or here.
+// We will assign it dynamically to the document since HTML is injected.
+document.addEventListener('click', function (e) {
+    const micBtn = e.target.closest('#chatbot-mic-btn');
+    if (micBtn) {
+        startListening(micBtn);
+    }
+
+    const speakerBtn = e.target.closest('#chatbot-speaker-btn');
+    if (speakerBtn) {
+        // If already speaking, stop it (Toggle OFF)
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            return;
+        }
+
+        // Otherwise find the last bot message and read it aloud (Toggle ON)
+        const botMessages = document.querySelectorAll('.bubble-bot');
+        if (botMessages.length > 0) {
+            // Use textContent to grab the hidden [SONG]/[JOKE] tags, but visible text
+            const lastMessage = botMessages[botMessages.length - 1].textContent;
+            speakResponse(lastMessage);
+        }
+    }
+});
+
+function startListening(micBtn) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Sorry, your browser doesn't support voice recognition. Please use Google Chrome.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN'; // Set to Indian English to support both English and Hinglish correctly without forcing Devanagari.
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = function () {
+        micBtn.classList.add('listening');
+        window.isVoiceMode = true; // Mark as voice mode
+        // Stop any currently playing audio so it doesn't listen to itself
+        window.speechSynthesis.cancel();
+    };
+
+    recognition.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        const inputField = document.getElementById("chat-input");
+        inputField.value = transcript;
+    };
+
+    recognition.onerror = function (event) {
+        console.error("Speech Recognition Error: ", event.error);
+        micBtn.classList.remove('listening');
+        window.isVoiceMode = false;
+    };
+
+    recognition.onend = function () {
+        micBtn.classList.remove('listening');
+
+        // Auto send immediately when speaking stops
+        const inputField = document.getElementById("chat-input");
+        if (inputField.value.trim() !== '') {
+            handleUserMessage();
+        }
+    };
+
+    recognition.start();
+}
+
 
 function addMessageToChat(text, sender) {
     const chatBody = document.getElementById("chat-body");
@@ -578,25 +810,75 @@ function addMessageToChat(text, sender) {
 function showTypingIndicator() {
     const indicator = document.getElementById("typing-indicator");
     const chatBody = document.getElementById("chat-body");
-    indicator.style.display = "flex";
-    chatBody.scrollTop = chatBody.scrollHeight;
+    if (indicator) {
+        indicator.style.display = "flex";
+    }
+    if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
 
     const sendBtn = document.getElementById("chat-send-btn");
-    sendBtn.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
 }
 
 function hideTypingIndicator() {
     const indicator = document.getElementById("typing-indicator");
-    indicator.style.display = "none";
-
+    if (indicator) {
+        indicator.style.display = "none";
+    }
     const sendBtn = document.getElementById("chat-send-btn");
-    sendBtn.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+}
+
+// --- BACKGROUND MUSIC LOGIC ---
+let audioCtx;
+let musicInterval;
+
+function startBackgroundMusic(type) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    stopBackgroundMusic(); // Clear existing
+
+    // Simple magical chord notes for song/poem, quirky bouncy notes for joke
+    const notes = type === 'joke' ? [200, 300, 200, 400] : [523.25, 659.25, 783.99, 1046.50];
+    let i = 0;
+
+    musicInterval = setInterval(() => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type === 'joke' ? 'triangle' : 'sine';
+        osc.frequency.value = notes[i % notes.length];
+
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        // Soft volume for background to avoid overpowering the voice
+        gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+
+        i++;
+    }, type === 'joke' ? 400 : 350);
+}
+
+function stopBackgroundMusic() {
+    if (musicInterval) {
+        clearInterval(musicInterval);
+        musicInterval = null;
+    }
 }
 
 // Simple Markdown formatter for the bot response
 function formatBotReply(text) {
+    // Hide [SONG] and [JOKE] tags for display
+    let html = text.replace(/\[SONG\]/g, '<span style="display:none;">[SONG]</span>');
+    html = html.replace(/\[JOKE\]/g, '<span style="display:none;">[JOKE]</span>');
+
     // Bold
-    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
     // Newlines to BR
     html = html.replace(/\n\n/g, '<br><br>');
