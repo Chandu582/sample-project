@@ -78,6 +78,12 @@ function injectChatbotUI() {
                 transform: scale(1.05) translateY(-5px);
                 box-shadow: 0 15px 35px rgba(234, 88, 12, 0.6);
             }
+            body.chat-active #ai-chat-btn, 
+            body.chat-active .status-float-btn {
+                transform: scale(0) !important;
+                opacity: 0;
+                pointer-events: none;
+            }
             #ai-chat-btn i {
                 font-size: 22px;
                 animation: pulseIcon 2s infinite;
@@ -93,23 +99,7 @@ function injectChatbotUI() {
                 100% { transform: scale(1); opacity: 1; }
             }
 
-            /* Responsive: Shrink to circle on Mobile */
-            @media (max-width: 600px) {
-                #ai-chat-btn {
-                    padding: 0;
-                    width: 55px;
-                    border-radius: 50%;
-                    bottom: 90px; /* Raised significantly to clear all mobile toolbars */
-                    right: 15px;
-                }
-                #ai-chat-btn .btn-text {
-                    display: none; /* Hide text on mobile */
-                }
-                #ai-chat-btn i {
-                    font-size: 26px;
-                    margin: 0;
-                }
-            }
+            /* Mobile rules have been consolidated at the bottom of the style tag */
 
             /* Chatbot Window */
             #ai-chat-window {
@@ -334,11 +324,46 @@ function injectChatbotUI() {
             .bubble-bot ul { margin: 5px 0; padding-left: 20px; }
             .bubble-bot li { margin-bottom: 3px; }
             
-            @media (max-width: 400px) {
+            @media (max-width: 600px) {
+                #ai-chat-btn {
+                    padding: 0;
+                    width: 55px;
+                    height: 55px;
+                    border-radius: 50%;
+                    bottom: 25px; /* Keep it nicely at the bottom corner */
+                    right: 15px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+                #ai-chat-btn .btn-text {
+                    display: none;
+                }
+                #ai-chat-btn i {
+                    font-size: 24px;
+                    margin: 0;
+                }
+                
                 #ai-chat-window {
-                    width: calc(100% - 40px);
-                    right: 20px;
-                    bottom: 100px;
+                    width: calc(100% - 30px);
+                    height: 450px; /* Reduced height to fit modern phones */
+                    right: 15px;
+                    bottom: 90px; /* Sits just above the Floating Button */
+                }
+                .chat-footer {
+                    padding: 10px 8px;
+                    gap: 6px;
+                }
+                .chat-input {
+                    padding: 10px 12px;
+                    font-size: 13px;
+                    width: 100%; /* Force it to stay strictly inside */
+                }
+                .chat-send-btn, .mic-btn {
+                    width: 40px !important;
+                    height: 40px !important;
+                    font-size: 15px;
+                    flex-shrink: 0; /* Prevent them from ever hiding */
                 }
             }
         </style>
@@ -397,7 +422,7 @@ function setupChatbotEvents() {
         isChatOpen = !isChatOpen;
         if (isChatOpen) {
             chatWindow.classList.add("active");
-            chatBtn.innerHTML = '<i class="fas fa-times"></i>'; // Optional: X icon when open
+            document.body.classList.add("chat-active");
             setTimeout(() => inputField.focus(), 300);
         } else {
             closeChatbot();
@@ -427,7 +452,7 @@ function setupChatbotEvents() {
 
         isChatOpen = false;
         chatWindow.classList.remove("active");
-        chatBtn.innerHTML = '<i class="fas fa-robot"></i><span class="btn-text">Ask AI</span>';
+        document.body.classList.remove("chat-active");
     }
 
     // Send Message
@@ -554,7 +579,7 @@ CRITICAL RULES:
 11. STRICT TIMING RULE: If the context only gives a single general school timing (e.g., 9:00 AM to 2:35 PM), simply tell them THAT exact timing. DO NOT mathematically divide or hallucinate class-wise breakups (like Nursery 9-12, 1st 9-1) unless it is explicitly written in the context!
 12. STRICT FEE RULE: NEVER say that the Tuition Fee includes transport, ID Card, Belt, Diary, or Uniforms. ALWAYS clarify that Transport Fees and Extra Items (like ID card, diary, belt) are charged SEPARATELY. Provide their exact separate costs ONLY if they are listed in the context.
 13. ZERO HALLUCINATION ON SCHOLARSHIPS/PROGRAMS: NEVER proactively bring up scholarships, discounts, or financial aid. If a user SPECIFICALLY asks about a scholarship, ONLY provide information if it is clearly written in the "SCHOOL INFORMATION CONTEXT". If there is NO scholarship mentioned in the context, you MUST politely say: "Currently, we do not have any special scholarship programs running. Please visit the school office for any fee-related queries." NEVER invent fake names or criteria.
-14. We also provide hostel facility for boys and girls.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
+14. we also provide hostel facility for boys and girls.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
 
 SCHOOL INFORMATION CONTEXT:
 ${systemContext}
@@ -890,4 +915,3 @@ function formatBotReply(text) {
 
     return html;
 }
-
