@@ -117,24 +117,28 @@ function injectChatbotUI() {
                 transform: translateY(20px);
                 opacity: 0;
                 pointer-events: none;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s, height 0.3s;
                 z-index: 9999;
                 font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
             }
             #ai-chat-window.active {
                 transform: translateY(0);
                 opacity: 1;
-                pointer-events: all;
+                pointer-events: auto;
             }
 
             /* Header */
             .chat-header {
                 background: linear-gradient(135deg, #f59e0b, #ea580c);
-                padding: 20px;
+                padding: 15px 20px;
                 color: white;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                cursor: grab;
+            }
+            .chat-header:active {
+                cursor: grabbing;
             }
             .chat-header-info {
                 display: flex;
@@ -346,11 +350,21 @@ function injectChatbotUI() {
                 
                 #ai-chat-window {
                     width: calc(100% - 30px);
-                    height: calc(100vh - 30px); /* Fallback */
-                    height: calc(100dvh - 30px); /* Dynamically stretches when keyboard closes */
+                    height: calc(100vh - 120px); /* Tall by default to read easily */
+                    height: calc(100dvh - 120px);
                     max-height: 800px;
-                    right: 15px;
-                    bottom: 15px; /* Sits naturally near the bottom edge */
+                    right: 15px !important;
+                    bottom: 90px !important; /* Above the button */
+                    left: auto !important;
+                    top: auto !important;
+                    transform: none !important; /* Disable drag transform on mobile usually, or let it work but ensure it snaps back */
+                }
+                
+                /* When keyboard is active (input focused), make it smaller */
+                body.chat-keyboard-open #ai-chat-window {
+                    height: 45vh; /* Take up less space so keyboard fits */
+                    height: 45dvh;
+                    bottom: 15px !important; /* Move down close to keyboard */
                 }
                 .chat-footer {
                     padding: 10px 8px;
@@ -435,6 +449,28 @@ function setupChatbotEvents() {
         closeChatbot();
     });
 
+    // Add classes for keyboard open/close based on input focus
+    inputField.addEventListener("focus", () => {
+        if (window.innerWidth <= 600) {
+            document.body.classList.add("chat-keyboard-open");
+            setTimeout(() => {
+                const chatBody = document.getElementById("chat-body");
+                if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+            }, 300);
+        }
+    });
+
+    inputField.addEventListener("blur", () => {
+        if (window.innerWidth <= 600) {
+            // small delay to see if they just clicked send button
+            setTimeout(() => {
+                if (document.activeElement !== inputField) {
+                    document.body.classList.remove("chat-keyboard-open");
+                }
+            }, 100);
+        }
+    });
+
     // Close on click outside
     document.addEventListener("click", (event) => {
         if (isChatOpen && !chatWindow.contains(event.target) && !chatBtn.contains(event.target)) {
@@ -451,6 +487,77 @@ function setupChatbotEvents() {
             }
         }
     });
+
+    // --- Drag and Drop Feature ---
+    makeDraggable(chatWindow, document.querySelector('.chat-header'));
+
+    function makeDraggable(element, handle) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+        handle.onmousedown = dragMouseDown;
+        handle.ontouchstart = dragTouchStart;
+
+        function dragMouseDown(e) {
+            if (window.innerWidth <= 600) return; // Disable drag on mobile to prevent layout breakage
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function dragTouchStart(e) {
+            if (window.innerWidth <= 600) return;
+            const touch = e.touches[0];
+            pos3 = touch.clientX;
+            pos4 = touch.clientY;
+            document.ontouchend = closeDragElement;
+            document.ontouchmove = elementTouchDrag;
+        }
+
+        function elementDrag(e) {
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            updateElementPosition();
+        }
+
+        function elementTouchDrag(e) {
+            const touch = e.touches[0];
+            pos1 = pos3 - touch.clientX;
+            pos2 = pos4 - touch.clientY;
+            pos3 = touch.clientX;
+            pos4 = touch.clientY;
+            updateElementPosition();
+        }
+
+        function updateElementPosition() {
+            // Apply restrictions to keep it on screen
+            let newTop = element.offsetTop - pos2;
+            let newLeft = element.offsetLeft - pos1;
+
+            // Constrain
+            if (newTop < 0) newTop = 0;
+            if (newLeft < 0) newLeft = 0;
+            if (newTop + element.offsetHeight > window.innerHeight) newTop = window.innerHeight - element.offsetHeight;
+            if (newLeft + element.offsetWidth > window.innerWidth) newLeft = window.innerWidth - element.offsetWidth;
+
+            element.style.top = newTop + "px";
+            element.style.left = newLeft + "px";
+            element.style.bottom = "auto";
+            element.style.right = "auto";
+            element.style.transform = "none";
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
+        }
+    }
 
     // Helper to close chat and reset button icon
     function closeChatbot() {
