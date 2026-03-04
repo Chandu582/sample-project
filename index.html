@@ -3443,7 +3443,8 @@
         /* --- LIQUID GLASS FLOATING BUTTON --- */
         .status-float-btn {
             position: fixed;
-            bottom: 90px;
+            bottom: 120px;
+            /* Moved up to clear chatbot button */
             right: 20px;
 
             /* Semi-transparent Orange Gradient */
@@ -3490,6 +3491,25 @@
 
             50% {
                 transform: translateY(-5px);
+            }
+        }
+
+        /* Adjust size and position for Mobile so both fit on the Right side */
+        @media (max-width: 600px) {
+            .status-float-btn {
+                right: 15px;
+                /* Keep on right side */
+                bottom: 100px;
+                /* Sit exactly above the AI Bot (which is at bottom: 50) */
+                padding: 8px 16px;
+                /* Shrink button size */
+                font-size: 13px;
+                border-radius: 30px;
+                gap: 5px;
+            }
+
+            .status-float-btn i {
+                font-size: 14px;
             }
         }
     </style>
