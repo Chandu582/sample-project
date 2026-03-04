@@ -554,7 +554,7 @@ CRITICAL RULES:
 11. STRICT TIMING RULE: If the context only gives a single general school timing (e.g., 9:00 AM to 2:35 PM), simply tell them THAT exact timing. DO NOT mathematically divide or hallucinate class-wise breakups (like Nursery 9-12, 1st 9-1) unless it is explicitly written in the context!
 12. STRICT FEE RULE: NEVER say that the Tuition Fee includes transport, ID Card, Belt, Diary, or Uniforms. ALWAYS clarify that Transport Fees and Extra Items (like ID card, diary, belt) are charged SEPARATELY. Provide their exact separate costs ONLY if they are listed in the context.
 13. ZERO HALLUCINATION ON SCHOLARSHIPS/PROGRAMS: NEVER proactively bring up scholarships, discounts, or financial aid. If a user SPECIFICALLY asks about a scholarship, ONLY provide information if it is clearly written in the "SCHOOL INFORMATION CONTEXT". If there is NO scholarship mentioned in the context, you MUST politely say: "Currently, we do not have any special scholarship programs running. Please visit the school office for any fee-related queries." NEVER invent fake names or criteria.
-14. Hostlers fee Rs 5000 per month.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
+14. We also provide hostel facility for boys and girls.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
 
 SCHOOL INFORMATION CONTEXT:
 ${systemContext}
@@ -890,3 +890,4 @@ function formatBotReply(text) {
 
     return html;
 }
+
