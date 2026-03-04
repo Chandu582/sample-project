@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard | STES ERP</title>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #ec4899;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --success: #16a34a;
+            --danger: #ef4444;
+            --brand: #6366f1;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: var(--text);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+
+        /* PROFILE CARD */
+        .profile-card {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stu-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stu-meta {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .btn-logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* MENU GRID */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .menu-item {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .menu-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: inline-block;
+            padding: 12px;
+            border-radius: 50%;
+        }
+
+        .menu-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        /* SECTIONS */
+        .section-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section-card.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sec-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .inp {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-success {
+            background: #16a34a;
+        }
+
+        .btn-dark {
+            background: var(--text);
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: auto;
+        }
+
+        /* --- ADMIN STYLE FEE UI (New) --- */
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .m-btn {
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 45px;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .m-btn.paid {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border-color: #166534 !important;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .m-btn.partial {
+            background: #fef9c3;
+            color: #854d0e;
+            border-color: #eab308;
+        }
+
+        .m-btn.due {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .m-btn.locked {
+            background: #f1f5f9;
+            color: #cbd5e1;
+            border-color: #e2e8f0;
+            pointer-events: none;
+        }
+
+        .m-btn.selected {
+            background: #6366f1 !important;
+            color: white !important;
+            border-color: #6366f1 !important;
+            transform: scale(1.05);
+            z-index: 2;
+        }
+
+        .annual-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .annual-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .annual-item.paid {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .annual-item.locked {
+            opacity: 0.5;
+            background: #f1f5f9;
+            cursor: not-allowed;
+            border-style: dashed;
+            pointer-events: none;
+        }
+
+        .annual-item.selected {
+            border-color: #6366f1;
+            background: #eef2ff;
+            color: #6366f1;
+        }
+
+        .sec-head {
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 15px 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 5px;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        .sum-total {
+            border-top: 2px dashed #cbd5e1;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: 800;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        /* ATTENDANCE & HISTORY TABLES */
+        .att-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+
+        .ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .ledger-table th {
+            text-align: left;
+            background: #f1f5f9;
+            padding: 8px;
+            color: #64748b;
+            font-weight: 700;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .ledger-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        .att-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .stat-val {
+            font-size: 18px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-lbl {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* UPI SECTION */
+        .upi-section {
+            background: #eff6ff;
+            border: 1px dashed #3b82f6;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .upi-id-box {
+            background: white;
+            border: 1px solid #bfdbfe;
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 3000;
+            display: none;
+        }
+
+
+        /* --- PROFILE CARD STYLING --- */
+        .profile-card {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-flex {
+            display: flex;
+            align-items: center;
+            /* Photo aur Text center align honge */
+            gap: 20px;
+            /* Photo aur Naam ke beech ka gap */
+        }
+
+        /* Photo Styling (Circle & Clickable) */
+        .stu-img-small {
+            width: 85px;
+            /* Size thoda bada kiya */
+            height: 85px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.4);
+            object-fit: cover;
+            cursor: pointer;
+            background: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stu-img-small:hover {
+            transform: scale(1.05);
+            /* Hover karne par thoda bada dikhega */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Logout Button (Same Position) */
+        .btn-logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* --- MODAL CSS (ZOOM EFFECT) --- */
+        .photo-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s;
+        }
+
+        .photo-modal img {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .close-photo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 35px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="toast" id="toast">Notification</div>
+
+    <div class="container">
+        <div class="profile-card">
+            <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+
+            <div class="profile-flex">
+
+                <img id="dPhoto" src="https://via.placeholder.com/150?text=..." class="stu-img-small"
+                    onclick="openPhotoModal()" alt="Profile">
+
+                <div style="flex: 1;">
+                    <h2 class="stu-name" id="dName" style="margin: 0; line-height: 1.2;font-size: 18px;">Loading...</h2>
+
+                    <div style="margin-top: 5px; font-size: 13px; opacity: 0.9; font-weight: 500;">
+                        <span id="dClass">--</span> | Roll: <span id="dRoll">--</span>
+                    </div>
+
+                    <div style="font-size: 13px; opacity: 0.9; font-weight: 500;">
+                        Section: <span id="dSec">--</span>
+                    </div>
+
+                    <div
+                        style="margin-top: 6px; font-size: 11px; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; display: inline-block;">
+                        ID: <span id="dId">--</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="photoViewer" class="photo-modal" onclick="closePhotoModal()">
+            <div class="close-photo">&times;</div>
+            <img id="fullSizeImg" src="" onclick="event.stopPropagation()">
+        </div>
+
+
+        <div class="grid-menu">
+            <div class="menu-item active" onclick="showSection('attendance')">
+                <span class="menu-icon" style="background:#dbeafe; color:#2563eb;"><i
+                        class="fas fa-calendar-check"></i></span>
+                <div class="menu-title">Attendance</div>
+            </div>
+            <div class="menu-item" onclick="showSection('fees')">
+                <span class="menu-icon" style="background:#fae8ff; color:#d946ef;"><i class="fas fa-wallet"></i></span>
+                <div class="menu-title">Fee Center</div>
+            </div>
+            <div class="menu-item" onclick="window.location.href='parent-result.html'">
+                <span class="menu-icon" style="background:#dcfce7; color:#16a34a;"><i
+                        class="fas fa-graduation-cap"></i></span>
+                <div class="menu-title">Result</div>
+            </div>
+            <div class="menu-item" onclick="showSection('profile')">
+                <span class="menu-icon" style="background:#ffedd5; color:#ea580c;"><i class="fas fa-key"></i></span>
+                <div class="menu-title">Password</div>
+            </div>
+        </div>
+
+        <div id="attendance" class="section-card show">
+            <div class="sec-title"><i class="fas fa-calendar-alt"></i> Attendance Register</div>
+            <div class="input-row">
+                <div style="flex:1"><label style="font-size:11px; font-weight:bold;">From Date</label><input type="date"
+                        id="attStart" class="inp"></div>
+                <div style="flex:1"><label style="font-size:11px; font-weight:bold;">To Date</label><input type="date"
+                        id="attEnd" class="inp"></div>
+            </div>
+            <button class="btn btn-primary" onclick="checkAttendance()">Check Status</button>
+
+            <div id="attStats" style="margin-top:15px; display:none;">
+                <div class="att-stats-grid">
+                    <div class="stat-box" style="border-color:#bbf7d0;"><span class="stat-val" style="color:#166534"
+                            id="statP">0</span>
+                        <div class="stat-lbl">Present</div>
+                    </div>
+                    <div class="stat-box" style="border-color:#fecaca;"><span class="stat-val" style="color:#991b1b"
+                            id="statA">0</span>
+                        <div class="stat-lbl">Absent</div>
+                    </div>
+                    <div class="stat-box" style="border-color:#fde68a;"><span class="stat-val" style="color:#854d0e"
+                            id="statH">0</span>
+                        <div class="stat-lbl">Holidays</div>
+                    </div>
+                    <div class="stat-box"><span class="stat-val" style="color:#1e293b" id="statW">0</span>
+                        <div class="stat-lbl">Working Days</div>
+                    </div>
+                </div>
+                <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;">
+                    <small style="color:#64748b; font-weight:700; display:block; margin-bottom:5px;">DETAILED
+                        LOG</small>
+                    <div id="attList" style="max-height:300px; overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fees" class="section-card">
+            <div class="sec-title">
+                <span><i class="fas fa-rupee-sign"></i> Fee Details</span>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="downloadStatement()" class="btn-icon"
+                        style="background:var(--success); color:white; border:none; border-radius:5px; cursor:pointer;"><i
+                            class="fas fa-file-excel"></i> Excel</button>
+                </div>
+            </div>
+
+            <div id="parentWalletBox"
+                style="display:none; background:#dbeafe; color:#1e40af; padding:10px 15px; border-radius:8px; margin-bottom:15px; border:1px solid #bfdbfe; align-items:center; gap:10px;">
+                <i class="fas fa-wallet" style="font-size:18px;"></i>
+                <div>
+                    <div style="font-size:10px; font-weight:800; opacity:0.8; letter-spacing:0.5px;">WALLET BALANCE
+                    </div>
+                    <div style="font-size:16px; font-weight:800;" id="pWalletAmt">₹0</div>
+                </div>
+            </div>
+
+            <div id="parentCreditBox"
+                style="display:none; background:#fef2f2; border:1px dashed #ef4444; padding:10px; margin-bottom:20px; border-radius:8px;">
+                <div
+                    style="font-size:12px; font-weight:800; color:#b91c1c; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                    <i class="fas fa-exclamation-circle"></i> PENDING ITEMS (Udhaar)
+                </div>
+                <div id="pCreditList"></div>
+            </div>
+
+
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;">
+                <div
+                    style="background:#f8fafc; padding:10px; border-radius:10px; text-align:center; border:1px solid #e2e8f0;">
+                    <small style="color:#64748b; font-weight:700;">PREV DUE</small>
+                    <div style="font-size:14px; font-weight:800; color:#ef4444;" id="dashPrevDue">₹0</div>
+                </div>
+                <div
+                    style="background:#f8fafc; padding:10px; border-radius:10px; text-align:center; border:1px solid #e2e8f0;">
+                    <small style="color:#64748b; font-weight:700;">PAID</small>
+                    <div style="font-size:14px; font-weight:800; color:#16a34a;" id="dashPaid">₹0</div>
+                </div>
+                <div
+                    style="background:#f8fafc; padding:10px; border-radius:10px; text-align:center; border:1px solid #e2e8f0;">
+                    <small style="color:#64748b; font-weight:700;">STATUS</small>
+                    <div style="font-size:11px; font-weight:800; color:#2563eb;">Active</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="openPayModal()"
+                style="font-size:16px; box-shadow:0 4px 12px rgba(79, 70, 229, 0.3);">
+                <i class="fas fa-wallet"></i> Pay Fees
+            </button>
+
+            <h4 style="margin:20px 0 10px; font-size:13px; color:#64748b; text-transform:uppercase;">Payment History
+            </h4>
+            <div style="overflow-x:auto;">
+                <table class="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Date/Receipt</th>
+                            <th>Description</th>
+                            <th style="text-align:right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feeHistoryBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="profile" class="section-card">
+            <div class="sec-title"><i class="fas fa-lock"></i> Change Password</div>
+            <input type="password" id="oldP" class="inp" placeholder="Current Password" style="margin-bottom:10px;">
+            <input type="password" id="newP" class="inp" placeholder="New Password" style="margin-bottom:10px;">
+            <button class="btn btn-dark" onclick="changePassword()">Update Password</button>
+        </div>
+
+    </div>
+
+    <div id="payModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">Fee Payment</div>
+                    <small style="color:#64748b; font-size:11px;" id="sessDisplay">Session: Loading...</small>
+                </div>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div id="loadingFee" style="text-align:center; padding:20px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading Fee Structure...
+            </div>
+
+            <div id="feeBody" style="display:none;">
+
+                <div id="monthlySection"></div>
+
+                <div id="transportSection" style="display:none;">
+                    <div class="sec-head">Transport Fee</div>
+                    <div class="month-grid" id="transGrid"></div>
+                </div>
+
+
+                <div class="sec-head">Annual & Other Fees</div>
+                <div class="annual-grid" id="annualSection"></div>
+            </div>
+
+            <div class="summary-box">
+                <div id="billDetails">Select items to pay...</div>
+                <div class="sum-total">
+                    <span>TOTAL PAYABLE:</span>
+                    <span id="billTotal">₹0</span>
+                </div>
+            </div>
+
+            <button onclick="showPaymentOptions()" class="btn btn-primary" style="margin-top:15px; width:100%;">
+                Proceed to Pay <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="paymentOptionsModal" class="modal">
+        <div class="modal-content" style="text-align:center; max-width:400px;">
+            <button class="close-btn" onclick="document.getElementById('paymentOptionsModal').style.display='none'"
+                style="position:absolute; right:15px; top:15px;">&times;</button>
+
+            <i class="fas fa-info-circle" style="font-size:40px; color:var(--brand); margin-bottom:10px;"></i>
+            <h3 style="margin:0; color:#1e293b;">Payment Instructions</h3>
+
+            <div
+                style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-top:15px; text-align:left;">
+
+                <div style="margin-bottom:15px;">
+                    <strong style="color:#0f172a; display:block; margin-bottom:5px; font-size:14px;">Option 1: Cash at
+                        Counter</strong>
+                    <div style="font-size:13px; color:#475569; line-height:1.5;">
+                        Aapne total <b style="color:#16a34a; font-size:16px;" id="finalPayAmt">₹0</b> select kiya hai.
+                        Kripya itna amount lekar School Counter par jama kar dein.
+                    </div>
+                </div>
+
+                <div style="border-top:1px dashed #cbd5e1; margin:10px 0;"></div>
+
+                <div>
+                    <strong style="color:#0f172a; display:block; margin-bottom:5px; font-size:14px;">Option 2: Online
+                        (UPI)</strong>
+                    <div style="font-size:13px; color:#475569; margin-bottom:8px;">
+                        Ya aap neeche diye gaye UPI ID par amount send karein:
+                    </div>
+
+                    <div class="upi-id-box"
+                        style="width:100%; box-sizing:border-box; justify-content:center; background:#eff6ff; border-color:#bfdbfe; font-size:15px;">
+                        <span id="schoolUpi">7632852762@ybl</span>
+                        <i class="far fa-copy" style="cursor:pointer; color:#2563eb; margin-left:10px;"
+                            onclick="copyUPI()"></i>
+                    </div>
+
+                    <div
+                        style="font-size:12px; color:#b91c1c; margin-top:10px; font-weight:600; background:#fef2f2; padding:8px; border-radius:6px; border:1px solid #fecaca;">
+                        <i class="fas fa-exclamation-circle"></i> Important: Payment ke baad kripya Director Ma'am ko
+                        WhatsApp screenshot bhejen aur call karke inform karein. Anyaatha kisi bhi asuvidha ke liye
+                        school zimmedar nahi hoga
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="shareOnWhatsApp()" style="margin-top:15px; font-size:14px;">
+                <i class="fab fa-whatsapp"></i> Payment kar diya? Inform Director with payment screenshot and call
+            </button>
+        </div>
+    </div>
+
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+            authDomain: "sample-school-13ca4.firebaseapp.com",
+            projectId: "sample-school-13ca4",
+            storageBucket: "sample-school-13ca4.firebasestorage.app",
+            messagingSenderId: "198448853287",
+            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- GLOBAL VARIABLES ---
+        let user = JSON.parse(sessionStorage.getItem("userData"));
+        let fullStudentData = {}; // Fresh data from DB
+        let currentSession = "2025-2026"; // Default
+
+        // Fee Calculation Variables
+        let feeRules = [];     // From masterSettings/feeConfig_Session
+        let classFees = {};    // From feeStructure/Session_Class
+        let transRate = 0;     // From transportStructure
+        let myPaidFees = [];   // From fees collection
+        let selections = { monthly: {}, annual: {}, transport: [] };
+
+        // Constants
+        const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+        const monthMapIdx = { "Apr": 0, "May": 1, "Jun": 2, "Jul": 3, "Aug": 4, "Sep": 5, "Oct": 6, "Nov": 7, "Dec": 8, "Jan": 9, "Feb": 10, "Mar": 11 };
+
+        // --- INIT ---
+        if (!user || (user.role !== 'parent' && user.role !== 'student')) {
+            window.location.href = "admin-login.html";
+        } else {
+            initDashboard();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // --- 1. LOAD DATA SEQUENCE ---
+
+
+        // --- 1. LOAD DATA SEQUENCE (FIXED) ---
+        async function initDashboard() {
+            try {
+                // A. Get Current Session
+                const sessDoc = await db.collection('masterSettings').doc('sessions').get();
+                if (sessDoc.exists && sessDoc.data().list) {
+                    const list = sessDoc.data().list.sort().reverse();
+                    currentSession = list[0]; // Latest session
+                }
+                document.getElementById('sessDisplay').innerText = `Session: ${currentSession}`;
+
+                // B. Get Fresh Student Data
+                const stuDoc = await db.collection('students').doc(user.id).get();
+                fullStudentData = stuDoc.data();
+
+                // UI Updates
+                document.getElementById('dName').innerText = fullStudentData.name;
+                document.getElementById('dClass').innerText = fullStudentData.class;
+                document.getElementById('dRoll').innerText = fullStudentData.roll;
+                document.getElementById('dSec').innerText = fullStudentData.section || 'A';
+                // --- YE LINE ADD KAREIN (Isse ID show hone lagega) ---
+                document.getElementById('dId').innerText = fullStudentData.stesID || "";
+
+
+                // --- YAHAN PASTE KAREIN (Part 1) ---
+
+                // Photo Logic
+                const imgEl = document.getElementById('dPhoto');
+                const fullImgEl = document.getElementById('fullSizeImg');
+
+                // Agar Student Data mein photo hai:
+                if (fullStudentData.photo) {
+                    imgEl.src = fullStudentData.photo;
+                    fullImgEl.src = fullStudentData.photo;
+                } else {
+                    // Agar photo nahi hai to Dummy Icon
+                    imgEl.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                    fullImgEl.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                }
+
+                // --- YAHAN KHATAM ---
+
+
+
+
+                // C. Load Fee Config (Rules)
+                const configDoc = await db.collection('masterSettings').doc(`feeConfig_${currentSession}`).get();
+                feeRules = configDoc.exists ? (configDoc.data().heads || []) : [];
+
+                // D. Load Class Structure
+                const structDoc = await db.collection('feeStructure').doc(`${currentSession}_${fullStudentData.class}`).get();
+                classFees = structDoc.exists ? structDoc.data() : {};
+
+                // E. LOAD TRANSPORT RATE (FIXED LOGIC)
+                if (fullStudentData.transportOpted) {
+                    // 1. Fetch all routes for this session
+                    const tQuery = await db.collection('transportStructure').where('session', '==', currentSession).get();
+
+                    // 2. Map banayein (exact matching ke liye)
+                    let transMap = {};
+                    tQuery.forEach(doc => {
+                        const d = doc.data();
+                        const rName = String(d.routeName || "").trim();
+                        const rRate = parseFloat(d.rate) || 0;
+
+                        if (rName) {
+                            transMap[rName] = rRate;
+                            transMap[rName.toLowerCase()] = rRate;
+
+                            if (rName.includes('_')) {
+                                const cleanName = rName.split('_')[1].trim();
+                                transMap[cleanName] = rRate;
+                                transMap[cleanName.toLowerCase()] = rRate;
+                            }
+                        }
+                    });
+
+                    // 3. Student ka route clean karein
+                    let stuRoute = (fullStudentData.transportRoute || "").trim();
+                    let stuRouteClean = stuRoute;
+                    if (stuRoute.includes('_')) {
+                        stuRouteClean = stuRoute.split('_')[1].trim();
+                    }
+
+                    // 4. Match karein
+                    if (transMap[stuRoute]) {
+                        transRate = transMap[stuRoute];
+                    } else if (transMap[stuRouteClean]) {
+                        transRate = transMap[stuRouteClean];
+                    } else if (transMap[stuRoute.toLowerCase()]) {
+                        transRate = transMap[stuRoute.toLowerCase()];
+                    } else if (transMap[stuRouteClean.toLowerCase()]) {
+                        transRate = transMap[stuRouteClean.toLowerCase()];
+                    } else {
+                        transRate = Number(fullStudentData.manualTransRate) || 0;
+                    }
+                    console.log("Transport Rate Loaded:", transRate);
+                }
+
+                // F. Load History & Set Dates
+                loadMyHistory();
+
+                const today = new Date();
+                const curYear = today.getFullYear();
+                const acYear = today.getMonth() < 3 ? curYear - 1 : curYear;
+                document.getElementById('attStart').value = `${acYear}-04-01`;
+                document.getElementById('attEnd').value = today.toISOString().split('T')[0];
+
+            } catch (e) {
+                console.error("Init Error:", e);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        // --- 2. HISTORY & DASHBOARD STATS ---
+        function loadMyHistory() {
+            db.collection('fees')
+                .where('sid', '==', user.id)
+                .where('session', '==', currentSession) // Only current session for stats
+                .onSnapshot(snap => {
+                    myPaidFees = snap.docs.map(d => d.data());
+                    renderHistoryTable(myPaidFees);
+                    calculateDashboardStats();
+                });
+        }
+
+        function renderHistoryTable(data) {
+            let html = "";
+            // Sort by Date Descending
+            data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+            data.forEach(f => {
+                let desc = f.headName || f.otherHead;
+                if (f.type === 'PAYMENT' && f.months) desc = `${f.headName} (${f.months.join(', ')})`;
+
+                html += `<tr>
+                <td><b style="color:#334155">${f.date}</b><br><small style="color:gray">${f.receiptNo}</small></td>
+                <td>${desc}</td>
+                <td style="text-align:right; font-weight:bold; color:#16a34a;">₹${f.paidAmount}</td>
+            </tr>`;
+            });
+            document.getElementById('feeHistoryBody').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No payments in this session.</td></tr>";
+        }
+
+        // --- UPDATED STATS FUNCTION (Admin Style) ---
+        function calculateDashboardStats() {
+            // 1. Basic Stats (Old Logic)
+            const totalPaid = myPaidFees.reduce((sum, f) => sum + Number(f.paidAmount), 0);
+            const prevDue = Number(fullStudentData.previousDue || 0);
+            document.getElementById('dashPaid').innerText = `₹${totalPaid}`;
+            document.getElementById('dashPrevDue').innerText = `₹${prevDue}`;
+
+            // 2. SHOW WALLET (Blue Style)
+            const wallet = Number(fullStudentData.walletBalance || 0);
+            const wBox = document.getElementById('parentWalletBox');
+            if (wBox) {
+                if (wallet > 0) {
+                    wBox.style.display = 'flex';
+                    document.getElementById('pWalletAmt').innerText = `₹${wallet}`;
+                } else {
+                    wBox.style.display = 'none';
+                }
+            }
+
+            // 3. SHOW PENDING ITEMS / UDHAAR (Red Dashed Style)
+            const pending = fullStudentData.pendingItems || [];
+            const cBox = document.getElementById('parentCreditBox');
+            if (cBox) {
+                if (pending.length > 0) {
+                    cBox.style.display = 'block';
+                    document.getElementById('pCreditList').innerHTML = pending.map(item => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:8px; margin-bottom:5px; border-radius:6px; border:1px solid #fca5a5;">
+                        <div>
+                            <div style="font-weight:bold; color:#b91c1c; font-size:12px;">${item.name}</div>
+                            <div style="font-size:10px; color:#7f1d1d;">${new Date(item.date).toLocaleDateString()}</div>
+                        </div>
+                        <span style="font-weight:bold; color:#b91c1c; font-size:13px;">₹${item.price}</span>
+                    </div>
+                `).join('');
+                } else {
+                    cBox.style.display = 'none';
+                }
+            }
+        }
+
+
+        // --- 3. PAY MODAL & CALCULATOR (THE CORE LOGIC) ---
+        function openPayModal() {
+            document.getElementById('payModal').style.display = 'flex';
+            document.getElementById('loadingFee').style.display = 'block';
+            document.getElementById('feeBody').style.display = 'none';
+
+            selections = { monthly: {}, annual: {}, transport: [] }; // Reset selections
+            updateBill(); // Reset totals
+
+            // Simulate slight delay for UI smoothness
+            setTimeout(renderFeeStructure, 500);
+        }
+
+        function renderFeeStructure() {
+            const mContainer = document.getElementById('monthlySection');
+            const aContainer = document.getElementById('annualSection');
+            const tContainer = document.getElementById('transGrid');
+
+            mContainer.innerHTML = "";
+            aContainer.innerHTML = "";
+            tContainer.innerHTML = "";
+
+            // A. Identify Admission Start Month
+            let startMonthIdx = 0; // Default April
+            if (fullStudentData.admissionDate) {
+                const parts = fullStudentData.admissionDate.split('-');
+                const admYear = parseInt(parts[0]);
+                const admMonth = parseInt(parts[1]);
+                const sessStartYear = parseInt(currentSession.split('-')[0]);
+
+                if (admYear === sessStartYear) {
+                    startMonthIdx = (admMonth >= 4) ? admMonth - 4 : 0;
+                } else if (admYear > sessStartYear) {
+                    // Admission in Jan/Feb/Mar of next year
+                    startMonthIdx = (admMonth <= 3) ? admMonth + 8 : 0;
+                }
+            }
+
+            const todayIdx = (new Date().getMonth() >= 3) ? new Date().getMonth() - 3 : new Date().getMonth() + 9;
+            const stuCat = (fullStudentData.admissionCategory || 'REGULAR').toUpperCase();
+
+            // B. Loop Fee Heads
+            feeRules.forEach(head => {
+                // 1. Category Filter
+                const allowedCats = head.appTo || ['REGULAR'];
+                const upperCats = allowedCats.map(c => c.toUpperCase());
+                if (!upperCats.includes(stuCat)) return; // Skip if not applicable
+
+                // 2. Get Rate
+                const headData = classFees[head.name];
+                if (!headData) return;
+
+                // 3. Render Based on Type
+                if (head.type === 'MONTHLY' && typeof headData === 'object') {
+                    // --- Monthly Fee Grid ---
+                    let html = `<div class="sec-head">${head.name}</div><div class="month-grid">`;
+
+                    // Calculate Paid amount for this head
+                    const thisHeadPaidDocs = myPaidFees.filter(f =>
+                        (f.headName === head.name || (f.headName || "").startsWith(head.name))
+                        && (f.type === 'PAYMENT' || f.type === 'HEADONLY')
+                    );
+
+                    let paidMonths = [];
+                    thisHeadPaidDocs.forEach(d => {
+                        if (d.months) paidMonths.push(...d.months);
+                    });
+
+                    months.forEach((m, i) => {
+                        let rate = Number(headData[m]) || 0;
+                        let cls = "m-btn";
+                        let click = `onclick="selectMonthly('${head.name}', '${m}', ${rate}, this)"`;
+                        let statusHtml = `<small>₹${rate}</small>`;
+
+                        if (i < startMonthIdx) {
+                            cls += " locked"; statusHtml = "<small>N/A</small>"; click = "";
+                        } else if (paidMonths.includes(m)) {
+                            cls += " paid"; statusHtml = "<i class='fas fa-check'></i>"; click = "";
+                        } else if (i <= todayIdx) {
+                            cls += " due"; // Past due date
+                        }
+
+                        if (rate === 0) { cls += " locked"; statusHtml = "<small>-</small>"; click = ""; }
+
+                        html += `<div class="${cls}" ${click}>${m}${statusHtml}</div>`;
+                    });
+                    html += `</div>`;
+                    mContainer.innerHTML += html;
+
+                } else {
+                    // --- Annual Fee Card ---
+                    let rate = Number(headData['Amount'] || headData) || 0;
+
+                    const validFrom = head.validFrom || 'Apr';
+                    const validIdx = monthMapIdx[validFrom];
+
+                    let cls = "annual-item";
+                    let click = `onclick="selectAnnual('${head.name}', ${rate}, this)"`;
+                    let statusHtml = `₹${rate}`;
+
+                    // Check Paid
+                    const isPaid = myPaidFees.some(f => f.headName === head.name || f.otherHead === head.name);
+
+                    if (isPaid) {
+                        cls += " paid"; statusHtml = "Paid <i class='fas fa-check'></i>"; click = "";
+                    } else if (todayIdx < validIdx) {
+                        // Locked hata diya taaki click ho sake
+                        // Style normal annual-item wala rahega (White/Grey border)
+                        statusHtml = `Due in ${validFrom}`;
+                        // click variable ko empty NAHI karenge, taaki parent advance pay kar sake
+                    }
+
+
+                    if (rate === 0) return; // Don't show 0 fees
+
+                    aContainer.innerHTML += `<div class="${cls}" ${click}>
+                    <span style="font-size:11px; font-weight:bold;">${head.name}</span>
+                    <span style="font-size:14px; font-weight:800; margin-top:5px;">${statusHtml}</span>
+                </div>`;
+                }
+            });
+
+            // C. Transport Section
+            // C. Transport Section (FIXED LOGIC)
+            if (fullStudentData.transportOpted) {
+                document.getElementById('transportSection').style.display = 'block';
+
+                // 1. Full Months Array (Matching ke liye zaroori hai)
+                const fullMonths = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
+
+                // 2. Check Paid Transport Months (Short & Full dono check karein)
+                let paidTransMonths = [];
+                myPaidFees.filter(f => f.type === 'TRANSPORT').forEach(d => {
+                    if (d.transportMonths) paidTransMonths.push(...d.transportMonths);
+                });
+
+                // 3. Allowed Months (Agar list empty hai to SAB allow karein)
+                let optedMonths = fullStudentData.transportMonths;
+                if (!optedMonths || optedMonths.length === 0) {
+                    optedMonths = months.concat(fullMonths); // Fallback: Enable All
+                }
+
+                let tHtml = "";
+                months.forEach((m, i) => {
+                    let cls = "m-btn";
+                    let click = `onclick="selectTransport('${m}', ${transRate}, this)"`;
+                    let statusHtml = `<small>₹${transRate}</small>`;
+
+                    // Full Month Name nikalein
+                    const fullM = fullMonths[i];
+
+                    // ✅ FIX: Short Name YA Full Name dono mein se koi bhi match kare
+                    const isAllocated = optedMonths.includes(m) || optedMonths.includes(fullM);
+
+                    // ✅ FIX: Paid Check bhi dono ke liye
+                    const isPaid = paidTransMonths.includes(m) || paidTransMonths.includes(fullM);
+
+                    if (i < startMonthIdx || !isAllocated) {
+                        cls += " locked"; statusHtml = "<small>N/A</small>"; click = "";
+                    } else if (isPaid) {
+                        cls += " paid"; statusHtml = "<i class='fas fa-check'></i>"; click = "";
+                    } else if (i <= todayIdx) {
+                        cls += " due";
+                    }
+
+                    tHtml += `<div class="${cls}" ${click}>${m}${statusHtml}</div>`;
+                });
+                tContainer.innerHTML = tHtml;
+            } else {
+                document.getElementById('transportSection').style.display = 'none';
+            }
+
+
+            document.getElementById('loadingFee').style.display = 'none';
+            document.getElementById('feeBody').style.display = 'block';
+        }
+
+        // --- 4. SELECTION LOGIC ---
+        window.selectMonthly = function (head, month, rate, el) {
+            if (!selections.monthly[head]) selections.monthly[head] = [];
+            const existsIdx = selections.monthly[head].findIndex(x => x.m === month);
+            if (existsIdx > -1) {
+                selections.monthly[head].splice(existsIdx, 1);
+                el.classList.remove('selected');
+            } else {
+                selections.monthly[head].push({ m: month, amt: rate });
+                el.classList.add('selected');
+            }
+            updateBill();
+        }
+
+        window.selectAnnual = function (head, rate, el) {
+            if (selections.annual[head]) {
+                delete selections.annual[head];
+                el.classList.remove('selected');
+            } else {
+                selections.annual[head] = rate;
+                el.classList.add('selected');
+            }
+            updateBill();
+        }
+
+        window.selectTransport = function (month, rate, el) {
+            if (selections.transport.includes(month)) {
+                selections.transport = selections.transport.filter(m => m !== month);
+                el.classList.remove('selected');
+            } else {
+                selections.transport.push(month);
+                el.classList.add('selected');
+            }
+            updateBill();
+        }
+
+        function updateBill() {
+            let total = 0;
+            let html = "";
+            for (let head in selections.monthly) {
+                if (selections.monthly[head].length > 0) {
+                    const subTotal = selections.monthly[head].reduce((a, b) => a + b.amt, 0);
+                    const mList = selections.monthly[head].map(x => x.m).join(', ');
+                    total += subTotal;
+                    html += `<div class="sum-row"><span>${head} (${mList})</span><span>₹${subTotal}</span></div>`;
+                }
+            }
+            for (let head in selections.annual) {
+                total += selections.annual[head];
+                html += `<div class="sum-row"><span>${head}</span><span>₹${selections.annual[head]}</span></div>`;
+            }
+            if (selections.transport.length > 0) {
+                const tTotal = selections.transport.length * transRate;
+                total += tTotal;
+                html += `<div class="sum-row"><span>Transport (${selections.transport.join(', ')})</span><span>₹${tTotal}</span></div>`;
+            }
+            document.getElementById('billDetails').innerHTML = html || "Select items to pay...";
+            document.getElementById('billTotal').innerText = `₹${total}`;
+            window.finalPaymentAmount = total;
+        }
+
+        // --- 5. PAYMENT HANDLER ---
+        function showPaymentOptions() {
+            if (!window.finalPaymentAmount || window.finalPaymentAmount <= 0) {
+                return showToast("Please select fees to pay first!");
+            }
+            closeModal();
+            document.getElementById('finalPayAmt').innerText = `₹${window.finalPaymentAmount}`;
+            document.getElementById('paymentOptionsModal').style.display = 'flex';
+        }
+
+        // --- 6. ATTENDANCE LOGIC ---
+        // --- 6. ATTENDANCE LOGIC (FIXED) ---
+        async function checkAttendance() {
+            const startStr = document.getElementById('attStart').value;
+            const endStr = document.getElementById('attEnd').value;
+
+            if (!startStr || !endStr) return showToast("Select date range");
+
+            try {
+                // UI Update: Loading state dikhayenge
+                document.getElementById('attList').innerHTML = '<div style="text-align:center; padding:20px; color:gray;">Loading...</div>';
+
+                // 1. Fetch ALL attendance data first
+                const snap = await db.collection('attendance').where('sid', '==', user.id).get();
+
+                // 2. Map creation (Sirf selected range ka data hi map me dalenge)
+                let attMap = {};
+                snap.forEach(d => {
+                    const data = d.data();
+                    // Strict String Comparison
+                    if (data.date >= startStr && data.date <= endStr) {
+                        attMap[data.date] = data;
+                    }
+                });
+
+                // 3. Stats Reset
+                let p = 0, a = 0, h = 0, working = 0;
+                let listHtml = "";
+
+                // 4. Safe Date Loop (Time 12:00 PM set kiya taaki date jump na kare)
+                let curr = new Date(startStr + "T12:00:00");
+                const last = new Date(endStr + "T12:00:00");
+
+                while (curr <= last) {
+                    // Generate YYYY-MM-DD string safely manually
+                    const yyyy = curr.getFullYear();
+                    const mm = String(curr.getMonth() + 1).padStart(2, '0');
+                    const dd = String(curr.getDate()).padStart(2, '0');
+                    const dateKey = `${yyyy}-${mm}-${dd}`;
+
+                    // Get Data from Map
+                    const record = attMap[dateKey];
+
+                    // Determine Status
+                    let status = record ? record.status : 'N';
+                    let remark = record ? record.remark : '';
+
+                    // Handle Sunday (Agar N hai aur Sunday hai to Holiday maano)
+                    if (status === 'N' && curr.getDay() === 0) {
+                        status = 'H';
+                        remark = 'Sunday';
+                    }
+
+                    // Count Stats
+                    if (status === 'P') p++;
+                    else if (status === 'A') a++;
+                    else if (status === 'H') h++;
+
+                    // Working days count (Holiday aur Sunday chod ke)
+                    if (status !== 'H' && status !== 'N') working++;
+
+                    // Format for Display
+                    const dayName = curr.toLocaleDateString('en-US', { weekday: 'short' });
+                    const displayDate = `${dd}-${mm}-${yyyy} (${dayName})`;
+
+                    // Style Classes
+                    let colorClass = '';
+                    let statusTxt = '';
+
+                    if (status === 'P') { colorClass = 'background:#dcfce7;color:#166534'; statusTxt = 'Present'; }
+                    else if (status === 'A') { colorClass = 'background:#fee2e2;color:#991b1b'; statusTxt = 'Absent'; }
+                    else if (status === 'H') { colorClass = 'background:#fef9c3;color:#854d0e'; statusTxt = 'Holiday'; }
+                    else { colorClass = 'background:#f1f5f9;color:#94a3b8'; statusTxt = '--'; }
+
+                    listHtml += `
+                    <div class="att-row">
+                        <div>
+                            <span class="att-date" style="font-weight:bold; color:#334155;">${displayDate}</span>
+                            ${remark ? `<div style="font-size:10px; color:#64748b; margin-top:2px;">${remark}</div>` : ''}
+                        </div>
+                        <span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; ${colorClass}">
+                            ${statusTxt}
+                        </span>
+                    </div>`;
+
+                    // Increment Day
+                    curr.setDate(curr.getDate() + 1);
+                }
+
+                // 5. Update UI
+                document.getElementById('statP').innerText = p;
+                document.getElementById('statA').innerText = a;
+                document.getElementById('statH').innerText = h;
+                document.getElementById('statW').innerText = working;
+                document.getElementById('attList').innerHTML = listHtml;
+                document.getElementById('attStats').style.display = 'block';
+
+            } catch (e) {
+                console.error(e);
+                showToast("Error checking attendance");
+            }
+        }
+
+
+        // --- 7. UTILITIES ---
+        // 🟢 NAYA SECURE PASSWORD CHANGE
+        // 🔑 PARENT PASSWORD CHANGE FUNCTION (Secure Sync)
+        // 🔑 PARENT PASSWORD CHANGE FUNCTION (Fixed Name)
+        // 🟢 NAYA SECURE PASSWORD CHANGE
+        // 🔑 PARENT PASSWORD CHANGE FUNCTION (Secure Sync)
+        // 🔑 PARENT PASSWORD CHANGE FUNCTION (Fixed Name)
+        // 🟢 NAYA SECURE PASSWORD CHANGE
+        // 🔑 PARENT PASSWORD CHANGE FUNCTION (Secure Sync)
+        async function changePassword() {  // YAHAN NAAM EXACTLY HTML SE MATCH KAR DIYA HAI
+            const newP = document.getElementById('newP').value;
+
+            if (!newP || newP.length < 6) {
+                return alert("Password must be at least 6 characters long!");
+            }
+
+            try {
+                const currentUser = firebase.auth().currentUser;
+
+                if (!currentUser) {
+                    return alert("Aapka session expire ho gaya hai. Kripya wapas login karein.");
+                }
+
+                // 1. Firebase Auth me password change
+                await currentUser.updatePassword(newP);
+
+                // 2. Backup ke liye 'students' collection me save
+                const sessionData = JSON.parse(sessionStorage.getItem("userData"));
+                await db.collection('students').doc(sessionData.id).update({
+                    customPassword: newP
+                });
+
+                alert("✅ Password Updated Successfully!");
+
+                // Box ko clear karne ke liye
+                document.getElementById('newP').value = '';
+                document.getElementById('oldP').value = '';
+
+            } catch (error) {
+                // Firebase Security: Agar purana login hai to Firebase password change nahi karne deta
+                if (error.code === 'auth/requires-recent-login') {
+                    alert("Security alert: Password update karne ke liye ek baar Logout karke wapas Login karein.");
+                } else {
+                    alert("Error: " + error.message);
+                }
+            }
+        }
+
+
+
+        function logout() { sessionStorage.clear(); window.location.href = "admin-login.html"; }
+        function showSection(id) {
+            document.querySelectorAll('.section-card').forEach(e => e.classList.remove('show'));
+            document.querySelectorAll('.menu-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(id).classList.add('show');
+        }
+        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+        function copyUPI() { const id = document.getElementById('schoolUpi').innerText; navigator.clipboard.writeText(id); showToast("UPI ID Copied!"); }
+        function payNowUPI() {
+            const upiId = document.getElementById('schoolUpi').innerText;
+            const name = "ST Teresa School"; const amt = window.finalPaymentAmount;
+            const note = `Fee for ${fullStudentData.name}`;
+            const url = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amt}&tn=${encodeURIComponent(note)}&cu=INR`;
+            window.open(url, '_blank');
+        }
+        function shareOnWhatsApp() {
+            let details = [];
+            for (let head in selections.monthly) if (selections.monthly[head].length) details.push(`${head}: ${selections.monthly[head].map(x => x.m).join(',')}`);
+            for (let head in selections.annual) details.push(`${head}`);
+            if (selections.transport.length) details.push(`Transport: ${selections.transport.join(',')}`);
+            const msg = `*FEE PAYMENT INITIATED*\nStudent: ${fullStudentData.name}\nClass: ${fullStudentData.class}\nAmount: ₹${window.finalPaymentAmount}\n\nDetails:\n${details.join('\n')}\n\nPlease confirm receipt.`;
+            window.open(`https://wa.me/917632852762?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+        function downloadStatement() {
+            if (myPaidFees.length === 0) return alert("No history to export");
+            const data = myPaidFees.map(f => {
+                let desc = f.otherHead || (f.months ? `Tuition: ${f.months.join(',')}` : 'Tuition');
+                return { Date: f.date, Receipt: f.receiptNo || '-', Description: desc, Amount: f.paidAmount };
+            });
+            const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Statement");
+            XLSX.writeFile(wb, `${user.name}_Fee_Statement.xlsx`);
+        }
+
+
+
+
+        // --- UPDATED INIT DASHBOARD (WITH DEBUGGING LOGS) ---
+
+
+
+
+
+
+
+
+        // Photo Modal Functions
+        function openPhotoModal() { document.getElementById('photoViewer').style.display = 'flex'; }
+        function closePhotoModal() { document.getElementById('photoViewer').style.display = 'none'; }
+
+        // --- YAHAN KHATAM ---
+
+
+
+        // 🟢 SECURE INITIALIZATION FOR PARENT 🟢
+        // 🟢 SECURE INITIALIZATION FOR PARENT 🟢
+        firebase.auth().onAuthStateChanged((user) => {
+            const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+            const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+            // Yahan strictly check kar rahe hain ki kya user sachi me PARENT hai
+            // Agar Parent NAHI hai (ya session expire ho gaya hai) toh login page pe bhejo
+            if (!(user && isLoggedIn && userData.role === 'parent')) {
+                window.location.replace("admin-login.html");
+            }
+
+            // Agar user Parent hai, toh usko rokne ki zaroorat nahi hai.
+            // Aapka upar likha hua data loading code apne aap chal jayega!
+        });
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+    <!-- AI Chatbot Integration -->
+    <script src="js/chatbot.js?v=19"></script>
+
+</body>
+
+</html>

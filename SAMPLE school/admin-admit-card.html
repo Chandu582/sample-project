@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    
+    
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admit Card Generator | STES</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { margin: 0; padding: 0; background: #cbd5e1; font-family: 'Outfit', sans-serif; }
+
+        /* --- SETTINGS PANEL --- */
+        .settings-panel {
+            width: 320px; height: 100vh; position: fixed; left: 0; top: 0;
+            background: #1e293b; color: white; padding: 15px; overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3); z-index: 100;
+        }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 3px; text-transform: uppercase; font-weight: 700; }
+        input, select, textarea { width: 100%; padding: 6px; background: #334155; border: 1px solid #475569; color: white; border-radius: 4px; outline: none; font-size: 12px; box-sizing: border-box; }
+        
+        .routine-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+        .btn-logo { background: #0ea5e9; padding: 8px; font-size: 12px; cursor: pointer; text-align: center; display: block; border-radius: 4px; }
+        .btn-print { background: #6366f1; margin-top: 10px; font-size: 16px; padding: 12px; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
+
+        /* --- PREVIEW AREA --- */
+        .preview-area { margin-left: 320px; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+
+        /* --- ADMIT CARD DESIGN --- */
+        .admit-card {
+            background: white; 
+            width: 190mm; 
+            height: auto;
+            max-height: 128mm; /* A4 Fitting Fix */
+            min-height: 80mm; 
+            border: 2px solid #000; 
+            margin-bottom: 5mm; 
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            padding: 5px;
+            page-break-inside: avoid;
+            transition: all 0.2s;
+        }
+        
+        .inner-border { 
+            border: 1px solid #000; width: 100%; padding: 6px; 
+            box-sizing: border-box; display: flex; flex-direction: column;
+        }
+
+        /* CHECKBOX SELECTION STYLE */
+        .card-select {
+            position: absolute; top: 10px; right: 10px;
+            width: 20px; height: 20px; z-index: 50;
+            cursor: pointer; accent-color: #2563eb;
+            display: block; 
+        }
+        .admit-card.selected { box-shadow: 0 0 0 4px #2563eb; transform: scale(1.02); z-index: 10; }
+
+        /* Header & Content Styles */
+        .ac-header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 5px; flex-shrink: 0; }
+        .logo-box { width: 75px; height: 75px; display: flex; align-items: center; justify-content: center; margin-left: 15px; margin-right: 20px; overflow: hidden; }
+        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        .school-text { flex: 1; text-align: center; }
+        .school-name { font-size: 24px; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
+        .school-reg { font-size: 10px; font-weight: 700; color: #000000; margin-bottom: 2px; }
+        .school-addr { font-size: 10px; font-weight: 600; color: #000000; }
+        .exam-title { background: #000; color: white; padding: 2px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-top: 3px; display: inline-block; text-transform: uppercase; }
+
+        .content-row { display: flex; gap: 10px; margin-bottom: 5px; flex-shrink: 0; }
+        .photo-frame { width: 85px; height: 100px; border: 1px solid #000; background: #f8fafc; padding: 2px; display: flex; align-items: center; justify-content: center; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        .details-grid { flex: 1; display: grid; grid-template-columns: 1.3fr 1fr; column-gap: 15px; row-gap: 0px; align-content: center; }
+        .field { display: flex; align-items: baseline; border-bottom: 1px dotted #475569; padding-bottom: 1px; margin-bottom: 1px; }
+        .lbl { width: 70px; font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; flex-shrink: 0; }
+        .val { flex: 1; font-size: 13px; font-weight: 700; color: #000; padding-left: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .routine-box { flex: 1; border: 2px solid #000; margin-top: 2px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+        .r-table { width: 100%; border-collapse: collapse; position: relative; z-index: 2; }
+        .r-table th { background: #e2e8f0; font-size: 15px; border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 2px; }
+        .r-table td { border-bottom: 1px solid #000; border-right: 1px solid #000; font-size: 18px; padding: 1px 3px; text-align: center; font-weight: 600; height: 20px; }
+        .r-table tr:last-child td { border-bottom: none; }
+        .r-table th:last-child, .r-table td:last-child { border-right: none; }
+        
+        
+        
+        
+    
+
+        /* Dynamic Watermark */
+        .watermark-box { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; opacity:0.20; z-index:0; pointer-events:none; }
+        .watermark-box img { width:auto; height:auto; max-width:80%; max-height:80%; object-fit:contain; }
+
+        .ac-footer { margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 2px; flex-shrink: 0; }
+        .instr-box { width: 65%; font-size: 8px; color: #000000; line-height: 1.2; }
+        .sign-area { text-align: center; }
+        .sign-line { width: 80px; border-top: 1px solid #000; padding-top: 2px; font-size: 9px; font-weight: bold; }
+
+        /* PRINT SETTINGS */
+        @media print {
+            .settings-panel, .card-select { display: none !important; }
+            .preview-area { margin: 0; padding: 0; background: white; display: block; }
+            body { background: white; margin: 0; }
+            
+            body.print-selected .admit-card:not(.selected) { display: none !important; }
+
+            .admit-card { 
+                margin: 0 auto 2mm auto; 
+                break-inside: avoid; page-break-inside: avoid;
+                max-height: 132mm; 
+                box-shadow: none !important;
+                transform: none !important;
+            }
+            @page { size: A4 portrait; margin: 2mm; }
+        }
+        
+        
+            /* Black & White Mode Styles */
+body.print-bw-mode .admit-card {
+    color: #000 !important;
+    border-color: #000 !important;
+}
+
+/* Annual Exam text with Black Box and White Text */
+body.print-bw-mode .exam-name {
+    background: #000 !important;
+    color: #fff !important;
+    padding: 2px 8px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+/* All other text Solid Black and Bold */
+body.print-bw-mode .school-name,
+body.print-bw-mode .info-label,
+body.print-bw-mode .info-label,
+body.print-bw-mode .info-value,
+body.print-bw-mode .student-details td {
+    color: #000 !important;
+    font-weight: 700 !important;
+}
+
+/* Watermark: Light Grey/Black */
+body.print-bw-mode .watermark {
+    filter: grayscale(100%) opacity(0.2);
+    color: #ccc !important;
+}
+
+/* Ensure colors are forced during print */
+@media print {
+    body.print-bw-mode {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+.watermark-box img {
+        visibility: visible !important;
+    }
+
+    /* Table ko transparent karein taaki watermark uske piche na chupe */
+    .r-table td {
+        background: transparent !important;
+    }
+
+        
+        
+        
+        
+        
+    </style>
+</head>
+<body>
+
+    <div class="settings-panel">
+        <h3 style="margin-top:0; color:#fbbf24;">Admit Card Settings</h3>
+
+        <div class="input-group">
+            <label>School Logo</label>
+            <div style="background:#334155; padding:10px; border-radius:6px; text-align:center;">
+                <img id="previewLogo" src="https://via.placeholder.com/100?text=LOGO" 
+                     style="width:60px; height:60px; object-fit:contain; background:white; border-radius:4px; margin-bottom:10px;">
+                <div style="display:flex; gap:10px;">
+                    <label class="btn" style="flex:1; background:#3b82f6; color:white; padding:6px; font-size:11px; cursor:pointer;">
+                        <i class="fas fa-upload"></i> Upload
+                        <input type="file" id="logoInput" accept="image/*" onchange="uploadLogoDB()" style="display:none;">
+                    </label>
+                    <button onclick="deleteLogoDB()" class="btn" style="flex:1; background:#ef4444; color:white; padding:6px; font-size:11px; border:none;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>School Reg. ID</label>
+            <input type="text" id="schoolReg" value="Reg No: STES/2026/BIH" onkeyup="updateUI()" onchange="saveGlobalDB()">
+        </div>
+
+        <div class="input-group">
+            <label>Exam Name</label>
+            <input type="text" id="examName" value="ANNUAL EXAMINATION 2026" onkeyup="updateUI()" onchange="saveGlobalDB()">
+        </div>
+
+        <div style="border-top:1px dashed #475569; margin:10px 0;"></div>
+        
+        <div class="input-group">
+            <label>Select Class</label>
+            <select id="filterClass" onchange="loadStudents()">
+                <option value="">Select Class...</option>
+                <option value="Nursery">Nursery</option>
+                <option value="LKG">LKG</option>
+                <option value="UKG">UKG</option>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                <option value="3">Class 3</option>
+                <option value="4">Class 4</option>
+                <option value="5">Class 5</option>
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10">Class 10</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>Section</label>
+            <select id="filterSection" onchange="loadStudents()">
+                <option value="">All Sections</option>
+                <option value="A">Section A</option>
+                <option value="B">Section B</option>
+                <option value="C">Section C</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Search Student</label>
+            <input type="text" id="searchBox" placeholder="Enter Name or Roll No..." onkeyup="renderCards()" style="border:1px solid #fbbf24; background:#0f172a;">
+        </div>
+        
+        
+        
+        <div style="display: flex; gap: 15px; margin-top: 15px;">
+    
+    <button onclick="generateAdmitCards('ALL')" style="background:#3b82f6; color:white; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">
+        <i class="fas fa-users"></i> Show All Cards
+    </button>
+    
+    <button onclick="generateAdmitCards('CLEARED')" style="background:#10b981; color:white; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">
+        <i class="fas fa-check-double"></i> Show (Fee Cleared Only)
+    </button>
+
+    </div>
+
+        
+        
+        
+        
+        
+        
+
+        <div style="margin-top:10px; padding:8px; background:#334155; border-radius:4px; display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:11px; cursor:pointer; display:flex; gap:5px; align-items:center;">
+                <input type="checkbox" id="selectAllBox" onchange="toggleSelectAll()"> Select All
+            </label>
+            <span id="selCount" style="font-size:10px; color:#fbbf24;">0 Selected</span>
+        </div>
+
+        <div style="border-top:1px dashed #475569; margin:10px 0;"></div>
+        
+        <div class="input-group">
+            <label>Reporting Time</label>
+            <input type="text" id="reportTime" value="09:00 AM" onkeyup="updateUI()" onchange="saveGlobalDB()">
+        </div>
+
+        <div class="input-group">
+            <label>Note / Instructions</label>
+            <textarea id="examNote" rows="2" onkeyup="updateUI()" onchange="saveGlobalDB()">1. Bring Admit Card daily.
+2. Report 30 mins before exam.</textarea>
+        </div>
+
+        <div style="border-top:1px dashed #475569; margin:10px 0;"></div>
+        <div style="font-size:12px; font-weight:bold; margin-bottom:5px; color:#fbbf24;">EXAM ROUTINE</div>
+        
+        <div id="routineInputs"></div>
+        <button class="btn" style="background:#334155; font-size:10px; margin-top:5px;" onclick="addRow()">+ Manual Row</button>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+    <button class="btn btn-print" onclick="printCards('color')" style="flex: 1;">
+        <i class="fas fa-palette"></i> Colorful
+    </button>
+    <button class="btn btn-print" onclick="printCards('bw')" style="flex: 1; background: #334155;">
+        <i class="fas fa-print"></i> B&W
+    </button>
+</div>
+
+    </div>
+
+    <div class="preview-area" id="cardContainer">
+        <div style="text-align:center; margin-top:150px; color:#64748b;">
+            <i class="fas fa-id-card fa-3x"></i><br><br>
+            <span style="font-size:18px;">Select a Class to Generate Cards</span>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allStudents = [];
+        let currentDisplayList = [];
+        let logoSrc = "https://via.placeholder.com/100?text=LOGO"; 
+        let savedSettings = {}; // Cache for DB Settings
+
+        function normalizeClass(val) {
+            if(!val) return "";
+            let v = val.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
+            const map = {
+                "1": "1", "01": "1", "1st": "1", "class1": "1",
+                "2": "2", "02": "2", "2nd": "2", "class2": "2",
+                "3": "3", "03": "3", "3rd": "3", "class3": "3",
+                "4": "4", "04": "4", "4th": "4", "class4": "4",
+                "5": "5", "05": "5", "5th": "5", "class5": "5",
+                "6": "6", "06": "6", "6th": "6", "class6": "6",
+                "7": "7", "07": "7", "7th": "7", "class7": "7",
+                "8": "8", "08": "8", "8th": "8", "class8": "8",
+                "9": "9", "09": "9", "9th": "9", "class9": "9",
+                "10": "10", "10th": "10", "class10": "10"
+            };
+            if(v.includes("nur")) return "nursery";
+            if(v.includes("lkg")) return "lkg";
+            if(v.includes("ukg")) return "ukg";
+            return map[v] || v; 
+        }
+
+        // ==========================================
+        // ✅ 1. LOAD & SAVE LOGIC (AUTO SAVE)
+        // ==========================================
+
+        function loadSettingsFromDB() {
+            db.collection('settings').doc('admitCardConfig').get().then(doc => {
+                if (doc.exists) {
+                    savedSettings = doc.data();
+                    
+                    if(savedSettings.logo) {
+                        logoSrc = savedSettings.logo;
+                        document.getElementById('previewLogo').src = logoSrc;
+                    }
+                    if(savedSettings.examName) document.getElementById('examName').value = savedSettings.examName;
+                    if(savedSettings.schoolReg) document.getElementById('schoolReg').value = savedSettings.schoolReg;
+                    if(savedSettings.reportTime) document.getElementById('reportTime').value = savedSettings.reportTime;
+                    if(savedSettings.examNote) document.getElementById('examNote').value = savedSettings.examNote.replace(/<br>/g, '\n');
+                    
+                    // Init empty routine if no class selected
+                    initRoutine();
+                    updateUI(); // Refresh UI
+                } else {
+                    initRoutine();
+                }
+            }).catch(() => initRoutine());
+        }
+
+        function saveGlobalDB() {
+            const data = {
+                examName: document.getElementById('examName').value,
+                schoolReg: document.getElementById('schoolReg').value,
+                reportTime: document.getElementById('reportTime').value,
+                examNote: document.getElementById('examNote').value.replace(/\n/g, '<br>')
+            };
+            db.collection('settings').doc('admitCardConfig').set(data, { merge: true });
+            updateUI();
+        }
+
+        function saveRoutineDB() {
+            const cls = document.getElementById('filterClass').value;
+            if(!cls) return;
+
+            const rows = document.querySelectorAll('.routine-row');
+            let routineData = [];
+            rows.forEach(r => {
+                const d = r.querySelector('.rDate').value;
+                const s = r.querySelector('.rSubj').value;
+                if(d || s) routineData.push({ date: d, subj: s });
+            });
+
+            if(!savedSettings.routines) savedSettings.routines = {};
+            savedSettings.routines[cls] = routineData;
+
+            db.collection('settings').doc('admitCardConfig').set({
+                routines: savedSettings.routines
+            }, { merge: true });
+
+            updateUI();
+        }
+
+        function loadClassRoutine(cls) {
+            const container = document.getElementById('routineInputs');
+            container.innerHTML = "";
+
+            if(savedSettings.routines && savedSettings.routines[cls] && savedSettings.routines[cls].length > 0) {
+                savedSettings.routines[cls].forEach(item => addRow(item.date, item.subj));
+            } else {
+                addRow(); addRow(); addRow(); 
+            }
+            updateUI();
+        }
+
+        function addRow(dateVal = '', subjVal = '') {
+            const container = document.getElementById('routineInputs');
+            const div = document.createElement('div');
+            div.className = 'routine-row';
+            div.innerHTML = `
+                <input type="text" class="rDate" value="${dateVal}" placeholder="Date" oninput="checkAutoAdd(this)" onchange="saveRoutineDB()">
+                <input type="text" class="rSubj" value="${subjVal}" placeholder="Subject" oninput="checkAutoAdd(this)" onchange="saveRoutineDB()">
+                <button onclick="this.parentElement.remove(); saveRoutineDB(); updateUI();" style="background:#ef4444; color:white; border:none; width:20px; cursor:pointer;">&times;</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function checkAutoAdd(input) {
+            const row = input.parentElement;
+            const container = document.getElementById('routineInputs');
+            if (row === container.lastElementChild && input.value.trim() !== "") {
+                addRow();
+            }
+            updateUI(); 
+        }
+
+        function initRoutine() {
+            if(document.getElementById('routineInputs').children.length === 0) {
+                addRow(); addRow(); addRow(); 
+            }
+        }
+
+        // ==========================================
+        // ✅ 2. LOGO UPLOAD & DELETE
+        // ==========================================
+        function uploadLogoDB() {
+            const file = document.getElementById('logoInput').files[0];
+            if(!file) return;
+
+            if(file.size > 500 * 1024) {
+                alert("File too large! Please use a smaller image (< 500KB).");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                db.collection('settings').doc('admitCardConfig').set({ logo: base64 }, { merge: true }).then(() => {
+                    logoSrc = base64;
+                    document.getElementById('previewLogo').src = base64;
+                    updateUI();
+                    alert("Logo Saved!");
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteLogoDB() {
+            if(confirm("Delete saved logo?")) {
+                db.collection('settings').doc('admitCardConfig').update({ logo: firebase.firestore.FieldValue.delete() }).then(() => {
+                    logoSrc = "https://via.placeholder.com/100?text=LOGO";
+                    document.getElementById('previewLogo').src = logoSrc;
+                    updateUI();
+                });
+            }
+        }
+
+        // ==========================================
+        // ✅ 3. FETCH & RENDER CARDS
+        // ==========================================
+        function loadStudents() {
+            const clsRaw = document.getElementById('filterClass').value;
+            const sec = document.getElementById('filterSection').value;
+            const container = document.getElementById('cardContainer');
+            
+            if(!clsRaw) return;
+
+            // Load Saved Routine for this class
+            loadClassRoutine(clsRaw);
+
+            container.innerHTML = '<div style="text-align:center; margin-top:100px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Fetching Data...</div>';
+
+            db.collection('students').where('status', '==', 'Active').get().then(snap => {
+                allStudents = [];
+                const targetClass = normalizeClass(clsRaw);
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if (normalizeClass(data.class) === targetClass) {
+                        if (!sec || data.section === sec) {
+                            allStudents.push({ id: doc.id, ...data });
+                        }
+                    }
+                });
+                
+                allStudents.sort((a,b) => (parseInt(a.roll)||0) - (parseInt(b.roll)||0));
+
+                if(allStudents.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; margin-top:100px; color:red;">No Data Found for ${clsRaw}</div>`;
+                } else {
+                    currentDisplayList = allStudents; // Nayi line
+                    renderCards();
+                }
+            });
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cardContainer');
+            const examName = document.getElementById('examName').value;
+            const regID = document.getElementById('schoolReg').value;
+            const time = document.getElementById('reportTime').value;
+            const note = document.getElementById('examNote').value.replace(/\n/g, '<br>');
+            
+            const searchQ = document.getElementById('searchBox').value.toLowerCase().trim();
+            
+            const filteredList = currentDisplayList.filter(s => {
+                const name = (s.name || "").toLowerCase();
+                const roll = (s.roll || "").toString();
+                return name.includes(searchQ) || roll.includes(searchQ);
+            });
+
+            container.innerHTML = "";
+            if(filteredList.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:50px; color:#64748b;">No students match your search.</div>`;
+                return;
+            }
+
+                        filteredList.forEach(s => {
+                // 1. Check karein photo hai ya nahi
+                const hasPhoto = s.photo && s.photo.trim() !== "";
+                
+                // 2. Agar photo hai to HTML banayein, nahi to empty rakhein
+                const photoHTML = hasPhoto ? `<div class="photo-frame"><img src="${s.photo}"></div>` : "";
+                
+                let displayClass = s.class || document.getElementById('filterClass').options[document.getElementById('filterClass').selectedIndex].text;
+                if(displayClass.includes("Select")) displayClass = "";
+                
+                const currentLogo = logoSrc;
+
+                const html = `
+                <div class="admit-card" id="card-${s.id}">
+                    <input type="checkbox" class="card-select" onchange="toggleCard('${s.id}')">
+
+                    <div class="inner-border">
+                        <div class="ac-header">
+                            <div class="logo-box"><img src="${currentLogo}"></div>
+                            <div class="school-text">
+                                <div class="school-name">St. Teresa English School</div>
+                                <div class="school-reg">${regID}</div>
+                                <div class="school-addr">Lalganj, Chandi, Nalanda (Bihar) - 803108</div>
+                                <div class="exam-title">${examName}</div>
+                            </div>
+                            <div id="qr-${s.id}" style="padding:2px; border:1px solid #ccc; background:white;"></div>
+                        </div>
+
+                        <div class="content-row">
+                            ${photoHTML} <div class="details-grid">
+    
+                                <div class="field"><span class="lbl">Reg. ID</span><span class="val" style="color:#000;">${s.stesID || '-'}</span></div>
+                                <div class="field"><span class="lbl">Class</span><span class="val">${displayClass} (${s.section || 'A'})</span></div>
+                                
+                                <div class="field"><span class="lbl">Name</span><span class="val">${s.name}</span></div>
+                                <div class="field"><span class="lbl">Father</span><span class="val">${s.fatherName || '-'}</span></div>
+                                
+                                <div class="field"><span class="lbl">Roll No</span><span class="val">${s.roll || '-'}</span></div>
+                                <div class="field"><span class="lbl">Gender</span><span class="val">${s.gender || '-'}</span></div>
+                            </div>
+                        </div>
+
+                        <div class="routine-box">
+                            <div class="watermark-box"><img src="${currentLogo}"></div>
+
+                            <table class="r-table">
+                                <thead>
+    <tr>
+        <th style="width:15%;">DATE</th>
+        <th>SUBJECT</th>
+        <th style="width:20%;">INVIGILATOR</th>
+        <th style="width:20%;">INVIGILATOR</th>
+    </tr>
+</thead>
+
+                                <tbody class="r-body"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="ac-footer">
+                            <div class="instr-box" style="display:flex; flex-direction:column; gap:2px;">
+                                <div style="display:flex; align-items:flex-start;">
+                                    <b style="width:30px; flex-shrink:0;">Note:</b>
+                                    <span class="note-text" style="flex:1;">${note}</span>
+                                </div>
+                                <div>
+                                    <b>Time:</b> <span class="time-text">${time}</span>
+                                </div>
+                            </div>
+                            <div class="sign-area"><div class="sign-line">Controller</div></div>
+                            <div class="sign-area"><div class="sign-line">Principal</div></div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                container.appendChild(tempDiv);
+
+                setTimeout(() => {
+                    const qrBox = document.getElementById(`qr-${s.id}`);
+                    if(qrBox) {
+                        qrBox.innerHTML = ""; 
+                        const qrText = `Name: ${s.name}\nFather: ${s.fatherName}\nClass: ${displayClass}\nID: ${s.stesID}`;
+                        new QRCode(qrBox, { text: qrText, width: 60, height: 60, correctLevel : QRCode.CorrectLevel.L });
+                    }
+                }, 100);
+            });
+            updateUI();
+        }
+
+        function updateUI() {
+            const examName = document.getElementById('examName').value;
+            const regID = document.getElementById('schoolReg').value;
+            const time = document.getElementById('reportTime').value;
+            const note = document.getElementById('examNote').value.replace(/\n/g, '<br>');
+
+            document.querySelectorAll('.exam-title').forEach(el => el.innerText = examName);
+            document.querySelectorAll('.school-reg').forEach(el => el.innerText = regID);
+            document.querySelectorAll('.time-text').forEach(el => el.innerText = time);
+            document.querySelectorAll('.note-text').forEach(el => el.innerHTML = note);
+            
+            document.querySelectorAll('img').forEach(img => {
+                if(img.parentNode.classList.contains('logo-box') || img.parentNode.classList.contains('watermark-box')) {
+                    img.src = logoSrc;
+                }
+            });
+
+            const rows = document.querySelectorAll('.routine-row');
+            let routineHTML = "";
+            rows.forEach(row => {
+                const dt = row.querySelector('.rDate').value;
+                const sb = row.querySelector('.rSubj').value;
+                // Yahan ek extra empty <td> add kiya gaya hai signatures ke liye
+if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td></tr>`;
+
+            });
+            if(routineHTML === "") routineHTML = "<tr><td colspan='3' style='padding:5px;'>--</td></tr>";
+            document.querySelectorAll('.r-body').forEach(tbody => tbody.innerHTML = routineHTML);
+        }
+
+        // SELECTION & PRINT
+        function toggleCard(id) {
+            const card = document.getElementById(`card-${id}`);
+            const cb = card.querySelector('.card-select');
+            if(cb.checked) card.classList.add('selected');
+            else card.classList.remove('selected');
+            updateSelCount();
+        }
+
+        function toggleSelectAll() {
+            const master = document.getElementById('selectAllBox').checked;
+            document.querySelectorAll('.card-select').forEach(cb => {
+                cb.checked = master;
+                const card = cb.closest('.admit-card');
+                if(master) card.classList.add('selected');
+                else card.classList.remove('selected');
+            });
+            updateSelCount();
+        }
+
+        function updateSelCount() {
+            const c = document.querySelectorAll('.admit-card.selected').length;
+            document.getElementById('selCount').innerText = `${c} Selected`;
+        }
+
+    function printCards(mode) {
+    const sel = document.querySelectorAll('.admit-card.selected').length;
+    
+    // 1. Selection Logic (Agar kuch select hai to wahi dikhega)
+    if(sel > 0) {
+        document.body.classList.add('print-selected');
+    } else {
+        document.body.classList.remove('print-selected');
+    }
+
+    // 2. Mode Logic (Ye ab permanent rahega jab tak aap change na karein)
+    if(mode === 'bw') {
+        document.body.classList.add('print-bw-mode');
+    } else {
+        // Sirf tab hategi jab aap Colorful button dabayenge
+        document.body.classList.remove('print-bw-mode');
+    }
+
+    // 3. Print Dialog Open
+    window.print();
+
+    // ❌ Yahan se humne automatic remove wala code hata diya hai.
+    // Ab Paper size change karne par B&W mode nahi hategi.
+}
+
+
+
+
+            async function generateAdmitCards(mode) {
+        const clsRaw = document.getElementById('filterClass').value;
+        const container = document.getElementById('cardContainer');
+        const sessionVal = "2025-2026"; // Current Session
+
+        if(!clsRaw || allStudents.length === 0) {
+            alert("Please select a Class first and let it load!");
+            return;
+        }
+
+        if(mode === 'ALL') {
+            currentDisplayList = allStudents;
+            renderCards();
+            return;
+        }
+
+                if(mode === 'CLEARED') {
+            container.innerHTML = '<div style="text-align:center; margin-top:100px;"><i class="fas fa-spinner fa-spin fa-3x" style="color:#10b981;"></i><br><h3 style="color:#10b981; margin-top:10px;">Deep Ledger Audit (Up to Previous Month)... Please Wait</h3></div>';
+
+            try {
+                // 👉 1. FETCH EXACT SAME DATA AS ADMIN-FEES.HTML
+                const [feeSnap, transSnap, structSnap, configSnap] = await Promise.all([
+                    db.collection('fees').where('session', '==', sessionVal).get(),
+                    db.collection('transportStructure').where('session', '==', sessionVal).get(),
+                    db.collection('feeStructure').where('session', '==', sessionVal).get(),
+                    db.collection('masterSettings').doc(`feeConfig_${sessionVal}`).get()
+                ]);
+
+                // 👉 2. REPLICATE EXACT MAPPING LOGIC
+                let masterHeads = configSnap.exists ? (configSnap.data().heads || []) : [];
+                if(!masterHeads.some(h=>h.name.toLowerCase().includes('tuition'))) masterHeads.push({name:'Tuition Fee', type:'MONTHLY'});
+                if(!masterHeads.some(h=>h.name.toLowerCase().includes('transport'))) masterHeads.push({name:'Transport Fee', type:'MONTHLY'});
+
+                let globalFeeMap = {};
+                structSnap.forEach(d => globalFeeMap[d.data().className] = d.data());
+
+                let globalTransMap = {};
+                transSnap.forEach(d => {
+                    const val = Number(d.data().rate) || 0;
+                    if(d.data().routeName) globalTransMap[d.data().routeName] = val;
+                    globalTransMap[d.id] = val;
+                });
+
+                let feesByStudent = {};
+                feeSnap.forEach(d => {
+                    const f = d.data();
+                    let sid = f.sid || f.studentId || f.stuId;
+                    if(!feesByStudent[sid]) feesByStudent[sid] = [];
+                    feesByStudent[sid].push(f);
+                });
+
+                const monthsArr = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+                const fullMonths = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
+                const monthMapIdx = {"Apr":0, "May":1, "Jun":2, "Jul":3, "Aug":4, "Sep":5, "Oct":6, "Nov":7, "Dec":8, "Jan":9, "Feb":10, "Mar":11};
+
+                const todayIdx = (new Date().getMonth() >= 3) ? new Date().getMonth() - 3 : new Date().getMonth() + 9;
+                
+                // 🟢 STRICT PREVIOUS MONTH LOGIC (e.g., Feb running, check till Jan)
+                const targetIdx = todayIdx - 1;
+
+                // 👉 3. DEEP AUDIT PROCESS
+                const clearedStudents = allStudents.filter(s => {
+                    const clsFees = globalFeeMap[s.class];
+
+                    // 🛑 BUG FIX: Agar Fee Structure match na ho, toh STRICT BLOCK karo! (Zero Dues nahi maan na hai)
+                    if (!clsFees || Object.keys(clsFees).length === 0) {
+                        console.log(`❌ BLOCKED: Fee Structure not found for ${s.name} (Class: ${s.class})`);
+                        return false; 
+                    }
+
+                    const myFees = feesByStudent[s.id] || [];
+
+                    // Admission Date Logic
+                    let startMonthIdx = 0; 
+                    if(s.admissionDate) {
+                        try {
+                            const sessStartYear = parseInt(sessionVal.split('-')[0]);
+                            const admDate = new Date(s.admissionDate);
+                            if (!isNaN(admDate.getTime())) {
+                                const admYear = admDate.getFullYear();
+                                const admMonth = admDate.getMonth();
+                                if (admYear < sessStartYear) startMonthIdx = 0;
+                                else if (admYear === sessStartYear) startMonthIdx = (admMonth >= 3) ? admMonth - 3 : 0;
+                                else if (admYear > sessStartYear) startMonthIdx = (admMonth <= 2) ? admMonth + 9 : 12;
+                            }
+                        } catch(e) {}
+                    }
+
+                    let currentDues = 0; 
+                    const stuCat = (s.admissionCategory || s.category || 'REGULAR').toUpperCase();
+
+                    // Calculate dues strictly checking category permissions
+                    masterHeads.forEach(h => {
+                        let exp = 0, paid = 0;
+                        let hNameLower = h.name.toLowerCase();
+
+                        const allowedCats = h.appTo || ['REGULAR']; 
+                        const isCategoryAllowed = allowedCats.map(c=>c.toUpperCase()).includes(stuCat);
+
+                        if (isCategoryAllowed) {
+                            if (hNameLower.includes('transport')) {
+                                if (s.transportOpted === true || s.transportOpted === "true" || s.transportOpted === "Yes") {
+                                     const cleanName = s.transportRoute?.replace(/^\d{4}-\d{4}_/, '') || s.transportRoute || "";
+                                     const rate = globalTransMap[s.transportRoute] || globalTransMap[cleanName] || 0;
+                                     const allocated = s.transportMonths || [];
+                                     let count = 0;
+                                     monthsArr.forEach((shortM, i) => { 
+                                        const fullM = fullMonths[i];
+                                        // 🟢 PREVIOUS MONTH RULE
+                                        if ((allocated.includes(shortM) || allocated.includes(fullM)) && i <= targetIdx && i >= startMonthIdx) count++; 
+                                     });
+                                     exp = rate * count;
+                                }
+                            } else if (h.type === 'MONTHLY') {
+                                if (clsFees[h.name] && typeof clsFees[h.name] === 'object' && clsFees[h.name]['Apr'] !== undefined) {
+                                    monthsArr.forEach((m, i) => { 
+                                        // 🟢 PREVIOUS MONTH RULE
+                                        if (i <= targetIdx && i >= startMonthIdx) exp += (Number(clsFees[h.name][m]) || 0); 
+                                    });
+                                } else {
+                                     let amt = Number(clsFees[h.name]?.Amount || clsFees[h.name] || 0);
+                                     if (amt > 0) {
+                                         let activeMonths = (targetIdx + 1) - startMonthIdx;
+                                         if(activeMonths < 0) activeMonths = 0;
+                                         exp = amt * activeMonths;
+                                     }
+                                }
+                            } else {
+                                const startM = h.validFrom || 'Apr';
+                                const feeMonthIdx = monthMapIdx[startM];
+                                
+                                // 🟢 PREVIOUS MONTH RULE
+                                const isTimeReached = (targetIdx >= feeMonthIdx);
+                                const isStudentEligible = (startMonthIdx <= feeMonthIdx);
+
+                                if(isTimeReached && isStudentEligible) {
+                                    exp = Number(clsFees[h.name]?.Amount || clsFees[h.name] || 0);
+                                }
+                            }
+                        }
+
+                        // Total Paid Calculation (Exactly like admin-fees)
+                        myFees.forEach(f => {
+                             let fHead = (f.headName || f.otherHead || "").toLowerCase();
+                             let fType = f.type;
+                             let match = false;
+                             
+                             if (fHead === hNameLower) match = true;
+                             if (fType === 'TUITION' && hNameLower.includes('tuition')) match = true;
+                             if (fType === 'PAYMENT' && hNameLower.includes('tuition')) match = true; 
+                             if (fType === 'TRANSPORT' && hNameLower.includes('transport')) match = true;
+                             if ((fType === 'HEAD' || fType === 'HEADONLY') && fHead.includes(hNameLower)) match = true;
+
+                             if (match) paid += (Number(f.paidAmount)||0) + (Number(f.discountUsed)||0);
+                        });
+
+                        let due = Math.max(0, exp - paid);
+                        currentDues += due;
+                    });
+
+                    // Discounts & Prev Dues logic
+                    let totalDisc = 0;
+                    myFees.forEach(f => { 
+                        if(f.type === 'DISCOUNT' || (f.headName||"").toLowerCase() === 'discount') {
+                            totalDisc += (Number(f.paidAmount)||0);
+                        } else if(f.discount && Number(f.discount) > 0) {
+                            totalDisc += Number(f.discount);
+                        }
+                    });
+
+                    let prevDue = 0;
+                    const sessionDueKey = `dues_${sessionVal}`;
+                    if (s[sessionDueKey] !== undefined) prevDue = Number(s[sessionDueKey]);
+                    else prevDue = Number(s.previousDue) || 0;
+
+                    let pending = (currentDues + prevDue) - totalDisc;
+
+                    // Audit log to trace exactly why a student was passed or blocked
+                    console.log(`[👤 ${s.name}] Curr Dues (Up to Prev Month): ₹${currentDues} | Old Dues: ₹${prevDue} | Disc: ₹${totalDisc} | 👉 TOTAL PENDING: ₹${pending}`);
+
+                    // Strict Block (10 Rs margin for decimal issues)
+                    return pending <= 10;
+                });
+
+                if(clearedStudents.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; margin-top:100px; color:#ef4444;"><h3>Is Class me ek bhi bacha nahi mila jiska pichle mahine tak ka dues completely clear ho!</h3></div>`;
+                    return;
+                }
+
+                currentDisplayList = clearedStudents;
+                renderCards();
+
+            } catch(e) {
+                console.error("Fee Check Error:", e);
+                container.innerHTML = `<div style="text-align:center; margin-top:100px; color:red;">Error checking fees: ${e.message}</div>`;
+            }
+        }
+            }
+
+
+
+
+
+
+
+        // Init App
+            // 🟢 SECURE INITIALIZATION 🟢
+    // admin-fees.html aur baaki data wale pages ke liye
+firebase.auth().onAuthStateChanged((user) => {
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+    if (user && isLoggedIn && userData.role === 'admin') {
+        // Asli test
+        db.collection('admins').doc(user.uid).get().then((doc) => {
+            if (doc.exists && doc.data().role === 'SuperAdmin') {
+                
+                loadSettingsFromDB(); // <-- Yahan page ka main function call hoga
+                
+            } else {
+                auth.signOut().then(() => window.location.replace("admin-login.html"));
+            }
+        });
+    } else {
+        window.location.replace("admin-login.html");
+    }
+});
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notice Board - St. Teresa School</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f9fafb; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        /* HEADER */
+        .page-header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 50px 20px; text-align: center; color: white; margin-bottom: 40px; }
+        .page-header h1 { margin: 0; font-size: 32px; font-weight: 700; }
+        .home-btn { display: inline-block; margin-top: 15px; color: white; text-decoration: none; font-weight: 600; border: 2px solid white; padding: 6px 18px; border-radius: 20px; font-size: 14px; transition: 0.3s; }
+        .home-btn:hover { background: white; color: #d97706; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px 50px; }
+
+        /* NOTICE CARD */
+        .notice-card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid #f59e0b; position: relative; }
+        .n-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .n-date { background: #fffbeb; color: #d97706; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .n-title { font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 10px 0; }
+        .n-body { color: #4b5563; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+
+        /* ACTION AREA */
+        .action-area { margin-top: 20px; border-top: 1px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
+        .btn-action { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; flex: 1; justify-content: center; max-width: 200px; border: none; }
+        
+        .btn-view { background: #e0f2fe; color: #0284c7; }
+        .btn-view:hover { background: #bae6fd; }
+        
+        .btn-download { background: #dcfce7; color: #16a34a; }
+        .btn-download:hover { background: #bbf7d0; }
+
+        .new-badge { position: absolute; top: -10px; right: 20px; background: #ef4444; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); }
+
+        .empty-state { text-align: center; color: #9ca3af; padding: 40px; }
+
+        /* --- GALLERY STYLE MODAL (Advanced Zoom) --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 1000;
+            justify-content: center; align-items: center; flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .close-btn {
+            position: absolute; top: 20px; right: 20px; color: white; 
+            font-size: 35px; cursor: pointer; z-index: 1005; padding: 10px;
+            background: rgba(0,0,0,0.3); border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Image Container */
+        .modal-img-container {
+            width: 100%; height: 90%; display: flex; justify-content: center; align-items: center;
+            overflow: visible; touch-action: none;
+        }
+        .modal-img {
+            max-width: 100%; max-height: 100%; 
+            transform-origin: center center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-header">
+        <h1>Notice Board</h1>
+        <p>Latest Announcements & Updates</p>
+        <a href="index.html" class="home-btn"><i class="fas fa-home"></i> Back to Home</a>
+    </div>
+
+    <div class="container" id="noticeContainer">
+        <div class="empty-state"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Loading Notices...</div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div class="modal-img-container" id="imgContainer">
+            <img id="fullImage" class="modal-img" src="">
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 1. FETCH NOTICES
+        db.collection('notices').orderBy('timestamp', 'desc').onSnapshot(snap => {
+            const container = document.getElementById('noticeContainer');
+            container.innerHTML = '';
+            if(snap.empty) {
+                container.innerHTML = `<div class="empty-state"><i class="far fa-folder-open fa-3x"></i><br><br>No notices found.</div>`;
+                return;
+            }
+
+            snap.forEach(doc => {
+                const data = doc.data();
+                const diffDays = Math.ceil(Math.abs(new Date() - new Date(data.date)) / (1000 * 60 * 60 * 24)); 
+                const newBadge = (diffDays <= 3) ? '<div class="new-badge">NEW</div>' : '';
+
+                let buttonsHtml = '';
+                if(data.fileUrl) {
+                    if(data.fileType === 'pdf') {
+                         buttonsHtml = `
+                            <div class="action-area">
+                                <a href="${data.fileUrl}" target="_blank" class="btn-action btn-view">
+                                    <i class="fas fa-file-pdf"></i> Open PDF
+                                </a>
+                            </div>`;
+                    } else {
+                         // Calling openModal instead of old openLightbox
+                         buttonsHtml = `
+                            <div class="action-area">
+                                <button onclick="openModal('${data.fileUrl}')" class="btn-action btn-view">
+                                    <i class="fas fa-eye"></i> View Image
+                                </button>
+                                <a href="${data.fileUrl}" download class="btn-action btn-download">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>`;
+                    }
+                }
+
+                container.innerHTML += `
+                    <div class="notice-card">
+                        ${newBadge}
+                        <div class="n-header"><span class="n-date"><i class="far fa-calendar-alt"></i> ${data.date}</span></div>
+                        <h3 class="n-title">${data.title}</h3>
+                        <div class="n-body">${data.body}</div>
+                        ${buttonsHtml}
+                    </div>`;
+            });
+        });
+
+        // --- 2. ADVANCED MODAL LOGIC (Copied from Gallery) ---
+        const modal = document.getElementById('imageModal');
+        const fullImg = document.getElementById('fullImage');
+        const imgContainer = document.getElementById('imgContainer');
+
+        function openModal(url) {
+            fullImg.src = url;
+            modal.style.display = 'flex';
+            resetTransform();
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            resetTransform();
+        }
+
+        // --- 3. GESTURES (ZOOM + SWIPE + PAN) ---
+        let currentScale = 1, currentX = 0, currentY = 0;
+        let startX = 0, startY = 0;
+        let initialPinchDistance = 0;
+        let isDragging = false, isPinching = false;
+        let startScale = 1;
+        let lastPinchTime = 0; 
+
+        function updateImageTransform(withTransition = false) {
+            if(withTransition) fullImg.style.transition = "transform 0.2s ease-out";
+            else fullImg.style.transition = "none";
+            fullImg.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
+        }
+
+        function resetTransform() {
+            currentScale = 1; currentX = 0; currentY = 0;
+            updateImageTransform(true);
+        }
+
+        imgContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                isPinching = true; isDragging = false;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                startScale = currentScale;
+            } else if (e.touches.length === 1) {
+                isPinching = false; isDragging = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }
+        });
+
+        imgContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault(); 
+            if (isPinching && e.touches.length === 2) {
+                const newDistance = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                const scaleFactor = newDistance / initialPinchDistance;
+                let newScale = startScale * scaleFactor;
+                if (newScale < 1) newScale = 1;
+                if (newScale > 4) newScale = 4;
+                currentScale = newScale;
+                updateImageTransform(false);
+            } else if (isDragging && e.touches.length === 1 && currentScale > 1) {
+                const diffX = e.touches[0].clientX - startX;
+                const diffY = e.touches[0].clientY - startY;
+                fullImg.style.transition = "none";
+                fullImg.style.transform = `translate(${currentX + diffX}px, ${currentY + diffY}px) scale(${currentScale})`;
+            }
+        });
+
+        imgContainer.addEventListener('touchend', (e) => {
+            let currentTime = new Date().getTime();
+
+            if (isPinching) {
+                isPinching = false;
+                lastPinchTime = currentTime;
+                updateImageTransform(true);
+                return;
+            }
+            
+            if (isDragging) {
+                // Notice board me "Next Image" logic nahi hai isliye swipe left/right se sirf pan hoga
+                if (currentScale > 1) {
+                    const endX = e.changedTouches[0].clientX;
+                    const endY = e.changedTouches[0].clientY;
+                    currentX += (endX - startX);
+                    currentY += (endY - startY);
+                    updateImageTransform(true);
+                }
+                isDragging = false;
+            }
+        });
+
+        // DOUBLE TAP TO ZOOM
+        let lastTap = 0;
+        imgContainer.addEventListener('touchend', function(e) {
+            let currentTime = new Date().getTime();
+            if (currentTime - lastPinchTime < 500) return; 
+
+            if (e.changedTouches.length === 1) {
+                if (currentTime - lastTap < 300) {
+                    if (currentScale > 1) resetTransform();
+                    else {
+                        currentScale = 2.5; 
+                        updateImageTransform(true);
+                    }
+                }
+                lastTap = currentTime;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Manager | STES ERP</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root { --primary: #7c3aed; --primary-dark: #6d28d9; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-back { text-decoration: none; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+
+        /* TABS */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; border: 1px solid var(--border); }
+        .tab-btn { padding: 10px 20px; border: none; background: transparent; cursor: pointer; font-weight: 600; color: #64748b; border-radius: 8px; transition: 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS */
+        .card { background: white; padding: 25px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--primary); }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
+        .input-box { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
+        
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; background: var(--primary); color: white; }
+        .btn:hover { background: var(--primary-dark); }
+
+        /* TAGS */
+        .quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .q-tag { background: #f0f9ff; border: 1px solid #bae6fd; color: #0284c7; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .q-tag:hover { background: #e0f2fe; }
+        .q-tag.selected { background: #0284c7; color: white; border-color: #0284c7; }
+
+        .pill-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .pill { background: #f1f5f9; padding: 5px 12px; border-radius: 20px; font-size: 13px; border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .pill.special { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
+        .pill i { cursor: pointer; opacity: 0.6; } .pill i:hover { opacity: 1; color: #ef4444; }
+
+        /* TABLE */
+        .table-wrap { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid var(--border); margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        th { background: #f8fafc; padding: 12px; text-align: center; font-size: 13px; color: #64748b; border-bottom: 2px solid var(--border); white-space: nowrap; }
+        td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; text-align: center; }
+        
+        .mark-input { width: 50px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-weight: 700; transition: all 0.2s; }
+        .mark-input:focus { border-color: var(--primary); outline: none; background: #f0f9ff; }
+        
+        /* ERROR ANIMATION CLASS */
+        .input-error { border-color: #ef4444 !important; background: #fee2e2 !important; color: #b91c1c; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .grade-badge { font-size: 11px; display: block; margin-top: 2px; color: #64748b; }
+        .total-cell { font-weight: 700; color: var(--primary); }
+        .rank-cell { font-weight: 700; color: #e11d48; }
+        .res-pass { color: #16a34a; font-weight: 700; }
+        .res-fail { color: #dc2626; font-weight: 700; }
+
+        .meta-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid var(--border); align-items: center; }
+        .meta-group label { font-size: 12px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px; }
+
+        /* --- MODERN TOAST NOTIFICATION --- */
+        #toastBox {
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; gap: 10px; z-index: 9999;
+        }
+        .toast {
+            background: white; min-width: 300px; padding: 12px 20px; border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px;
+            font-size: 14px; font-weight: 600; animation: slideDown 0.4s ease forwards;
+            opacity: 0; transform: translateY(-20px); border: 1px solid #e2e8f0;
+        }
+        .toast.success { color: #16a34a; border-left: 5px solid #16a34a; }
+        .toast.error { color: #dc2626; border-left: 5px solid #dc2626; }
+        .toast i { font-size: 18px; }
+
+        @keyframes slideDown { to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+        
+        /* --- DYNAMIC FREEZE STYLES --- */
+
+/* Jab table par 'sticky-mode' class hogi tabhi freeze karega */
+.sticky-mode th:nth-child(1), 
+.sticky-mode td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background: #f8fafc; /* Header color */
+    border-right: 1px solid #cbd5e1;
+}
+
+.sticky-mode th:nth-child(2), 
+.sticky-mode td:nth-child(2) {
+    position: sticky;
+    left: 55px; /* Roll No column ke baad */
+    z-index: 20;
+    background: #f8fafc;
+    border-right: 2px solid #94a3b8; /* Dark border taaki alag dikhe */
+    box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1);
+}
+
+/* Body cells ka background white rakhna zaruri hai taaki text overlap na ho */
+.sticky-mode tbody td:nth-child(1),
+.sticky-mode tbody td:nth-child(2) {
+    background: #fff;
+}
+
+        
+        
+        
+        
+        
+        
+    </style>
+    
+</head>
+<body>
+
+<div id="toastBox"></div>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-poll"></i> Result Manager</h1>
+        <a href="admin-dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('setup', this)">1. Setup</button>
+        <button class="tab-btn" onclick="switchTab('entry', this)">2. Marks Entry</button>
+        
+        <button class="tab-btn" onclick="window.location.href='admin-bulk-print.html'">3. Print Report Card <i class="fas fa-external-link-alt" style="font-size:12px; margin-left:5px;"></i></button>
+
+    </div>
+
+    <div id="setup" class="section active">
+        <div class="card">
+            <div class="card-title"><span><i class="fas fa-cog"></i> Create Exam Type</span></div>
+            <div class="form-grid">
+                <input type="text" id="setupExamName" class="input-box" placeholder="Exam Name (e.g. Unit Test 1)">
+                <select id="setupMaxMarks" class="input-box">
+                    <option value="25">Max Marks: 25</option>
+                    <option value="100">Max Marks: 100</option>
+                </select>
+                <button class="btn" onclick="saveExamType()">Save Exam</button>
+            </div>
+            <div id="examList" class="pill-container"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span><i class="fas fa-book"></i> Subject Configuration</span></div>
+            <div class="form-grid">
+                <select id="subClass" class="input-box" onchange="loadSubjects()">
+                    <option value="">Select Class</option>
+                    <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
+                    <option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option>
+                    <option value="4th">4th</option><option value="5th">5th</option><option value="6th">6th</option>
+                    <option value="7th">7th</option><option value="8th">8th</option><option value="9th">9th</option>
+                    <option value="10th">10th</option>
+                </select>
+                
+                <div style="display:flex; flex-direction:column;">
+                    <div class="quick-tags">
+                        <span class="q-tag" onclick="toggleTag(this)">English</span>
+                        <span class="q-tag" onclick="toggleTag(this)">Hindi</span>
+                        <span class="q-tag" onclick="toggleTag(this)">Maths</span>
+                        <span class="q-tag" onclick="toggleTag(this)">Science</span>
+                        <span class="q-tag" onclick="toggleTag(this)">SST</span>
+                        <span class="q-tag" onclick="toggleTag(this)">Computer</span>
+                        <span class="q-tag" onclick="toggleTag(this)">GK</span>
+                        <span class="q-tag" onclick="toggleTag(this)">Sanskrit</span>
+                        <span class="q-tag" onclick="toggleTag(this)">Drawing</span>
+                    </div>
+                    <input type="text" id="customSubject" class="input-box" placeholder="Or type custom..." style="margin-top:10px;">
+                </div>
+                
+                <div style="display:flex; flex-direction:column; justify-content:center;">
+                    <label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; margin-bottom:10px;">
+                        <input type="checkbox" id="isHalfMarks"> Is 50 Marks? (GK/Sanskrit)
+                    </label>
+                    <button class="btn" onclick="addBulkSubjects()">Add Selected</button>
+                </div>
+            </div>
+            <div id="subjectList" class="pill-container"></div>
+        </div>
+    </div>
+
+    <div id="entry" class="section">
+        <div class="card">
+            <div class="form-grid">
+                <select id="entryExam" class="input-box"><option>Loading...</option></select>
+                <select id="entryClass" class="input-box">
+                    <option value="">Select Class</option>
+                    <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
+                    <option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option>
+                    <option value="4th">4th</option><option value="5th">5th</option><option value="6th">6th</option>
+                    <option value="7th">7th</option><option value="8th">8th</option><option value="9th">9th</option>
+                    <option value="10th">10th</option>
+                </select>
+                <select id="entrySection" class="input-box">
+                    <option value="A">Section A</option><option value="B">Section B</option>
+                    <option value="C">Section C</option><option value="D">Section D</option>
+                </select>
+                <button class="btn" onclick="loadStudentTable()">Load / Create Sheet</button>
+            </div>
+        </div>
+
+        <div id="sheetArea" style="display:none;">
+            <div class="meta-row">
+    <div class="meta-group">
+        <label>Class Teacher</label>
+        <input type="text" id="classTeacher" class="input-box" placeholder="Teacher Name">
+    </div>
+    <div class="meta-group">
+        <label>Exam Month/Year</label>
+        <input type="month" id="examMonth" class="input-box">
+    </div>
+    <div class="meta-group">
+        <label>Total Working Days</label>
+        <input type="number" id="totalWorkingDays" class="input-box" placeholder="e.g. 210">
+    </div>
+    <div class="meta-group">
+        <label>School Reopens On</label>
+        <input type="text" id="schoolReopens" class="input-box" placeholder="e.g. 10th July">
+    </div>
+    <div class="meta-group">
+        <label>Promoted to Class</label>
+        <input type="text" id="promotedTo" class="input-box" placeholder="e.g. 5th - A">
+    </div>
+    
+    
+    
+    <div style="display:flex; align-items:flex-end;">
+    <button id="btnPublish" class="btn" style="background: #ef4444; height: 42px; min-width: 140px;" onclick="togglePublish()">
+        <i class="fas fa-eye-slash"></i> Unpublished
+    </button>
+</div>
+
+    
+    
+    
+    
+    
+    <div style="display:flex; align-items:flex-end;">
+        <button id="btnFreeze" class="btn" style="background: #475569; height: 42px;" onclick="toggleFreezeCols()">
+            <i class="fas fa-thumbtack"></i> Freeze Names
+        </button>
+    </div>
+
+    <div style="text-align:right; font-weight:700; color:var(--primary); align-self:center;">
+        Max: <span id="displayMax">--</span>
+    </div>
+</div>
+
+                
+            
+
+            <div class="table-wrap">
+                <table id="marksTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+
+    <button class="btn" style="flex: 1; background: #dc2626;" onclick="clearAllEntries()">
+        <i class="fas fa-trash"></i> Clear All Data
+    </button>
+
+    <button id="btnSaveAll" class="btn" style="flex: 2; background: #16a34a;" onclick="saveResults()">
+    <i class="fas fa-save"></i> Save All Results
+</button>
+
+
+</div>
+
+    </div>
+
+</div>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- MODERN TOAST SYSTEM ---
+    function showToast(msg, type = 'success') {
+        const box = document.getElementById('toastBox');
+        const div = document.createElement('div');
+        div.classList.add('toast', type);
+        
+        const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
+        div.innerHTML = `${icon} <span>${msg}</span>`;
+        
+        box.appendChild(div);
+        
+        setTimeout(() => {
+            div.style.animation = "fadeOut 0.4s ease forwards";
+            setTimeout(() => div.remove(), 400);
+        }, 3000);
+    }
+
+    function switchTab(id, btn) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function toggleTag(el) { el.classList.toggle('selected'); }
+
+    // ===========================
+    // SETUP LOGIC
+    // ===========================
+    async function saveExamType() {
+        const name = document.getElementById('setupExamName').value;
+        const max = document.getElementById('setupMaxMarks').value;
+        if(!name) return showToast("Enter Exam Name", "error");
+        try {
+            await db.collection('exam_types').doc(name).set({ name, maxMarks: parseInt(max) });
+            showToast("Exam Type Saved!"); loadExamTypes();
+        } catch(e) { showToast(e.message, "error"); }
+    }
+
+    async function loadExamTypes() {
+        try {
+            const snap = await db.collection('exam_types').get();
+            let html = "", selectHtml = "<option value=''>Select Exam</option>";
+            snap.forEach(doc => {
+                const d = doc.data();
+                html += `<span class="pill">${d.name} (${d.maxMarks}M) <i class="fas fa-times" onclick="delExam('${doc.id}')"></i></span>`;
+                selectHtml += `<option value="${doc.id}" data-max="${d.maxMarks}">${d.name} (${d.maxMarks} Marks)</option>`;
+            });
+            document.getElementById('examList').innerHTML = html;
+            document.getElementById('entryExam').innerHTML = selectHtml;
+        } catch(e) { console.error(e); }
+    }
+
+    async function delExam(id) { if(confirm("Delete exam?")) await db.collection('exam_types').doc(id).delete(); loadExamTypes(); }
+
+    async function addBulkSubjects() {
+        const cls = document.getElementById('subClass').value;
+        if(!cls) return showToast("Select Class first!", "error");
+
+        const selectedTags = document.querySelectorAll('.q-tag.selected');
+        const customSub = document.getElementById('customSubject').value.trim();
+        const isHalf = document.getElementById('isHalfMarks').checked; 
+
+        let newSubjects = [];
+        selectedTags.forEach(tag => newSubjects.push({ name: tag.innerText, is50: isHalf }));
+        if(customSub) newSubjects.push({ name: customSub, is50: isHalf });
+
+        if(newSubjects.length === 0) return showToast("Select at least one subject", "error");
+
+        try {
+            const docRef = db.collection('subjects').doc(cls);
+            const doc = await docRef.get();
+            let currentList = doc.exists ? doc.data().list : [];
+            let addedCount = 0;
+            
+            newSubjects.forEach(newSub => {
+                // Auto Detect 50 Marks
+                if(/^(gk|g\.k|g\.k\.|sanskrit)$/i.test(newSub.name)) newSub.is50 = true;
+                const exists = currentList.some(s => s.name.toLowerCase() === newSub.name.toLowerCase());
+                if(!exists) { currentList.push(newSub); addedCount++; }
+            });
+            
+            if(addedCount > 0) {
+                await docRef.set({ list: currentList });
+                showToast(`${addedCount} Subjects Added!`);
+                document.querySelectorAll('.q-tag.selected').forEach(t => t.classList.remove('selected'));
+                document.getElementById('customSubject').value = "";
+                loadSubjects();
+            } else { showToast("Subjects already exist!", "error"); }
+        } catch(e) { showToast(e.message, "error"); }
+    }
+
+    async function loadSubjects() {
+        const cls = document.getElementById('subClass').value;
+        if(!cls) return;
+        try {
+            const doc = await db.collection('subjects').doc(cls).get();
+            let html = "";
+            if(doc.exists && doc.data().list) {
+                doc.data().list.forEach((s, i) => {
+                    const isFifty = s.is50 || /^(gk|g\.k|g\.k\.|sanskrit)$/i.test(s.name);
+                    const badge = isFifty ? "pill special" : "pill";
+                    const label = isFifty ? " (50M)" : "";
+                    html += `<span class="${badge}">${s.name}${label} <i class="fas fa-times" onclick="delSubject('${cls}', ${i})"></i></span>`;
+                });
+            } else { html = "<small>No subjects added.</small>"; }
+            document.getElementById('subjectList').innerHTML = html;
+        } catch(e) { console.error(e); }
+    }
+
+    async function delSubject(cls, idx) {
+        if(!confirm("Remove this subject?")) return;
+        const docRef = db.collection('subjects').doc(cls);
+        const doc = await docRef.get();
+        let list = doc.data().list; list.splice(idx, 1);
+        await docRef.update({ list }); loadSubjects();
+    }
+
+    // ===========================
+    // MARKS ENTRY 
+    // ===========================
+    let currentStudents = [];
+    let currentSubjects = [];
+    let examMaxMarks = 0;
+    let savedResultsMap = {}; 
+
+    async function loadStudentTable() {
+        const examSel = document.getElementById('entryExam');
+        const cls = document.getElementById('entryClass').value;
+        const sec = document.getElementById('entrySection').value;
+        
+        if(!examSel.value || !cls) return showToast("Select details first!", "error");
+        
+        const btn = document.querySelector('#entry button');
+        btn.innerText = "Loading..."; btn.disabled = true;
+        document.getElementById('sheetArea').style.display = 'none';
+
+        try {
+            const examId = examSel.value;
+            examMaxMarks = parseInt(examSel.options[examSel.selectedIndex].getAttribute('data-max'));
+            document.getElementById('displayMax').innerText = examMaxMarks;
+            // Check if result is already published
+            checkPublishStatus(examId, cls);
+
+            
+            const subDoc = await db.collection('subjects').doc(cls).get();
+            if(!subDoc.exists || !subDoc.data().list) {
+                showToast(`Subjects missing for Class ${cls}.`, "error");
+                btn.innerText = "Load Sheet"; btn.disabled = false; return;
+            }
+            
+            currentSubjects = subDoc.data().list;
+            currentSubjects.forEach(s => {
+                if(/^(gk|g\.k|g\.k\.|sanskrit)$/i.test(s.name)) s.is50 = true;
+            });
+
+            // Fetch Students
+            const stuSnap = await db.collection('students').where('class', '==', cls).get();
+            if(stuSnap.empty) {
+                showToast(`No students found in Class ${cls}`, "error");
+                btn.innerText = "Load Sheet"; btn.disabled = false; return;
+            } 
+            
+            let allStudents = stuSnap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            currentStudents = allStudents.filter(s => String(s.section || "").trim().toUpperCase() === String(sec).trim().toUpperCase());
+
+            if(currentStudents.length === 0) {
+                showToast(`No students in ${cls} - Sec ${sec}`, "error");
+                btn.innerText = "Load Sheet"; btn.disabled = false; return;
+            }
+
+            // Fetch Existing Results
+            const resSnap = await db.collection('results')
+                .where('examId', '==', examId)
+                .where('class', '==', cls)
+                .get();
+            
+            savedResultsMap = {};
+            let commonData = null;
+
+            resSnap.forEach(doc => {
+                const data = doc.data();
+                savedResultsMap[data.studentId] = data;
+                if(!commonData) commonData = data;
+            });
+
+            // Pre-fill Common Fields
+            if(commonData) {
+                document.getElementById('classTeacher').value = commonData.classTeacher || "";
+                document.getElementById('examMonth').value = commonData.examMonth || "";
+                document.getElementById('totalWorkingDays').value = commonData.totalWorkingDays || "";
+                document.getElementById('schoolReopens').value = commonData.schoolReopens || "";
+                document.getElementById('promotedTo').value = commonData.promotedTo || "";
+            } else {
+                document.getElementById('classTeacher').value = "";
+                document.getElementById('examMonth').value = "";
+                document.getElementById('totalWorkingDays').value = "";
+                document.getElementById('schoolReopens').value = "";
+                document.getElementById('promotedTo').value = "";
+            }
+
+            currentStudents.sort((a, b) => (parseInt(a.roll) || 999) - (parseInt(b.roll) || 999));
+            renderTable();
+            currentStudents.forEach(stu => calcRow(stu.id));
+
+            document.getElementById('sheetArea').style.display = 'block';
+
+        } catch(error) { showToast("Error: " + error.message, "error"); }
+        btn.innerText = "Load Sheet"; btn.disabled = false;
+    }
+
+        function renderTable() {
+        // Is line ko copy karke wahan paste kar do
+let htmlHead = `<tr>
+    <th style="width:50px;">Roll</th>
+    <th style="text-align:left; width:140px; max-width:140px; white-space:normal; font-size:12px;">Name</th>`;
+
+        currentSubjects.forEach(s => htmlHead += `<th>${s.name} ${s.is50 ? '<br><small>(50M)</small>' : ''}</th>`);
+        htmlHead += `<th>Attendance</th><th>Total</th><th>%</th><th>Grd</th><th>Res</th><th>Rank</th></tr>`;
+        document.querySelector('#marksTable thead').innerHTML = htmlHead;
+
+        let htmlBody = "";
+        currentStudents.forEach(stu => {
+            const savedRes = savedResultsMap[stu.id] || {};
+            const savedMarks = savedRes.marks || {};
+            const savedAtt = savedRes.attendance || "";
+
+            htmlBody += `<tr><td>${stu.roll || '-'}</td><td style="text-align:left;"><b>${stu.name}</b></td>`;
+            
+            currentSubjects.forEach(sub => {
+                const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
+                const val = savedMarks[sub.name] || "";
+                
+                // IMPORTANT: enterkeyhint="next" mobile ke liye zaroori hai
+                htmlBody += `<td>
+                    <input type="text" 
+                           id="${inputId}" 
+                           class="mark-input" 
+                           value="${val}" 
+                           enterkeyhint="next"
+                           onkeyup="calcRow('${stu.id}')" 
+                           onkeydown="focusNextRow(event, this)"> 
+                    <span id="grade_${inputId}" class="grade-badge">-</span>
+                </td>`;
+            });
+
+            // Attendance wale input me bhi navigation add kar diya
+            htmlBody += `<td><input type="text" id="att_${stu.id}" class="mark-input" value="${savedAtt}" placeholder="Days" enterkeyhint="next" onkeydown="focusNextRow(event, this)"></td>
+                         <td class="total-cell" id="total_${stu.id}">0</td>
+                         <td class="total-cell" id="perc_${stu.id}">0%</td>
+                         <td class="total-cell" id="overG_${stu.id}">-</td>
+                         <td id="res_${stu.id}">-</td>
+                         <td class="rank-cell" id="rank_${stu.id}">-</td></tr>`;
+        });
+        document.querySelector('#marksTable tbody').innerHTML = htmlBody;
+    }
+
+
+    // --- SECURED CALCULATION LOGIC ---
+    // REPLACE THIS FUNCTION in admin-results.html
+
+    function calcRow(stuId) {
+        let totalObtained = 0;
+        let totalMax = 0;
+
+        currentSubjects.forEach(sub => {
+            const inputId = `${stuId}_${sub.name.replace(/\s/g,'')}`;
+            const el = document.getElementById(inputId);
+            if(!el) return;
+            const valStr = el.value.trim();
+            const gradeSpan = document.getElementById(`grade_${inputId}`);
+            
+            // --- DRAWING LOGIC (Allow Text, No Marks) ---
+            if (/drawing/i.test(sub.name)) {
+                gradeSpan.innerText = valStr.toUpperCase();
+                return; // Drawing ke marks total me add nahi honge
+            }
+
+            // --- MAX MARKS CALCULATION (MOVED OUTSIDE) ---
+            // Pehle ye determine karo ki is subject ka max marks kya hai
+            let subjectMax = examMaxMarks;
+            if (examMaxMarks === 100 && sub.is50) {
+                subjectMax = 50;
+            }
+
+            // FIX: Hamesha Total Max add karo, chahe 'AB' ho ya Number
+            totalMax += subjectMax; 
+
+            const marks = parseFloat(valStr);
+            const isNum = !isNaN(marks);
+
+            if(isNum) {
+                // --- SECURITY CHECK ---
+                if (marks > subjectMax) {
+                    el.classList.add('input-error');
+                    setTimeout(() => el.classList.remove('input-error'), 500);
+                    showToast(`Max marks for ${sub.name} is ${subjectMax}!`, "error");
+                    el.value = ""; 
+                    gradeSpan.innerText = "-";
+                    // Agar galat entry hai to Total Max wapas ghata do taaki calculation kharab na ho
+                    totalMax -= subjectMax; 
+                    return; 
+                }
+
+                let calcPercent = 0;
+                if(examMaxMarks === 25) {
+                    calcPercent = marks * 4; 
+                } else {
+                    calcPercent = sub.is50 ? marks * 2 : marks * 1;
+                }
+                
+                gradeSpan.innerText = getGrade(Math.round(calcPercent));
+                totalObtained += marks;
+                
+            } else {
+                // Agar 'AB' ya koi text hai
+                gradeSpan.innerText = valStr.toUpperCase() || "-";
+            }
+        });
+
+        let overallPerc = 0;
+        if(totalMax > 0) overallPerc = ((totalObtained / totalMax) * 100).toFixed(2);
+
+        document.getElementById(`total_${stuId}`).innerText = totalObtained + "/" + totalMax;
+        document.getElementById(`perc_${stuId}`).innerText = overallPerc + "%";
+        
+        document.getElementById(`overG_${stuId}`).innerText = getGrade(parseFloat(overallPerc));
+
+        const resEl = document.getElementById(`res_${stuId}`);
+        if(overallPerc >= 32.5) {
+            resEl.innerText = "P"; resEl.className = "res-pass";
+        } else {
+            resEl.innerText = "N.I"; resEl.className = "res-fail";
+        }
+        setTimeout(calculateRanks, 100);
+    }
+
+
+    function calculateRanks() {
+        let studentScores = [];
+        currentStudents.forEach(stu => {
+            const percTxt = document.getElementById(`perc_${stu.id}`).innerText;
+            const perc = parseFloat(percTxt) || 0;
+            // EDITED: Use 32.5% for pass logic
+            const passed = perc >= 32.5;
+            studentScores.push({ id: stu.id, perc: perc, passed: passed });
+        });
+
+        studentScores.sort((a, b) => b.perc - a.perc);
+
+        let rank = 1;
+        // Logic: Rank is sequential for everyone, but only displayed for passed
+        for (let i = 0; i < studentScores.length; i++) {
+             if (i > 0 && studentScores[i].perc < studentScores[i-1].perc) rank++;
+             
+             const el = document.getElementById(`rank_${studentScores[i].id}`);
+             // EDITED: Empty if failed
+             if (studentScores[i].passed) {
+                 el.innerText = rank;
+             } else {
+                 el.innerText = "";
+             }
+        }
+    }
+
+    function getGrade(p) {
+        if(p >= 91) return "O ";
+        if(p >= 81) return "A+ ";
+        if(p >= 71) return "A ";
+        if(p >= 61) return "B+ ";
+        if(p >= 51) return "B ";
+        if(p >= 41) return "C ";
+        if(p >= 33) return "P ";
+        return "F ";
+    }
+    
+    
+    
+    
+    
+        // --- FREEZE / UNFREEZE TOGGLE LOGIC ---
+    let isFrozen = false;
+
+    function toggleFreezeCols() {
+        const table = document.getElementById('marksTable');
+        const btn = document.getElementById('btnFreeze');
+
+        // Class Toggle karein
+        table.classList.toggle('sticky-mode');
+        isFrozen = !isFrozen;
+
+        // Button ka Text aur Color badlein
+        if (isFrozen) {
+            btn.innerHTML = '<i class="fas fa-unlock"></i> Unfreeze Cols';
+            btn.style.background = '#dc2626'; // Red color to indicate active state
+            showToast("Columns Frozen via Name!");
+        } else {
+            btn.innerHTML = '<i class="fas fa-thumbtack"></i> Freeze Names';
+            btn.style.background = '#475569'; // Back to grey
+            showToast("Columns Unfrozen");
+        }
+    }
+
+    // --- VERTICAL NAVIGATION (Enter/Tab se neeche jana) ---
+    // (RenderTable function me onkeydown="focusNextRow(event, this)" lagana na bhoolein)
+    
+            // --- ADVANCED NAVIGATION (Snake Pattern: Down -> Top Right) ---
+    function focusNextRow(e, currentInput) {
+        const key = e.key || e.code;
+        const keyCode = e.keyCode || e.which;
+
+        // Sirf Enter (13) ya Tab (9) par chalega
+        if (key === "Enter" || key === "Tab" || keyCode === 13 || keyCode === 9) {
+            e.preventDefault(); 
+
+            const currentCell = currentInput.closest('td');
+            const currentRow = currentInput.closest('tr');
+            const tbody = currentRow.parentElement; // Table Body
+            
+            // Pata karein hum kaunse column number par hain
+            const cellIndex = Array.from(currentRow.children).indexOf(currentCell);
+
+            // Step 1: Niche wali Row check karein (Vertical Movement)
+            const nextRow = currentRow.nextElementSibling;
+
+            if (nextRow) {
+                // Agar niche row hai, to wahan focus karein
+                const targetCell = nextRow.children[cellIndex];
+                if (targetCell) {
+                    const nextInput = targetCell.querySelector('input');
+                    if (nextInput) {
+                        nextInput.focus();
+                        setTimeout(() => nextInput.select(), 10);
+                        return; // Kaam khatam, function roko
+                    }
+                }
+            } 
+            
+            // Step 2: Agar Niche Row NAHI hai (Matlab Last Student), to Next Column -> First Student
+            else {
+                const firstRow = tbody.firstElementChild; // Sabse pehli row (Roll No 1)
+                
+                // Agla Column check karein (Current Index + 1)
+                const nextCellIndex = cellIndex + 1;
+                
+                if (firstRow && firstRow.children[nextCellIndex]) {
+                    const targetCell = firstRow.children[nextCellIndex];
+                    const nextColInput = targetCell.querySelector('input');
+
+                    // Agar agle column me input box hai (e.g. Maths -> Science)
+                    if (nextColInput) {
+                        nextColInput.focus();
+                        
+                        // Mobile/Desktop par user ko dikhane ke liye scroll karein
+                        nextColInput.scrollIntoView({ behavior: "smooth", block: "center" });
+                        
+                        setTimeout(() => nextColInput.select(), 10);
+                        
+                        // User ko pata chale ki subject change hua hai
+                        showToast("Next Subject", "success");
+                    } else {
+                        // Agar aage koi subject nahi bacha (Last column)
+                        currentInput.blur();
+                    }
+                }
+            }
+        }
+    }
+
+    
+    
+            // --- PUBLISH / UNPUBLISH LOGIC ---
+    let isResultPublished = false;
+
+    async function checkPublishStatus(examId, cls) {
+        const btn = document.getElementById('btnPublish');
+        // Reset Button first
+        btn.style.background = "#ef4444";
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i> Unpublished';
+        isResultPublished = false;
+
+        try {
+            // Check database
+            const doc = await db.collection('publish_status').doc(`${examId}_${cls}`).get();
+            if (doc.exists && doc.data().published) {
+                isResultPublished = true;
+                btn.style.background = "#16a34a"; // Green
+                btn.innerHTML = '<i class="fas fa-eye"></i> Published';
+            }
+        } catch (e) { console.error("Status Check Error", e); }
+    }
+
+    async function togglePublish() {
+        const examId = document.getElementById('entryExam').value;
+        const cls = document.getElementById('entryClass').value;
+        
+        if (!examId || !cls) return showToast("Error: Missing Exam or Class", "error");
+
+        const btn = document.getElementById('btnPublish');
+        const newState = !isResultPublished; // Toggle status
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        try {
+            await db.collection('publish_status').doc(`${examId}_${cls}`).set({
+                published: newState,
+                updatedAt: new Date()
+            });
+
+            isResultPublished = newState;
+            
+            if (isResultPublished) {
+                btn.style.background = "#16a34a";
+                btn.innerHTML = '<i class="fas fa-eye"></i> Published';
+                showToast("Result is now LIVE for Parents!", "success");
+            } else {
+                btn.style.background = "#ef4444";
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i> Unpublished';
+                showToast("Result HIDDEN from Parents.", "error"); // Red toast specifically for hidden
+            }
+
+        } catch (e) {
+            showToast("Error updating status: " + e.message, "error");
+        }
+        btn.disabled = false;
+    }
+
+    
+        
+        
+        
+        
+        
+            // --- CLEAR ALL DATA FUNCTION ---
+    function clearAllEntries() {
+        // 1. Warning Message
+        if(!confirm("⚠️ WARNING: Kya aap sach me SARE MARKS delete karna chahte hain?\n\nEk baar clear karne ke baad ye wapas nahi aayenge!")) {
+            return; // Agar Cancel kiya to ruk jao
+        }
+
+        // 2. Loop through all students and clear inputs
+        currentStudents.forEach(stu => {
+            
+            // A. Subjects ke marks clear karo
+            currentSubjects.forEach(sub => {
+                const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
+                const el = document.getElementById(inputId);
+                if(el) {
+                    el.value = ""; // Khali kar do
+                    
+                    // Grade wapas "-" kar do
+                    const gradeSpan = document.getElementById(`grade_${inputId}`);
+                    if(gradeSpan) gradeSpan.innerText = "-";
+                }
+            });
+
+            // B. Attendance clear karo
+            const attEl = document.getElementById(`att_${stu.id}`);
+            if(attEl) attEl.value = "";
+
+            // C. Total/Percentage wapas 0 calculate karo
+            calcRow(stu.id);
+        });
+
+        showToast("All Data Cleared!", "error"); // Red toast dikhao
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+        async function saveResults() {
+        const examId = document.getElementById('entryExam').value;
+        const teacher = document.getElementById('classTeacher').value;
+        const month = document.getElementById('examMonth').value;
+        const workingDays = document.getElementById('totalWorkingDays').value;
+        const reopens = document.getElementById('schoolReopens').value; 
+        const promoted = document.getElementById('promotedTo').value;   
+
+        const batch = db.batch();
+        
+        // --- FIX: Specific ID use karein ---
+        const btn = document.getElementById('btnSaveAll');
+        const originalText = btn.innerHTML; // Icon save rakhne ke liye
+        // -----------------------------------
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; 
+        btn.disabled = true;
+
+        try {
+            currentStudents.forEach(stu => {
+                let marksObj = {};
+                currentSubjects.forEach(sub => {
+                    const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
+                    const el = document.getElementById(inputId); // Safety check
+                    marksObj[sub.name] = el ? el.value : "";
+                });
+
+                const total = document.getElementById(`total_${stu.id}`).innerText;
+                const perc = document.getElementById(`perc_${stu.id}`).innerText;
+                const ovGrade = document.getElementById(`overG_${stu.id}`).innerText;
+                const result = document.getElementById(`res_${stu.id}`).innerText;
+                const rank = document.getElementById(`rank_${stu.id}`).innerText;
+                // --- NAYA LOGIC ---
+                let finalPromoted = (result === "P" || result === "PASS") ? promoted : "------";
+
+                const attendance = document.getElementById(`att_${stu.id}`).value;
+
+                const ref = db.collection('results').doc(`${examId}_${stu.id}`);
+                batch.set(ref, {
+                    examId, studentId: stu.id, name: stu.name, roll: stu.roll,
+                    class: document.getElementById('entryClass').value,
+                    marks: marksObj, total, percentage: perc,
+                    overallGrade: ovGrade, resultStatus: result === "P" ? "PASS" : "FAIL", classRank: rank,
+                    attendance: attendance, totalWorkingDays: workingDays,
+                    schoolReopens: reopens, 
+                    promotedTo: promoted,    
+                    classTeacher: teacher, examMonth: month, updatedAt: new Date()
+                },{ merge: true });
+            });
+            await batch.commit(); 
+            showToast("Saved Successfully!");
+        } catch(e) { 
+            showToast("Error: " + e.message, "error"); 
+        }
+        
+        // Button ko wapas normal karein
+        btn.innerHTML = originalText; 
+        btn.disabled = false;
+    }
+
+    
+       
+       
+       // admin-fees.html aur baaki data wale pages ke liye
+firebase.auth().onAuthStateChanged((user) => {
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+    if (user && isLoggedIn && userData.role === 'admin') {
+        // Asli test
+        db.collection('admins').doc(user.uid).get().then((doc) => {
+            if (doc.exists && doc.data().role === 'SuperAdmin') {
+                
+                loadExamTypes(); // <-- Yahan page ka main function call hoga
+                
+            } else {
+                auth.signOut().then(() => window.location.replace("admin-login.html"));
+            }
+        });
+    } else {
+        window.location.replace("admin-login.html");
+    }
+});
+
+       
+       
+       
+       
+       
+
+</script>
+</body>
+</html>

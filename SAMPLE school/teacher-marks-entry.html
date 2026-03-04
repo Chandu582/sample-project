@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Class Result | Teacher Portal</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-bundle.min.js"></script>
+
+
+
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --bg: #f3f4f6; --card-bg: #ffffff; --border: #e5e7eb;
+            --text-main: #1f2937; --text-light: #6b7280;
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 20px; }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* HEADER */
+        .header-card {
+            background: var(--card-bg); padding: 20px; border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border);
+        }
+        .header-title h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .teacher-badge { 
+            display: inline-flex; align-items: center; gap: 8px; margin-top: 5px; 
+            background: #e0e7ff; color: var(--primary-dark); padding: 6px 12px; 
+            border-radius: 20px; font-size: 13px; font-weight: 600; 
+        }
+        .btn-back { 
+            background: white; border: 1px solid var(--border); color: var(--text-light); 
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;
+        }
+        .btn-back:hover { background: #f9fafb; color: var(--text-main); }
+
+        /* CONTROLS CARD */
+        .controls-card {
+            background: var(--card-bg); padding: 20px; border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px; border: 1px solid var(--border);
+        }
+        .control-grid { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+        
+        .input-group { flex: 1; min-width: 200px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-light); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-field { 
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; 
+            font-size: 14px; background: #f9fafb; transition: 0.2s; box-sizing: border-box;
+        }
+        .input-field:focus { border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+
+        .btn-action { 
+            padding: 12px 24px; border: none; border-radius: 10px; font-weight: 600; 
+            cursor: pointer; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--primary); } .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); } .btn-success:hover { background: #059669; }
+
+        /* DATA TABLE AREA */
+        .sheet-container { display: none; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .meta-section {
+            background: var(--card-bg); padding: 20px; border-radius: 16px; 
+            border: 1px solid var(--border); margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
+        }
+
+        .table-card {
+            background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border);
+            overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); margin-bottom: 80px; /* Space for floating bar */
+        }
+        
+        .table-responsive { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        
+        th { 
+            background: #f8fafc; padding: 15px; text-align: center; 
+            font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase;
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+        }
+        td { 
+            padding: 10px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle;
+            font-size: 14px;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f9fafb; }
+
+        .mark-input { 
+            width: 60px; padding: 8px; text-align: center; border: 1px solid var(--border); 
+            border-radius: 8px; font-weight: 600; font-size: 14px; transition: 0.2s; 
+        }
+        .mark-input:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        
+        .badge-grade { 
+            display: inline-block; padding: 4px 10px; border-radius: 20px; 
+            font-size: 11px; font-weight: 700; background: #f3f4f6; color: var(--text-light); margin-top: 4px;
+        }
+        
+        /* Floating Save Bar */
+        .floating-save {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--card-bg); padding: 8px 15px; border-radius: 50px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            display: flex; gap: 10px; align-items: center; border: 1px solid var(--border); z-index: 100;
+        }
+
+        /* Error Animation */
+        .input-error { 
+            border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger); 
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; 
+        }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        /* Toast */
+        #toastBox { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { 
+            background: white; min-width: 280px; padding: 16px; border-radius: 12px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 12px; 
+            font-size: 14px; font-weight: 500; animation: slideIn 0.3s ease forwards; border-left: 4px solid;
+        }
+        .toast.success { border-color: var(--success); color: #065f46; }
+        .toast.error { border-color: var(--danger); color: #991b1b; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .pill-pass { background: #dcfce7; color: #166534; }
+        .pill-fail { background: #fee2e2; color: #991b1b; }
+        
+        
+        
+        
+        
+                /* --- NEW: COMPACT NAME COLUMN STYLES --- */
+        /* यह कोड दूसरे कॉलम (Student Name) की चौड़ाई कम करता है */
+        #marksTable th:nth-child(2),
+        #marksTable td:nth-child(2) {
+            max-width: 100px !important; /* अधिकतम चौड़ाई फिक्स करें */
+            min-width: 80px;  /* बहुत छोटा भी न हो */
+            white-space: normal !important; /* लंबे नामों को अगली लाइन में जाने दें */
+            word-wrap: break-word; /* शब्दों को तोड़कर रैप करें */
+            padding: 8px 4px; /* साइड की पैडिंग थोड़ी कम करें */
+            font-size: 13px; /* नाम का फॉन्ट थोड़ा छोटा करें ताकि फिट हो जाए */
+            line-height: 1.2; /* लाइनों के बीच की दूरी कम करें */
+            text-align: left;
+        }
+        /* हेडर को एक ही लाइन में रखने की कोशिश करें */
+        #marksTable th:nth-child(2) {
+             white-space: nowrap !important; 
+             overflow: hidden;
+             text-overflow: ellipsis;
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        /* --- FREEZE / STICKY MODE STYLES --- */
+.sticky-mode th:nth-child(1), 
+.sticky-mode td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background: #f8fafc;
+    border-right: 1px solid #cbd5e1;
+}
+.sticky-mode tbody td:nth-child(1) { background: #fff; }
+
+.sticky-mode th:nth-child(2), 
+.sticky-mode td:nth-child(2) {
+    position: sticky;
+    left: 60px; /* Roll No width ke hisaab se adjust */
+    z-index: 20;
+    background: #f8fafc;
+    border-right: 2px solid #9ca3af;
+    box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1);
+}
+.sticky-mode tbody td:nth-child(2) { background: #fff; }
+
+        
+        
+        
+        
+    </style>
+</head>
+<body>
+
+<div id="toastBox"></div>
+
+<div class="container">
+    <div class="header-card">
+        <div class="header-title">
+            <h2>Marks Entry Portal</h2>
+            <div class="teacher-badge">
+                <i class="fas fa-user-tie"></i> <span id="tName">--</span> 
+                <span style="margin: 0 5px;">|</span> 
+                <i class="fas fa-chalkboard"></i> <span id="tClass">--</span>
+            </div>
+        </div>
+        <button onclick="history.back()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+    </div>
+
+    <div class="controls-card">
+        <div class="control-grid">
+            <div class="input-group">
+                <label>Select Exam</label>
+                <select id="examSelect" class="input-field">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="input-group" style="max-width: 120px;">
+                <label>Max Marks</label>
+                <input type="text" id="displayMax" class="input-field" style="text-align:center; font-weight:bold; color:var(--text-light);" readonly value="--">
+            </div>
+            <button class="btn-action btn-primary" onclick="loadMyStudents()">
+                <i class="fas fa-sync-alt"></i> Load Data
+            </button>
+        </div>
+    </div>
+
+    <div id="workingArea" class="sheet-container">
+        <div class="meta-section">
+    <div class="input-group">
+        <label>Exam Month / Year</label>
+        <input type="month" id="examMonth" class="input-field">
+    </div>
+    <div class="input-group">
+        <label>Total Working Days</label>
+        <input type="number" id="totalDays" class="input-field" placeholder="e.g. 210">
+    </div>
+    <div class="input-group">
+        <label>School Reopens On</label>
+        <input type="text" id="reopenDate" class="input-field" placeholder="e.g. 10th July">
+    </div>
+    <div class="input-group">
+        <label>Promoted To Class</label>
+        <input type="text" id="promoClass" class="input-field" placeholder="e.g. 2nd - A">
+    </div>
+
+    <div class="input-group" style="display:flex; align-items:flex-end;">
+        <button id="btnFreeze" class="btn-action" style="background: #4b5563; width:100%; justify-content:center;" onclick="toggleFreezeCols()">
+            <i class="fas fa-thumbtack"></i> Freeze Names
+        </button>
+    </div>
+</div>
+
+
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+            <button class="btn-action btn-success" onclick="exportToExcel()" style="padding: 10px 20px; font-size: 13px;">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </button>
+        </div>
+
+        <div class="table-card">
+            <div class="table-responsive">
+                <table id="marksTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="floating-save">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-light); margin-right: 10px;">
+                <i class="fas fa-info-circle"></i> Click to
+            </span>
+            <button onclick="saveMyResults()" class="btn-action btn-primary" style="padding: 8px 16px; font-size: 13px;">
+                <i class="fas fa-save"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let teacherProfile = null;
+
+    // --- Toast System ---
+    function showToast(msg, type = 'success') {
+        const box = document.getElementById('toastBox');
+        const div = document.createElement('div');
+        div.className = `toast ${type}`;
+        div.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${msg}</span>`;
+        box.appendChild(div);
+        setTimeout(() => { div.style.animation = 'slideOut 0.3s forwards'; setTimeout(() => div.remove(), 300); }, 3000);
+    }
+
+    // --- 1. Auth Check (FIXED: NO ALERT, NO LOCALHOST) ---
+    function checkAuth() {
+        let dataStr = sessionStorage.getItem("userData");
+        
+        if (!dataStr) {
+            // Show custom red toast instead of browser alert
+            showToast("Session Expired. Redirecting...", "error");
+            // Delay slightly to let user see the toast, then redirect
+            setTimeout(() => {
+                window.location.href = "teacher-portal.html"; 
+            }, 1500);
+            return;
+        }
+        
+        let rawData = JSON.parse(dataStr);
+        let classParts = (rawData.class || "").split("-");
+        
+        teacherProfile = {
+            name: rawData.name,
+            assignedClass: classParts[0] || "",
+            assignedSection: classParts[1] || "A" 
+        };
+
+        if(!teacherProfile.assignedClass) {
+            showToast("Error: Class not assigned to this teacher.", "error");
+            return;
+        }
+        
+        document.getElementById('tName').innerText = teacherProfile.name;
+        document.getElementById('tClass').innerText = `${teacherProfile.assignedClass} - ${teacherProfile.assignedSection}`;
+        loadExams();
+    }
+
+    // --- 2. Load Exams ---
+    async function loadExams() {
+        const snap = await db.collection('exam_types').get();
+        let html = "<option value=''>-- Select Exam --</option>";
+        snap.forEach(doc => {
+            const d = doc.data();
+            html += `<option value="${doc.id}" data-max="${d.maxMarks}">${d.name}</option>`;
+        });
+        document.getElementById('examSelect').innerHTML = html;
+        document.getElementById('examSelect').addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            document.getElementById('displayMax').value = opt.getAttribute('data-max') || "--";
+        });
+    }
+
+    let currentStudents = [];
+    let currentSubjects = [];
+    let savedResultsMap = {};
+    let examMaxMarks = 0;
+
+    // --- 3. Load Students & Data ---
+    async function loadMyStudents() {
+        const examId = document.getElementById('examSelect').value;
+        if(!examId) return showToast("Please select an exam first!", "error");
+
+        const btn = document.querySelector('.btn-primary');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading...`; btn.disabled = true;
+
+        try {
+            examMaxMarks = parseInt(document.getElementById('examSelect').options[document.getElementById('examSelect').selectedIndex].getAttribute('data-max'));
+
+            // A. Get Subjects
+            const subDoc = await db.collection('subjects').doc(teacherProfile.assignedClass).get();
+            if(!subDoc.exists || !subDoc.data().list) {
+                showToast("No subjects found for this Class", "error");
+                btn.innerHTML = originalText; btn.disabled = false; return;
+            }
+            
+            // Smart Subject Logic
+            currentSubjects = subDoc.data().list;
+            currentSubjects.forEach(s => {
+                if(/^(gk|g\.k|g\.k\.|sanskrit)$/i.test(s.name)) s.is50 = true;
+            });
+
+            // B. Get Students
+            const stuSnap = await db.collection('students').where('class', '==', teacherProfile.assignedClass).get();
+            
+            // Local Filter for Section
+            currentStudents = stuSnap.docs.map(d => ({id: d.id, ...d.data()}))
+                .filter(s => String(s.section).trim().toUpperCase() === String(teacherProfile.assignedSection).trim().toUpperCase());
+
+            currentStudents.sort((a,b) => (parseInt(a.roll)||999) - (parseInt(b.roll)||999));
+
+            if(currentStudents.length === 0) {
+                showToast("No students found in your class!", "error");
+                btn.innerHTML = originalText; btn.disabled = false; return;
+            }
+
+            // C. Fetch Existing Results
+            const resSnap = await db.collection('results').where('examId', '==', examId).get();
+
+            savedResultsMap = {};
+            let commonData = null;
+
+            resSnap.forEach(doc => {
+                const d = doc.data();
+                if (currentStudents.some(stu => stu.id === d.studentId)) {
+                    savedResultsMap[d.studentId] = d;
+                    if(!commonData) commonData = d;
+                }
+            });
+
+            // D. Fill Fields
+            if(commonData) {
+                document.getElementById('examMonth').value = commonData.examMonth || "";
+                document.getElementById('totalDays').value = commonData.totalWorkingDays || "";
+                document.getElementById('reopenDate').value = commonData.schoolReopens || "";
+                document.getElementById('promoClass').value = commonData.promotedTo || "";
+            } else {
+                document.getElementById('examMonth').value = "";
+                document.getElementById('totalDays').value = "";
+                document.getElementById('reopenDate').value = "";
+                document.getElementById('promoClass').value = "";
+            }
+
+            renderSheet();
+            currentStudents.forEach(stu => calc(stu.id)); 
+            document.getElementById('workingArea').style.display = 'block';
+
+        } catch(e) { showToast("Error: " + e.message, "error"); }
+        
+        btn.innerHTML = originalText; btn.disabled = false;
+    }
+
+        function renderSheet() {
+    // CHANGE: Removed inline min-width:150px from Student Name th. It is now handled by CSS.
+    let head = `<tr><th style="width:50px;">Roll</th><th>Student Name</th>`;
+    currentSubjects.forEach(s => head += `<th>${s.name} ${s.is50?'<br><small style="font-size:9px; color:#888;">(50M)</small>':''}</th>`);
+
+        head += `<th style="width:80px;">Attendance</th><th>Total</th><th>%</th><th>Grade</th><th>Result</th><th>Rank</th></tr>`;
+        
+        document.querySelector('#marksTable thead').innerHTML = head;
+
+        let body = "";
+        currentStudents.forEach(stu => {
+            const saved = savedResultsMap[stu.id] || {};
+            const marks = saved.marks || {};
+            const att = saved.attendance || "";
+
+            body += `<tr>
+                <td style="font-weight:700; color:var(--text-light);">${stu.roll}</td>
+                <td style="text-align:left; font-weight:600;">${stu.name}</td>`;
+            
+            currentSubjects.forEach(sub => {
+                const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
+                const val = marks[sub.name] || "";
+                
+                // IMPORTANT: enterkeyhint aur onkeydown add kiya gaya hai
+                body += `<td>
+                    <input type="text" 
+                           id="${inputId}" 
+                           class="mark-input" 
+                           value="${val}" 
+                           enterkeyhint="next"
+                           onkeyup="calc('${stu.id}')"
+                           onkeydown="focusNextRow(event, this)">
+                    <span id="g_${inputId}" class="badge-grade">-</span>
+                </td>`;
+            });
+
+            // Attendance input par bhi logic lagaya hai
+            body += `<td><input type="text" id="att_${stu.id}" class="mark-input" value="${att}" placeholder="Days" style="width:100%;" enterkeyhint="next" onkeydown="focusNextRow(event, this)"></td>
+                     <td style="font-weight:800; color:var(--primary);" id="tot_${stu.id}">0</td>
+                     <td style="font-weight:700;" id="perc_${stu.id}">0%</td>
+                     <td><span id="grd_${stu.id}" class="status-pill">-</span></td>
+                     <td><span id="res_${stu.id}" class="status-pill">-</span></td>
+                     <td style="font-weight:800; color:#e11d48;" id="rank_${stu.id}">-</td>
+                     </tr>`;
+        });
+        document.querySelector('#marksTable tbody').innerHTML = body;
+    }
+
+
+    // --- Calculation Logic ---
+    // REPLACE THIS FUNCTION in teacher-marks-entry.html
+
+    function calc(sid) {
+        let obtained = 0;
+        let maxTotal = 0;
+
+        currentSubjects.forEach(sub => {
+            const inputId = `${sid}_${sub.name.replace(/\s/g,'')}`;
+            const el = document.getElementById(inputId);
+            const badge = document.getElementById(`g_${inputId}`);
+            if(!el) return;
+            const valStr = el.value.trim();
+            
+            if(/drawing/i.test(sub.name)) {
+                badge.innerText = valStr.toUpperCase() || "-";
+                return;
+            }
+
+            // --- FIX START: Max Marks Calculation Outside Check ---
+            let subjectMax = examMaxMarks;
+            if (examMaxMarks === 100 && sub.is50) subjectMax = 50;
+
+            // Always add to Total Max (Fixing the AB issue)
+            maxTotal += subjectMax;
+            // --- FIX END ---
+
+            const marks = parseFloat(valStr);
+            if(!isNaN(marks)) {
+                if(marks > subjectMax) {
+                    el.classList.add('input-error');
+                    setTimeout(() => el.classList.remove('input-error'), 500);
+                    showToast(`Max for ${sub.name} is ${subjectMax}`, "error");
+                    el.value = ""; badge.innerText = "-";
+                    
+                    // Error case me wapas minus kar do
+                    maxTotal -= subjectMax;
+                    return;
+                }
+
+                let calcPercent = 0;
+                if(examMaxMarks === 25) calcPercent = marks * 4;
+                else calcPercent = sub.is50 ? marks * 2 : marks * 1;
+
+                badge.innerText = getGrade(Math.round(calcPercent));
+                obtained += marks;
+                
+            } else {
+                // Handle AB or Text
+                badge.innerText = valStr.toUpperCase() || "-";
+            }
+        });
+
+        let perc = 0;
+        if(maxTotal > 0) perc = ((obtained / maxTotal) * 100).toFixed(2); 
+
+        document.getElementById(`tot_${sid}`).innerText = obtained + "/" + maxTotal;
+        document.getElementById(`perc_${sid}`).innerText = perc + "%";
+
+        const grdEl = document.getElementById(`grd_${sid}`);
+        grdEl.innerText = getGrade(perc);
+        grdEl.className = perc >= 33 ? "status-pill pill-pass" : "status-pill pill-fail";
+
+        const resEl = document.getElementById(`res_${sid}`);
+        if(perc >= 32.5) { 
+            resEl.innerText = "PASS";
+            resEl.className = "status-pill pill-pass";
+        } else {
+            resEl.innerText = "N.I";
+            resEl.className = "status-pill pill-fail";
+        }
+
+        clearTimeout(window.rankTimeout);
+        window.rankTimeout = setTimeout(calculateRanks, 300);
+    }
+
+
+    function calculateRanks() {
+        let scores = [];
+        currentStudents.forEach(stu => {
+            const p = parseFloat(document.getElementById(`perc_${stu.id}`).innerText) || 0;
+            const isPass = p >= 32.5; 
+            scores.push({ id: stu.id, p: p, passed: isPass });
+        });
+        
+        scores.sort((a,b) => b.p - a.p);
+        
+        let rank = 1;
+        for(let i=0; i<scores.length; i++) {
+            if(i > 0 && scores[i].p < scores[i-1].p) rank++;
+            const el = document.getElementById(`rank_${scores[i].id}`);
+            if(scores[i].passed) el.innerText = rank;
+            else el.innerText = ""; 
+        }
+    }
+
+    function getGrade(p) {
+        if(p >= 91) return "O";
+        if(p >= 81) return "A+";
+        if(p >= 71) return "A";
+        if(p >= 61) return "B+";
+        if(p >= 51) return "B";
+        if(p >= 41) return "C";
+        if(p >= 33) return "P";
+        return "N.I";
+    }
+
+    // --- Save Logic ---
+    async function saveMyResults() {
+        const examId = document.getElementById('examSelect').value;
+        const month = document.getElementById('examMonth').value;
+        const wDays = document.getElementById('totalDays').value;
+        const reopen = document.getElementById('reopenDate').value;
+        const promo = document.getElementById('promoClass').value;
+
+        if(!confirm("Save Results for " + teacherProfile.assignedClass + "?")) return;
+
+        const btn = document.querySelector('.floating-save button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`; btn.disabled = true;
+
+        const batch = db.batch();
+        
+        currentStudents.forEach(stu => {
+            let marksObj = {};
+            currentSubjects.forEach(sub => {
+                const el = document.getElementById(`${stu.id}_${sub.name.replace(/\s/g,'')}`);
+                if(el) marksObj[sub.name] = el.value;
+            });
+
+            const totTxt = document.getElementById(`tot_${stu.id}`).innerText;
+            const percTxt = document.getElementById(`perc_${stu.id}`).innerText;
+            const att = document.getElementById(`att_${stu.id}`).value;
+            const rank = document.getElementById(`rank_${stu.id}`).innerText;
+            
+            let pVal = parseFloat(percTxt) || 0;
+            let resStatus = pVal >= 32.5 ? "PASS" : "N.I"; 
+            let ovGrade = getGrade(pVal);
+            // --- NAYA LOGIC ---
+            let finalPromoted = resStatus === "PASS" ? promo : "------";
+
+
+            const ref = db.collection('results').doc(`${examId}_${stu.id}`);
+            batch.set(ref, {
+                examId: examId,
+                studentId: stu.id,
+                name: stu.name,
+                roll: stu.roll,
+                class: teacherProfile.assignedClass, 
+                section: teacherProfile.assignedSection, 
+                classTeacher: teacherProfile.name,
+                
+                marks: marksObj,
+                total: totTxt,
+                percentage: percTxt,
+                attendance: att,
+                
+                overallGrade: ovGrade,
+                resultStatus: resStatus,
+                classRank: rank,
+                
+                totalWorkingDays: wDays,
+                schoolReopens: reopen,
+                promotedTo: finalPromoted,
+            
+                examMonth: month,
+                updatedAt: new Date()
+            }, { merge: true });
+        });
+
+        try {
+            await batch.commit();
+            showToast("Results Saved Successfully!", "success");
+        } catch(e) { showToast("Save failed: " + e.message, "error"); }
+        
+        btn.innerHTML = originalText; btn.disabled = false;
+    }
+    
+    
+    
+            // --- 1. FREEZE TOGGLE LOGIC ---
+    let isFrozen = false;
+    function toggleFreezeCols() {
+        const table = document.getElementById('marksTable');
+        const btn = document.getElementById('btnFreeze');
+        
+        table.classList.toggle('sticky-mode');
+        isFrozen = !isFrozen;
+
+        if (isFrozen) {
+            btn.innerHTML = '<i class="fas fa-unlock"></i> Unfreeze';
+            btn.style.background = '#dc2626'; // Red
+            showToast("Columns Frozen!");
+        } else {
+            btn.innerHTML = '<i class="fas fa-thumbtack"></i> Freeze Names';
+            btn.style.background = '#4b5563'; // Grey
+            showToast("Columns Unfrozen");
+        }
+    }
+
+    // --- 2. SNAKE NAVIGATION LOGIC (Mobile Friendly) ---
+    function focusNextRow(e, currentInput) {
+        const key = e.key || e.code;
+        const keyCode = e.keyCode || e.which;
+
+        // Enter (13) ya Tab (9)
+        if (key === "Enter" || key === "Tab" || keyCode === 13 || keyCode === 9) {
+            e.preventDefault(); 
+
+            const currentCell = currentInput.closest('td');
+            const currentRow = currentInput.closest('tr');
+            const tbody = currentRow.parentElement;
+            const cellIndex = Array.from(currentRow.children).indexOf(currentCell);
+
+            // 1. Try Next Row (Down)
+            const nextRow = currentRow.nextElementSibling;
+
+            if (nextRow) {
+                const targetCell = nextRow.children[cellIndex];
+                if (targetCell) {
+                    const nextInput = targetCell.querySelector('input');
+                    if (nextInput) {
+                        nextInput.focus();
+                        setTimeout(() => nextInput.select(), 10);
+                        return;
+                    }
+                }
+            } 
+            // 2. If No Next Row -> Go to Next Column (Top)
+            else {
+                const firstRow = tbody.firstElementChild;
+                const nextCellIndex = cellIndex + 1;
+                
+                if (firstRow && firstRow.children[nextCellIndex]) {
+                    const targetCell = firstRow.children[nextCellIndex];
+                    const nextColInput = targetCell.querySelector('input');
+
+                    if (nextColInput) {
+                        nextColInput.focus();
+                        nextColInput.scrollIntoView({ behavior: "smooth", block: "center" });
+                        setTimeout(() => nextColInput.select(), 10);
+                        showToast("Next Subject", "success");
+                    } else {
+                        currentInput.blur(); // End of table
+                    }
+                }
+            }
+        }
+    }
+
+
+
+        
+        
+        
+        
+        
+        
+        function exportToExcel() {
+    const btn = document.querySelector('.btn-success');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    setTimeout(() => {
+        try {
+            // 1. चेक करें कि लाइब्रेरी लोड है या नहीं
+            if (typeof XLSX === 'undefined') {
+                alert("Error: Internet Issue! Excel लाइब्रेरी लोड नहीं हुई।");
+                btn.innerHTML = oldText;
+                return;
+            }
+
+            // 2. टेबल का क्लोन बनाएं
+            let originalTable = document.getElementById("marksTable");
+            let tableClone = originalTable.cloneNode(true);
+            
+            // इनपुट बॉक्स को टेक्स्ट में बदलें
+            let inputs = tableClone.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.parentElement.innerText = input.value;
+            });
+
+            // --- MOVE ATTENDANCE TO LAST (अटेंडेंस को आखिरी में भेजने का जादू) ---
+            // हम हेडर में Attendance ढूंढेंगे
+            let headers = tableClone.querySelectorAll('th');
+            let attIndex = -1;
+            
+            headers.forEach((th, index) => {
+                if (th.innerText.includes("Attendance")) attIndex = index;
+            });
+
+            if (attIndex > -1) {
+                // हर रो (Row) में से Attendance वाला सेल निकालकर अंत में जोड़ें
+                let rows = tableClone.querySelectorAll('tr');
+                rows.forEach(row => {
+                    let cells = row.children;
+                    if (cells.length > attIndex) {
+                        let attCell = cells[attIndex];
+                        row.appendChild(attCell); // इसे उठाकर सबसे लास्ट में डाल दो
+                    }
+                });
+            }
+            // -----------------------------------------------------------
+
+            // 3. शीट बनाएं (raw: true ताकि एक्सेल अपना दिमाग न लगाए)
+            let ws = XLSX.utils.table_to_sheet(tableClone, { raw: true });
+
+            // 4. कॉलम इंडेक्स पता करें (ताकि हम सही जगह कलर और % लगाएं)
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            let colMap = { perc: -1, result: -1, name: 1 };
+
+            // पहली लाइन (Header) स्कैन करें
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                let addr = XLSX.utils.encode_cell({ r: 0, c: C });
+                let val = ws[addr] ? String(ws[addr].v).trim() : "";
+                
+                if (val === "%") colMap.perc = C;
+                if (val === "Result") colMap.result = C;
+            }
+
+            // 5. सजावट और फिक्सिंग लूप
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (!ws[cellAddress]) continue;
+
+                    // स्टाइल ऑब्जेक्ट
+                    if (!ws[cellAddress].s) ws[cellAddress].s = {};
+
+                    // A. बेसिक बॉर्डर
+                    ws[cellAddress].s.border = {
+                        top: { style: "thin", color: { rgb: "000000" } },
+                        bottom: { style: "thin", color: { rgb: "000000" } },
+                        left: { style: "thin", color: { rgb: "000000" } },
+                        right: { style: "thin", color: { rgb: "000000" } }
+                    };
+                    ws[cellAddress].s.alignment = { horizontal: "center", vertical: "center" };
+
+                    // B. हेडर स्टाइल
+                    if (R === 0) {
+                        ws[cellAddress].s.font = { bold: true, color: { rgb: "FFFFFF" } };
+                        ws[cellAddress].s.fill = { fgColor: { rgb: "4F46E5" } };
+                        continue;
+                    }
+
+                    let cellValue = String(ws[cellAddress].v).trim();
+
+                    // --- C. PERCENTAGE FIX (सिर्फ % वाले कॉलम के लिए) ---
+                    if (C === colMap.perc) {
+                        // अगर वैल्यू 0.42 जैसी है, तो उसे 42% बनाओ
+                        if (!isNaN(cellValue) && cellValue !== "") {
+                            // अगर पहले से % नहीं है
+                            if (!cellValue.includes("%")) {
+                                let num = parseFloat(cellValue);
+                                // अगर 0.xx है तो 100 से गुणा करें, अगर 42 है तो सीधे % लगाएं
+                                if (num <= 1 && num > 0) val = (num * 100).toFixed(2) + "%";
+                                else val = num + "%";
+                                
+                                ws[cellAddress].v = val;
+                                ws[cellAddress].t = 's'; // Force Text
+                            }
+                        }
+                    }
+
+                    // --- D. COLORS (PASS / FAIL) ---
+                    if (C === colMap.result) {
+                        if (cellValue === "PASS") {
+                            ws[cellAddress].s.font = { bold: true, color: { rgb: "006400" } };
+                            ws[cellAddress].s.fill = { fgColor: { rgb: "C6EFCE" } };
+                        } else if (cellValue === "N.I" || cellValue === "FAIL") {
+                            ws[cellAddress].s.font = { bold: true, color: { rgb: "9C0006" } };
+                            ws[cellAddress].s.fill = { fgColor: { rgb: "FFC7CE" } };
+                        }
+                    }
+
+                    // --- E. Subject Fail Marks (Red Color) ---
+                    // यह लॉजिक: अगर कॉलम नाम और रिजल्ट के बीच में है (यानी सब्जेक्ट है)
+                    // और मार्क्स 33 से कम हैं
+                    if (C > 1 && C < colMap.perc - 1) { 
+                        if (!isNaN(cellValue) && cellValue !== "") {
+                            let marks = parseFloat(cellValue);
+                            if (marks < 32.5 && marks >= 0) {
+                                ws[cellAddress].s.font = { color: { rgb: "FF0000" }, bold: true };
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6. फाइल डाउनलोड
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Result");
+            let fileName = `Result_${teacherProfile?.assignedClass || 'Class'}_${teacherProfile?.assignedSection || 'Sec'}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showToast("Excel Downloaded Successfully!", "success");
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        } finally {
+            btn.innerHTML = oldText;
+        }
+    }, 500);
+}
+
+    
+    
+        // 🟢 SECURE INITIALIZATION FOR TEACHER 🟢
+    firebase.auth().onAuthStateChanged((user) => {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+        const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+        // Yahan strictly check kar rahe hain ki role 'teacher' hona chahiye
+        if (user && isLoggedIn && userData.role === 'teacher') {
+            // Agar file mein init() function hai to use call karein
+            if(typeof checkAuth === 'function') checkAuth();
+        } else {
+            // Agar parent ya koi aur bina permission aaya to wapas login page pe bhejo
+            window.location.replace("admin-login.html"); 
+        }
+    });
+</script>
+
+    
+
+    
+
+
+    
+</script>
+</body>
+</html>

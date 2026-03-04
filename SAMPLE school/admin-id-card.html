@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <script>
+    if (sessionStorage.getItem("isLoggedIn") !== "true") {
+        window.location.href = "admin-login.html";
+    }
+    </script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Card Generator | STES</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { margin: 0; padding: 0; background: #f3f4f6; font-family: 'Outfit', sans-serif; }
+
+        /* --- CONTROL PANEL (Top Bar) --- */
+        .control-panel {
+            background: white; padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 100;
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+        }
+        .filter-group { display: flex; gap: 10px; flex: 1; min-width: 300px; }
+        input, select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
+        
+        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .btn-primary { background: #4f46e5; color: white; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-outline { border: 1px solid #4f46e5; color: #4f46e5; background: white; }
+
+        /* --- CARD GRID --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(86mm, 1fr));
+            gap: 20px;
+            padding: 20px;
+            justify-items: center;
+        }
+
+        /* --- ID CARD DESIGN (Standard Size) --- */
+        .id-card-wrapper { position: relative; cursor: pointer; transition: 0.2s; }
+        .id-card-wrapper:hover { transform: translateY(-3px); }
+        
+        /* Selection Checkbox Overlay */
+        .select-overlay {
+            position: absolute; top: -10px; right: -10px; z-index: 10;
+            background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .card-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: #4f46e5; }
+
+        .id-card {
+            width: 86mm; height: 54mm;
+            background: white; border-radius: 8px;
+            overflow: hidden; border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative; user-select: none;
+        }
+        
+        /* Card Internals */
+        .header { background: linear-gradient(135deg, #1e3a8a, #3b82f6); height: 42px; display: flex; align-items: center; padding: 0 10px; color: white; }
+        .logo { width: 28px; height: 28px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1e3a8a; font-size: 14px; margin-right: 8px; }
+        .school-name h1 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .school-name p { margin: 0; font-size: 6px; opacity: 0.9; }
+
+        .content { display: flex; padding: 8px; gap: 8px; align-items: center; height: calc(100% - 64px); }
+        .photo-box { width: 65px; height: 80px; border: 2px solid #3b82f6; border-radius: 4px; overflow: hidden; background: #f0f9ff; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .details { flex: 1; }
+        .st-name { font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+        .st-meta { font-size: 8px; color: #4b5563; font-weight: 600; margin-bottom: 4px; }
+        .info-row { font-size: 7.5px; margin-bottom: 2px; color: #374151; display: flex; }
+        .info-label { width: 35px; font-weight: 700; color: #6b7280; }
+
+        .footer { position: absolute; bottom: 0; width: 100%; height: 22px; background: #1e3a8a; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; box-sizing: border-box; }
+        .qr-box { background: white; padding: 2px; border-radius: 2px; margin-top: -12px; border: 1px solid #1e3a8a; }
+
+        /* Selected State */
+        .id-card-wrapper.selected .id-card { border: 2px solid #4f46e5; box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); }
+
+        /* --- PRINT SETTINGS (A4 Page Layout) --- */
+        @media print {
+            .control-panel, .select-overlay { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            
+            .card-grid {
+                display: block; padding: 0;
+            }
+            
+            /* Hide Unselected Cards */
+            .id-card-wrapper:not(.selected) { display: none; }
+            
+            .id-card-wrapper {
+                display: inline-block;
+                margin: 5mm; /* Space between cards */
+                break-inside: avoid;
+                transform: none !important;
+                box-shadow: none;
+            }
+            
+            .id-card { border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-panel">
+        <div class="filter-group">
+            <input type="text" id="searchBox" placeholder="Search Name, ID, Father, Mobile..." onkeyup="filterCards()" style="flex:2;">
+            <select id="filterClass" onchange="filterCards()">
+                <option value="">All Classes</option>
+                <option value="Nursery">Nursery</option>
+                <option value="LKG">LKG</option>
+                <option value="UKG">UKG</option>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                </select>
+            <select id="filterSort" onchange="filterCards()">
+                <option value="roll_asc">Roll No (Asc)</option>
+                <option value="roll_desc">Roll No (Desc)</option>
+                <option value="name">Name (A-Z)</option>
+            </select>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span id="countDisplay" style="font-size:14px; color:#666; font-weight:600;">0 Students</span>
+            <button class="btn btn-outline" onclick="toggleSelectAll()">
+                <i class="fas fa-check-double"></i> Select Visible
+            </button>
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Selected
+            </button>
+        </div>
+    </div>
+
+    <div id="cardsContainer" class="card-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+            <i class="fas fa-spinner fa-spin fa-2x"></i> Loading Students...
+        </div>
+    </div>
+
+    <script>
+        // 1. FIREBASE CONFIG
+        const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allStudents = [];
+
+        // 2. LOAD STUDENTS
+        db.collection('students').where('status', '==', 'Active').get().then(snap => {
+            allStudents = [];
+            snap.forEach(doc => allStudents.push({ id: doc.id, ...doc.data() }));
+            filterCards(); // Initial Render
+            
+            // Auto Search from URL (If coming from Admin Panel)
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchId = urlParams.get('search');
+            if(searchId) {
+                document.getElementById('searchBox').value = searchId;
+                filterCards();
+            }
+
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('cardsContainer').innerHTML = "Error loading data.";
+        });
+
+        // 3. RENDER CARDS
+        function renderCards(list) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = "";
+            document.getElementById('countDisplay').innerText = `${list.length} Found`;
+
+            if(list.length === 0) {
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center;">No students found</div>`;
+                return;
+            }
+
+            list.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'id-card-wrapper';
+                div.id = `card-${s.id}`;
+                div.onclick = (e) => toggleSelect(s.id, e);
+
+                // Safe Data Handling
+                const name = (s.name || "").toUpperCase().slice(0, 20);
+                const cls = (s.class || "") + (s.section ? ` (${s.section})` : "");
+                const photo = s.photo || "https://via.placeholder.com/80?text=No+Img";
+                const addr = (s.addressPerm || "").slice(0, 25);
+
+                div.innerHTML = `
+                    <div class="select-overlay">
+                        <input type="checkbox" class="card-checkbox" value="${s.id}">
+                    </div>
+                    <div class="id-card">
+                        <div class="header">
+                            <div class="logo"><i class="fas fa-university"></i></div>
+                            <div class="school-name">
+                                <h1>St. Teresa School</h1>
+                                <p>Lalganj, Chandi, Nalanda (Bihar)</p>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <div class="photo-box"><img src="${photo}"></div>
+                            <div class="details">
+                                <div class="st-name">${name}</div>
+                                <div class="st-meta">${cls} | Roll: ${s.roll||'-'}</div>
+                                <div class="info-row"><span class="info-label">ID:</span> <b>${s.stesID||'-'}</b></div>
+                                <div class="info-row"><span class="info-label">DOB:</span> ${s.dob||'-'}</div>
+                                <div class="info-row"><span class="info-label">Father:</span> ${s.fatherName||'-'}</div>
+                                <div class="info-row"><span class="info-label">Mob:</span> ${s.mobile||'-'}</div>
+                                <div class="info-row"><span class="info-label">Add:</span> ${addr}..</div>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <div style="font-size: 6px;">
+                                <div>Ph: 9693776982</div>
+                                <div>Principal Sign</div>
+                            </div>
+                            <div class="qr-box" id="qr-${s.id}"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+
+                // Generate QR
+                new QRCode(document.getElementById(`qr-${s.id}`), {
+                    text: `ID:${s.stesID}|Name:${s.name}`,
+                    width: 32,
+                    height: 32
+                });
+            });
+        }
+
+        // 4. FILTER & SORT LOGIC
+        function filterCards() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const clsFilter = document.getElementById('filterClass').value;
+            const sortType = document.getElementById('filterSort').value;
+
+            let filtered = allStudents.filter(s => {
+                const text = ((s.name||"") + " " + (s.stesID||"") + " " + (s.fatherName||"") + " " + (s.mobile||"")).toLowerCase();
+                const matchText = text.includes(query);
+                const matchClass = clsFilter ? s.class === clsFilter : true;
+                return matchText && matchClass;
+            });
+
+            // Sorting
+            filtered.sort((a, b) => {
+                if(sortType === 'name') return (a.name||"").localeCompare(b.name||"");
+                if(sortType === 'roll_asc') return (parseInt(a.roll)||0) - (parseInt(b.roll)||0);
+                if(sortType === 'roll_desc') return (parseInt(b.roll)||0) - (parseInt(a.roll)||0);
+                return 0;
+            });
+
+            renderCards(filtered);
+        }
+
+        // 5. SELECTION LOGIC
+        function toggleSelect(id, event) {
+            // Checkbox click propagation fix
+            if(event && event.target.type === 'checkbox') return;
+
+            const wrapper = document.getElementById(`card-${id}`);
+            const checkbox = wrapper.querySelector('input');
+            
+            if(wrapper.classList.contains('selected')) {
+                wrapper.classList.remove('selected');
+                checkbox.checked = false;
+            } else {
+                wrapper.classList.add('selected');
+                checkbox.checked = true;
+            }
+        }
+
+        function toggleSelectAll() {
+            const wrappers = document.querySelectorAll('.id-card-wrapper');
+            let allSelected = true;
+            wrappers.forEach(w => { if(!w.classList.contains('selected')) allSelected = false; });
+
+            wrappers.forEach(w => {
+                const cb = w.querySelector('input');
+                if(allSelected) {
+                    w.classList.remove('selected');
+                    cb.checked = false;
+                } else {
+                    w.classList.add('selected');
+                    cb.checked = true;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
