@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot Manager - Admin</title>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="config.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #8b5cf6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .admin-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border-top: 5px solid #8b5cf6;
+        }
+
+        .card-head {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4c1d95;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #444;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .ai-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #dcfce7;
+            color: #16a34a;
+            margin-left: auto;
+            border: 1px solid #16a34a;
+        }
+
+        .ai-status.offline {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 400px;
+            box-sizing: border-box;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            border-color: #8b5cf6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+            display: block;
+            line-height: 1.4;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-save:hover {
+            background: #7c3aed;
+        }
+
+        .btn-save:disabled {
+            background: #c4b5fd;
+            cursor: not-allowed;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+        }
+
+        /* --- DYNAMIC BUILDER CSS --- */
+        .dynamic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .dynamic-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .dynamic-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .dynamic-item .item-value {
+            flex: 0.5;
+        }
+
+        .btn-remove {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-remove:hover {
+            background: #dc2626;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .btn-add:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h2><i class="fas fa-robot"></i> AI Chatbot Settings</h2>
+        <a href="admin-dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </div>
+
+    <!-- AI KNOWLEDGE BASE -->
+    <div class="admin-card">
+        <h3 class="card-head">
+            <i class="fas fa-brain"></i> School Knowledge Base (Context Builder)
+        </h3>
+        <p style="font-size:13px; color:#666; margin-bottom: 20px;">
+            Yahan aap school ki jankari, fees, transport aur extra items easily enter karein. System isko automatically
+            AI ke liye perfect format mein badal dega.
+        </p>
+
+        <div class="form-group">
+            <label>General School Info & Rules (Timings, Principal, Contacts)</label>
+            <textarea id="aiContext"
+                placeholder="School Name: STES Public School&#10;Principal: Dr. APJ&#10;Timings: 8:00 AM to 2:00 PM&#10;Contact: 7632852762"
+                style="min-height: 150px;"></textarea>
+            <span class="help-text">
+                Tip: Sirf basic aam jankari yahan likhein (Email, rules). Fees, Transport aur Items neeche diye form me
+                bharne hain.
+            </span>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+        <!-- FEE STRUCTURE -->
+        <h4 style="margin-bottom: 10px; color: #333;"><i class="fas fa-rupee-sign"></i> Class-wise Fee Structure</h4>
+        <div id="feeList" class="dynamic-list">
+            <!-- Dynamic Fee Items Go Here -->
+        </div>
+        <button class="btn-add" onclick="addFeeRow()"><i class="fas fa-plus"></i> Add Class Fee</button>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+        <!-- TRANSPORT -->
+        <h4 style="margin-bottom: 10px; color: #333;"><i class="fas fa-bus"></i> Transport Pricing</h4>
+        <div id="transportList" class="dynamic-list">
+            <!-- Dynamic Transport Items Go Here -->
+        </div>
+        <button class="btn-add" onclick="addTransportRow()"><i class="fas fa-plus"></i> Add Route/Distance</button>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+        <!-- EXTRA ITEMS -->
+        <h4 style="margin-bottom: 10px; color: #333;"><i class="fas fa-tshirt"></i> Extra Items (Books, Uniform, ID
+            Card, etc.)</h4>
+        <div id="itemList" class="dynamic-list">
+            <!-- Dynamic Exta Items Go Here -->
+        </div>
+        <button class="btn-add" onclick="addItemRow()"><i class="fas fa-plus"></i> Add Extra Item</button>
+
+
+        <div style="margin-top: 20px;">
+            <button onclick="saveKnowledgeBase()" class="btn-save" id="saveBtn">
+                <i class="fas fa-save"></i> Build AI Context & Save
+            </button>
+        </div>
+    </div>
+
+    <!-- API KEY SETTINGS (Optional/Advanced) -->
+    <div class="admin-card">
+        <h3 class="card-head" style="color: #333;">
+            <i class="fas fa-key"></i> Groq API Key (Llama 3)
+        </h3>
+        <p style="font-size:13px; color:#666; margin-bottom: 20px;">
+            Default API key (Demo) jaldi limit cross kar jaata hai. Chatbot ko hamesha free aur tez chalane ke liye apni
+            <a href="https://console.groq.com/keys" target="_blank" style="color: #8b5cf6; font-weight: bold;">Groq API
+                Key</a> banakar yahan dalein.
+        </p>
+        <div class="form-group">
+            <label>Groq API Key</label>
+            <input type="password" id="geminiApiKey" class="api-input"
+                placeholder="gsk_... (Leave blank to use default)">
+            <span class="help-text">Apne Gmail se login karein, 'Create API Key' par click karein aur yahan paste
+                karein.</span>
+        </div>
+        <button onclick="saveApiKey()" class="btn-save" style="background: #333;">
+            <i class="fas fa-check"></i> Update Custom API Key
+        </button>
+    </div>
+
+
+    <script>
+        // Check Admin Auth (Basic protection)
+        firebase.auth().onAuthStateChanged((user) => {
+            const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+            const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+            if (!user || !isLoggedIn || userData.role !== 'admin') {
+                window.location.replace("admin-login.html");
+            } else {
+                loadSettings();
+            }
+        });
+
+        // Load existing settings
+        function loadSettings() {
+            db.collection('settings').doc('chatbot_config').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+
+                    if (data.generalContext) {
+                        document.getElementById('aiContext').value = data.generalContext;
+                    } else if (data.context && !data.structuredData) {
+                        // Backwards compatibility if they only had the old text
+                        document.getElementById('aiContext').value = data.context;
+                    }
+
+                    if (data.customApiKey) document.getElementById('geminiApiKey').value = data.customApiKey;
+
+                    // Load structured data
+                    const struct = data.structuredData || { fees: [], items: [], transport: [] };
+
+                    if (struct.fees && struct.fees.length > 0) struct.fees.forEach(f => addFeeRow(f.name, f.amount));
+                    else addFeeRow();
+
+                    if (struct.items && struct.items.length > 0) struct.items.forEach(i => addItemRow(i.name, i.amount));
+                    else addItemRow();
+
+                    if (struct.transport && struct.transport.length > 0) struct.transport.forEach(t => addTransportRow(t.name, t.amount));
+                    else addTransportRow();
+
+                } else {
+                    addFeeRow();
+                    addItemRow();
+                    addTransportRow();
+                }
+            }).catch(err => {
+                console.error("Error loading Chatbot settings:", err);
+            });
+        }
+
+        // --- DYNAMIC UI FUNCTIONS ---
+        function createRowHTML(containerId, placeholderName, placeholderAmout, valName = '', valAmt = '') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <input type="text" class="item-name" placeholder="${placeholderName}" value="${valName}">
+                <input type="text" class="item-value" placeholder="${placeholderAmout}" value="${valAmt}">
+                <button class="btn-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addFeeRow(name = '', amt = '') { createRowHTML('feeList', 'Class (e.g., Nursery to UKG)', 'Amount (e.g., Rs 500/month)', name, amt); }
+        function addItemRow(name = '', amt = '') { createRowHTML('itemList', 'Item Name (e.g., Tie, Belt, ID Card)', 'Price (e.g., Rs 150)', name, amt); }
+        function addTransportRow(name = '', amt = '') { createRowHTML('transportList', 'Route/Distance (e.g., 0-5 km)', 'Fee (e.g., Rs 600/month)', name, amt); }
+
+        function gatherList(containerId) {
+            const items = [];
+            document.querySelectorAll(`#${containerId} .dynamic-item`).forEach(row => {
+                const name = row.querySelector('.item-name').value.trim();
+                const amt = row.querySelector('.item-value').value.trim();
+                if (name || amt) items.push({ name, amount: amt });
+            });
+            return items;
+        }
+
+        // Save Context
+        function saveKnowledgeBase() {
+            const generalContext = document.getElementById('aiContext').value.trim();
+            const fees = gatherList('feeList');
+            const items = gatherList('itemList');
+            const transport = gatherList('transportList');
+
+            const btn = document.getElementById('saveBtn');
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            // Build the final string for the Chatbot to actually read
+            let finalPromptString = generalContext + "\n\n";
+
+            if (fees.length > 0) {
+                finalPromptString += "*** SCHOOL FEES STRUCTURE ***\n";
+                fees.forEach(f => { finalPromptString += `${f.name}: ${f.amount}\n`; });
+                finalPromptString += "\n";
+            }
+            if (items.length > 0) {
+                finalPromptString += "*** EXTRA ITEMS PRICING ***\n";
+                items.forEach(i => { finalPromptString += `${i.name}: ${i.amount}\n`; });
+                finalPromptString += "\n";
+            }
+            if (transport.length > 0) {
+                finalPromptString += "*** TRANSPORT FEES ***\n";
+                transport.forEach(t => { finalPromptString += `${t.name}: ${t.amount}\n`; });
+                finalPromptString += "\n";
+            }
+
+            const structuredData = { fees, items, transport };
+
+            db.collection('settings').doc('chatbot_config').set({
+                context: finalPromptString.trim(), // Chatbot reads this
+                generalContext: generalContext,    // Admin UI reads this
+                structuredData: structuredData,    // Admin UI reads this
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true })
+                .then(() => {
+                    alert("AI Knowledge Base Updated Successfully! The Chatbot is now smarter.");
+                })
+                .catch(err => {
+                    console.error("Error saving:", err);
+                    alert("Failed to save changes.");
+                })
+                .finally(() => {
+                    btn.innerHTML = '<i class="fas fa-save"></i> Build AI Context & Save';
+                    btn.disabled = false;
+                });
+        }
+
+        // Save Custom API Key
+        function saveApiKey() {
+            const key = document.getElementById('geminiApiKey').value.trim();
+
+            db.collection('settings').doc('chatbot_config').set({
+                customApiKey: key,
+                apiKeyUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true })
+                .then(() => {
+                    if (key) {
+                        alert("Custom API Key Saved!");
+                    } else {
+                        alert("Custom API Key cleared. Now using Default Key.");
+                    }
+                })
+                .catch(err => {
+                    alert("Error saving API Key: " + err.message);
+                });
+        }
+    </script>
+</body>
+
+</html>

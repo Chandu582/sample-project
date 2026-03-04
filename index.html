@@ -1,0 +1,3506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Teresa English School | Best School in Lalganj,Chandi, Nalanda, Bihar</title>
+    <meta name="description"
+        content="St. Teresa English School, Lalganj,Chandi (Nalanda). Providing quality education, modern labs, and safe transport. Admission open for 2026.">
+    <meta name="keywords"
+        content="St. Teresa English School, School in Lalganj, Best School in Nalanda, Chandi, School, Admission 2026">
+
+    <link rel="preload" as="image"
+        href="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop">
+
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </noscript>
+
+
+
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
+
+
+
+
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --dark: #0d47a1;
+            --accent: #ffca28;
+            --text: #333;
+            --bg: #f4f7f6;
+        }
+
+
+        :root {
+            /* Core Brand Colors */
+            --primary: #1a73e8;
+            --primary-dark: #0d47a1;
+            --accent: #ffb300;
+            /* Thoda deep gold premium look ke liye */
+
+            /* Text & Backgrounds */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+
+            /* Universal Title Gradient */
+            --title-gradient: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+
+
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            overflow-x: hidden;
+            /* Premium Background Texture */
+            background-color: #f8fafc;
+            background-image: radial-gradient(rgba(26, 115, 232, 0.07) 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+
+        /* --- CUSTOM GLOBAL SCROLLBAR --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            /* Patla scrollbar */
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            /* Halka grey background */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            /* Scroll bar ka color */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+            /* Hover karne par school ka blue color */
+        }
+
+
+
+        .premium-title {
+            background: var(--title-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            /* Responsive font size: Mobile par chota, desktop par bada */
+            font-size: clamp(1.5rem, 4vw, 2.2rem) !important;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+
+
+
+
+
+
+        /* --- NAVBAR --- */
+        /* --- ULTRA-PREMIUM NAVBAR --- */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            /* Slightly transparent */
+            backdrop-filter: blur(15px);
+            /* The magic blur */
+            -webkit-backdrop-filter: blur(15px);
+            padding: 5px 20px;
+            /* VERICAL PADDING KAM KI: 15px se 5px kardi */
+            border-bottom: 1px solid rgba(26, 115, 232, 0.1);
+            /* Subtle blue line */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 5px 0;
+            position: relative;
+        }
+
+        /* --- THE FLOATING CREST (SCHOOL LOGO) --- */
+        .nav-school-logo-container {
+            position: relative;
+            /* Breakout overlapping effect (It hangs below the navbar) */
+            margin-bottom: 0px;
+            /* Ab bilkul text ke level me center ho jayega */
+            width: clamp(50px, 5vw, 62px);
+            /* Dimension thoda aur kam kiya */
+            height: clamp(50px, 5vw, 62px);
+            background: linear-gradient(135deg, #ffffff 0%, #f4f7f6 100%);
+            border-radius: 50%;
+
+            /* High-end soft & crisp shadow */
+            box-shadow: 0 10px 25px rgba(13, 71, 161, 0.15),
+                0 4px 10px rgba(0, 0, 0, 0.05),
+                inset 0 0 0 2px rgba(255, 255, 255, 1),
+                /* White rim patli kardi */
+                inset 0 0 0 4px rgba(26, 115, 232, 0.15);
+            /* Blue trim clear rakha */
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        .nav-school-logo {
+            width: 90%;
+            /* BADA KIYA: 70% se 90% space le lega */
+            height: 90%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+            transition: transform 0.4s ease;
+        }
+
+        /* Hover states for the Crest */
+        .nav-logo:hover .nav-school-logo-container {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(13, 71, 161, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 0 0 3px rgba(255, 255, 255, 1),
+                inset 0 0 0 5px rgba(26, 115, 232, 0.2);
+        }
+
+        .nav-logo:hover .nav-school-logo {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* --- TWO-LINE LUXURY TYPOGRAPHY --- */
+        .logo-text-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.1;
+        }
+
+        .logo-text-main {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: 900;
+            color: #0d47a1;
+            /* Majestic Navy Blue */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+
+        /* Subtle gold sweeping underline on hover */
+        .logo-text-main::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #ffb300, #ffca28);
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 2px;
+        }
+
+        .nav-logo:hover .logo-text-main {
+            color: #1a73e8;
+            /* Lighter blue on hover */
+        }
+
+        .nav-logo:hover .logo-text-main::after {
+            width: 100%;
+        }
+
+        .logo-text-sub {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(9px, 1.5vw, 12px);
+            font-weight: 700;
+            color: #ffb300;
+            /* Rich Gold */
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 2px;
+            padding-left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo:hover .logo-text-sub {
+            letter-spacing: 4px;
+            /* Expanding text effect */
+            color: #f59e0b;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.4);
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        .menu-btn {
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        /* --- HERO SECTION (DYNAMIC SLIDER) --- */
+        .hero {
+            position: relative;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            /* Important for border-radius clip */
+            background-color: #0d47a1;
+            /* Fallback color */
+        }
+
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 1;
+            /* Behind content */
+        }
+
+        .hero-slide::after {
+            /* Black overlay to make text readable */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            /* Keep text above images */
+            padding: 20px;
+            animation: fadeIn 1s ease;
+        }
+
+        .hero h1 {
+            /* 📱Mobile: 28px, 💻Desktop: 56px (Huge and Premium) */
+            font-size: clamp(28px, 5vw, 56px);
+            font-weight: 800;
+            margin: 0 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            /* Better readability on bg */
+        }
+
+        .hero p {
+            /* 📱Mobile: 14px, 💻Desktop: 22px */
+            font-size: clamp(14px, 2vw, 22px);
+            opacity: 0.95;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* --- LIQUID GLASS HERO BUTTON --- */
+        .cta-btn {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.7), rgba(99, 102, 241, 0.7));
+            /* Semi-transparent purple/blue */
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+
+            /* The Glass Edge (Safed border) */
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+
+            /* Background ko blur karne ke liye */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            /* The Magic: Inner Highlight aur Outer Glow */
+            box-shadow:
+                0 8px 32px rgba(99, 102, 241, 0.4),
+                /* Bahar ka soft glow */
+                inset 0 2px 4px rgba(255, 255, 255, 0.8),
+                /* Upar ka safed shine (Liquid look) */
+                inset 0 -3px 5px rgba(0, 0, 0, 0.1);
+            /* Niche ka dark shadow */
+
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.85), rgba(99, 102, 241, 0.85));
+            box-shadow:
+                0 12px 40px rgba(99, 102, 241, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.9),
+                inset 0 -3px 5px rgba(0, 0, 0, 0.15);
+        }
+
+
+        /* --- NOTICE MARQUEE --- */
+        /* --- NOTICE MARQUEE PREMIUM --- */
+        .notice-bar {
+            background: linear-gradient(135deg, var(--dark), #1a237e);
+            color: white;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+            margin-top: -35px;
+            position: relative;
+            z-index: 5;
+            width: 92%;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notice-label {
+            background: var(--accent);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 11px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 10px rgba(255, 202, 40, 0.4);
+        }
+
+        /* Live Blinking Dot */
+        .notice-label::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #ff1744;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+
+
+
+        /* --- MODERN CSS MARQUEE ANIMATION --- */
+        .marquee-wrapper {
+            overflow: hidden;
+            /* Box ke bahar ka text chupa dega */
+            width: 100%;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            /* Text ko right side se start karega */
+            animation: smooth-scroll 15s linear infinite;
+            /* 15s speed hai, aap change kar sakte hain */
+        }
+
+        /* User jab padhne ke liye mouse layega ya touch karega, to text ruk jayega (Great UX!) */
+        .notice-bar:hover .marquee-text {
+            animation-play-state: paused;
+        }
+
+        /* Scroll hone ka keyframe logic */
+        @keyframes smooth-scroll {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(-100%, 0);
+            }
+        }
+
+
+
+        /* --- GRID MENU (Quick Links) --- */
+        /* --- PREMIUM DASHBOARD GRID --- */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 10px 20px 30px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .menu-card {
+            background: #ffffff;
+            padding: 20px 15px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f4f8;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* --- PREMIUM DASHBOARD GRID HOVER EFFECTS --- */
+        /* --- LIQUID GLASS DASHBOARD GRID --- */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 10px 20px 30px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .menu-card {
+            background: rgba(255, 255, 255, 0.4);
+            /* Halka transparent safed (Frosty Glass) */
+            backdrop-filter: blur(12px);
+            /* Peeche ka background blur karega */
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            /* Glass ka chamakta hua kinara */
+
+            padding: 22px 15px;
+            border-radius: 24px;
+            /* Thoda aur gol kiya hai liquid feel ke liye */
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+            /* 3D Liquid Effect: Bahar ka shadow + Andar ki chamak */
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.05),
+                /* Soft bahari shadow */
+                inset 0 2px 5px rgba(255, 255, 255, 1),
+                /* Upar ki light */
+                inset 0 -3px 5px rgba(255, 255, 255, 0.3);
+            /* Niche ka reflection */
+        }
+
+        /* Hover Effects with Glowing Shadows */
+        .menu-card:hover {
+            transform: translateY(-6px);
+            background: rgba(255, 255, 255, 0.65);
+            border-color: #fff;
+        }
+
+        .mc-1:hover {
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.25), inset 0 2px 5px rgba(255, 255, 255, 1);
+        }
+
+        .mc-2:hover {
+            box-shadow: 0 15px 35px rgba(255, 8, 68, 0.25), inset 0 2px 5px rgba(255, 255, 255, 1);
+        }
+
+        .mc-3:hover {
+            box-shadow: 0 15px 35px rgba(67, 233, 123, 0.25), inset 0 2px 5px rgba(255, 255, 255, 1);
+        }
+
+        .mc-4:hover {
+            box-shadow: 0 15px 35px rgba(253, 160, 133, 0.25), inset 0 2px 5px rgba(255, 255, 255, 1);
+        }
+
+
+        /* Punchy, Modern App Icon Gradients */
+        /* --- LIQUID GLASS ICONS --- */
+        .menu-icon {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 12px;
+            border-radius: 20px;
+            /* Squircle shape */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            transition: transform 0.4s ease;
+
+            /* Icons ke andar bhi glass effect */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .menu-card:hover .menu-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Transparent Gradients with Inner Shine */
+        .mc-1 .menu-icon {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.8), rgba(0, 242, 254, 0.8));
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+        }
+
+        .mc-2 .menu-icon {
+            background: linear-gradient(135deg, rgba(255, 8, 68, 0.8), rgba(255, 177, 153, 0.8));
+            box-shadow: 0 8px 20px rgba(255, 8, 68, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+        }
+
+        .mc-3 .menu-icon {
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.8), rgba(56, 249, 215, 0.8));
+            box-shadow: 0 8px 20px rgba(67, 233, 123, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+        }
+
+        .mc-4 .menu-icon {
+            background: linear-gradient(135deg, rgba(246, 211, 101, 0.8), rgba(253, 160, 133, 0.8));
+            box-shadow: 0 8px 20px rgba(253, 160, 133, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+        }
+
+        .menu-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #1e293b;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            /* Text ko ubharne ke liye safed shadow */
+        }
+
+
+
+        /* --- WHY CHOOSE US --- */
+        .section-title {
+            text-align: center;
+            margin: 30px 0 20px;
+            /* 📱Mobile par 22px rahega, screen badi hone par automatically badhkar 💻Desktop par 36px ho jayega */
+            font-size: clamp(22px, 4vw, 36px);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+
+        /* --- PREMIUM WHY CHOOSE US CARDS --- */
+        .features-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 10px 20px 40px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .feature-card {
+            min-width: 220px;
+            background: #fff;
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            border-top: 4px solid var(--primary);
+            /* Ye line top par blue border banayegi */
+            transition: all 0.3s ease;
+            scroll-snap-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(26, 115, 232, 0.1);
+            border-color: #e3f2fd;
+        }
+
+        /* Icon in a soft glowing circle */
+        .feature-card i {
+            font-size: 24px;
+            color: var(--primary);
+            background: #eef2ff;
+            /* Light blue background */
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: block;
+            box-shadow: 0 5px 15px rgba(26, 115, 232, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover i {
+            transform: scale(1.1) rotate(5deg);
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .feature-card h4 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .feature-card p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+
+        /* --- STATS --- */
+        .stats-box {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin: 20px;
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .stat p {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+
+
+
+
+
+        /* --- UPDATED FOOTER CSS (Padding Fixed) --- */
+        /* --- UPDATED FOOTER CSS --- */
+        footer {
+            background: #1a1a1a;
+            /* Thoda dark grey professional lagta hai */
+            color: #aaa;
+            padding: 40px 20px 90px;
+            /* Bottom padding zyada taki floating nav cover na kare */
+            text-align: center;
+            font-size: 13px;
+            border-top: 5px solid var(--primary);
+        }
+
+        .footer-logo {
+            font-size: 22px;
+            color: white;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        .school-address {
+            margin-bottom: 20px;
+            font-style: normal;
+            opacity: 0.8;
+        }
+
+        /* Legal Links Styling */
+        .footer-links {
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.3s;
+            margin: 0 10px;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+            /* Yellow hover effect */
+            text-decoration: underline;
+        }
+
+        .separator {
+            color: #555;
+        }
+
+        .developer-credit {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+
+        /* ... (Baaki footer CSS same rahegi) ... */
+
+        /* --- NEW DEVELOPER BOX STYLING --- */
+        .developer-credit-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            /* Lines ke beech gap */
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dev-intro {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .dev-profile-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            /* Name aur View Profile ke beech gap */
+            flex-wrap: wrap;
+        }
+
+        .dev-name {
+            /* 1. Website wala same font taaki odd na lage */
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            /* Bold rakha hai taaki gold clear dikhe */
+            font-size: 15px;
+            /* Footer text ke size ke barabar */
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            /* Underline hatayi */
+
+            /* 2. Asli "Gold Metal" Gradient */
+            background: linear-gradient(to right,
+                    #bf953f,
+                    /* Dark Gold */
+                    #fcf6ba,
+                    /* Light Gold (Shine area) */
+                    #b38728,
+                    /* Medium Gold */
+                    #fbf5b7,
+                    /* Light Gold wapas */
+                    #aa771c
+                    /* Dark Gold End */
+                );
+            background-size: 200% auto;
+
+            /* 3. Text ke andar Gold bharna */
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            /* 4. Bahut Halka Glow (Bhadkila nahi, classy) */
+            filter: drop-shadow(0 0 2px rgba(191, 149, 63, 0.5));
+
+            /* 5. Smooth Shine Animation */
+            animation: shine 3s linear infinite;
+            display: inline-block;
+        }
+
+        /* Shine ko move karne ke liye */
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+
+        .view-profile-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent);
+            /* Yellow Color */
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            border: 1px solid rgba(255, 202, 40, 0.3);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .view-profile-btn:hover {
+            background: var(--accent);
+            color: #000;
+            transform: translateX(3px);
+        }
+
+        /* WhatsApp Button Adjustment */
+        .hire-me-btn {
+            margin-top: 8px;
+            /* Thoda gap upar se */
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        /* --- BOTTOM FLOATING BAR --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Naya Glassmorphism Effect */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+
+            padding: 12px 35px;
+            /* Thodi padding badhayi taaki congested na lage */
+            border-radius: 50px;
+            box-shadow: 0 8px 32px rgba(26, 115, 232, 0.1);
+            /* Halka blue shadow */
+            display: flex;
+            gap: 35px;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .bn-item {
+            text-decoration: none;
+            color: #555;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        .bn-item.active {
+            color: var(--primary);
+        }
+
+        .bn-item:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- SIDEBAR MENU STYLES --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            /* Ab isse right edge par rakhenge */
+            width: 260px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2);
+
+            /* PURANA: right: -280px; transition: 0.3s ... */
+            /* NAYA: Transform use karenge jo behtar hai */
+            transform: translateX(100%);
+            /* Apni chaudai jitna right mein khiska do (off-screen) */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Transition ko transform par lagao */
+
+            z-index: 2000;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            /* Padding ko width ke andar hi rakhega */
+        }
+
+        .sidebar.active {
+            /* PURANA: right: 0; */
+            /* NAYA: Wapas apni jagah par le aao */
+            transform: translateX(0);
+        }
+
+        /* Bahar nikla hua */
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .sidebar-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-links li {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-links a {
+            text-decoration: none;
+            color: #444;
+            font-weight: 500;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: 0.2s;
+        }
+
+        .sidebar-links a i {
+            width: 25px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .sidebar-links a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        /* Black Overlay Background */
+        /* --- PREMIUM SIDEBAR BLUR OVERLAY --- */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            /* Deep slate tint */
+            backdrop-filter: blur(6px);
+            /* Background ko blur karega */
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1999;
+            display: none;
+            opacity: 0;
+            transition: all 0.4s ease-in-out;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+
+
+        /* --- TOPPERS SECTION STYLE --- */
+
+
+
+        /* --- MODERN HORIZONTAL CAROUSEL SECTION --- */
+
+
+
+
+
+        /* --- TOPPERS SECTION (Fixed Layout) --- */
+        .toppers-section {
+            padding: 1px 0 1px 0;
+            background: radial-gradient(circle at 50% 50%, #FFFFFF 0%, #FEFEFE 100%);
+            position: relative;
+            overflow: hidden;
+            margin-top: 1px;
+        }
+
+        .section-title-box {
+            text-align: center;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 2;
+            padding: 0 15px;
+        }
+
+        .section-title-box h2 {
+            /* 📱Mobile par 1.5rem (chhota), aur 💻Desktop par 2.5rem (bada) ho jayega */
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: #1a237e;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, #1a237e, #F30E0E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-title-box p {
+            color: #78909c;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        /* --- 🔥 MAGIC SCROLL CONTAINER (Center Aligned) 🔥 --- */
+        /* --- SCROLL CONTAINER (Perfect Center Logic) --- */
+
+
+        /* कार्ड का साइज फिक्स रखें ताकि कैलकुलेशन सही रहे */
+        .topper-card {
+            min-width: 260px;
+            max-width: 260px;
+            background: #fff;
+            border-radius: 25px;
+            text-align: center;
+            position: relative;
+
+            /* यह कार्ड को सेंटर में रोक देगा */
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+
+        /* बाकी डिजाइन वही रहेगा */
+        .topper-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(255, 193, 7, 0.25);
+            border-color: #ffd700;
+            z-index: 10;
+        }
+
+        .card-header-curve {
+            height: 70px;
+            background: linear-gradient(135deg, #283593 0%, #3f51b5 100%);
+            border-radius: 25px 25px 50% 50% / 25px 25px 35px 35px;
+            margin-bottom: 45px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topper-img-box {
+            width: 90px;
+            height: 90px;
+            margin: -90px auto 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .topper-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 3px #ffc107, 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s;
+        }
+
+        /* --- RANK BADGE (Auto Size Fix) --- */
+        .rank-badge {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            /* बैकग्राउंड और कलर */
+            background: linear-gradient(to right, #ffb300, #FF2828);
+            color: #fff;
+
+            /* टेक्स्ट स्टाइल */
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            /* बॉक्स का साइज */
+            padding: 4px 15px;
+            /* साइड में थोड़ी ज्यादा जगह दी */
+            border-radius: 20px;
+            border: 2px solid #fff;
+
+            /* शैडो */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            z-index: 3;
+
+            /* 🔥 MAIN FIX: बॉक्स को फैलने दें 🔥 */
+            width: max-content;
+            /* टेक्स्ट जितना लंबा होगा, बॉक्स उतना चौड़ा होगा */
+            min-width: 60px;
+            /* कम से कम इतना बड़ा तो रहेगा ही */
+            max-width: 90%;
+            /* कार्ड से बाहर नहीं जाएगा */
+            white-space: nowrap;
+            /* टेक्स्ट एक लाइन में रहेगा */
+
+            /* टेक्स्ट बीच में रखने के लिए */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+
+        .topper-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1a237e;
+            margin: 10px 0 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 10px;
+        }
+
+        .class-pill {
+            display: inline-block;
+            background: #e8eaf6;
+            color: #3949ab;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .roll-text {
+            display: block;
+            font-size: 12px;
+            color: #6A5AE0;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .percent-val {
+            font-size: 2rem;
+            font-weight: 900;
+            background: -webkit-linear-gradient(45deg, #1a237e, #ff6f00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(255, 111, 0, 0.15));
+            line-height: 1;
+        }
+
+        .percent-sym {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #1a237e;
+            -webkit-text-fill-color: #ff6f00;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* --- 🎂 BIRTHDAY SECTION (Mobile Fixed) --- */
+        .birthday-section {
+            padding: 20px 0 40px 0;
+            /* Celebration Background */
+            background: radial-gradient(circle at 50% 50%, #fff0f0 0%, #fff 100%);
+            position: relative;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        /* --- TITLE FIX (Mobile pe ek line me aayega) --- */
+        #birthday-section .section-title-box h2 {
+            /* 📱Mobile par 1.5rem rahega, 💻Desktop par badhkar 2.5rem ho jayega */
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+
+            /* Baaki design same rahega */
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+
+            /* 🔥 लाइन ब्रेक रोकने के लिए */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 10px;
+        }
+
+
+        #birthday-section .section-title-box p {
+            color: #78909c;
+            font-size: 13px;
+            margin: 0;
+            padding: 0 15px;
+            /* मोबाइल पर टेक्स्ट कटे नहीं */
+        }
+
+        /* --- MAGIC CONTAINER (Scroll Logic) --- */
+        /* --- 🔥 SMART SCROLL CONTAINER (Toppers & Birthday) 🔥 --- */
+        .toppers-scroll-container,
+        .birthday-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            width: 100%;
+            box-sizing: border-box;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .toppers-scroll-container::-webkit-scrollbar,
+        .birthday-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .toppers-scroll-container {
+            gap: 30px;
+            padding: 20px 20px 60px 20px;
+        }
+
+        .birthday-scroll-container {
+            gap: 20px;
+            padding: 20px 20px 50px 20px;
+        }
+
+        /* 🔥 DESKTOP (Laptop/PC) Setting: Center Align all cards and disable forced scroll */
+        @media (min-width: 769px) {
+
+            .toppers-scroll-container,
+            .birthday-scroll-container,
+            .alumni-grid-wrapper,
+            .features-scroll {
+                justify-content: center !important;
+                flex-wrap: wrap;
+                /* Wrap extra cards to next line instead of hiding them */
+                overflow-x: hidden;
+                /* Remove ugly scrollbars on desktop */
+            }
+        }
+
+        /* Magic trick: Zyada cards hone par left side cut na ho */
+        .toppers-scroll-container::before,
+        .toppers-scroll-container::after,
+        .birthday-scroll-container::before,
+        .birthday-scroll-container::after {
+            content: '';
+            margin: auto;
+        }
+        }
+
+        /* 🔥 MOBILE Setting: Pehla card screen ke perfect beech mein rahe (Snap Effect) */
+        @media (max-width: 768px) {
+            .toppers-scroll-container {
+                padding: 20px calc(50% - 130px) 60px calc(50% - 130px);
+                justify-content: flex-start;
+            }
+
+            .birthday-scroll-container {
+                padding: 20px calc(50% - 130px) 50px calc(50% - 130px);
+                justify-content: flex-start;
+            }
+        }
+
+
+        /* --- CARD DESIGN --- */
+
+
+
+        /* --- INTERACTIVE BIRTHDAY CARD --- */
+        .bday-card {
+            min-width: 260px;
+            max-width: 260px;
+            background: #fff;
+            border-radius: 25px;
+            text-align: center;
+            position: relative;
+
+            /* Center Align Logic */
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.15);
+            border: 1px solid #ffe3e3;
+            padding-bottom: 20px;
+            flex-shrink: 0;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Bouncy Effect */
+            overflow: hidden;
+
+            /* 🔥 NEW: Clickable Cursor */
+            cursor: pointer;
+            user-select: none;
+            /* Text selection roko */
+        }
+
+        /* Hover Effect */
+        .bday-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 65, 108, 0.3);
+            border-color: #ff4b2b;
+        }
+
+        /* 🔥 NEW: Click Effect (Dabne ka effect) */
+        .bday-card:active {
+            transform: scale(0.95);
+            /* Thoda chhota hoga */
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.2);
+        }
+
+
+
+
+
+
+
+
+
+        /* --- MODERN PRELOADER CSS --- */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        .loader-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* The Bouncing School Logo */
+        .loader-logo {
+            width: 120px;
+            height: auto;
+            animation: infiniteBounce 1.5s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
+            filter: drop-shadow(0 10px 15px rgba(26, 115, 232, 0.3));
+        }
+
+        @keyframes infiniteBounce {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) scale(1.05);
+            }
+        }
+
+        .loader-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            background: var(--title-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            animation: pulseText 1.5s infinite;
+        }
+
+        @keyframes pulseText {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Loading Progress Line */
+        .loading-bar {
+            width: 150px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            background: var(--title-gradient);
+            border-radius: 10px;
+            animation: loadingSlide 1s infinite linear;
+        }
+
+        @keyframes loadingSlide {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(200%);
+            }
+        }
+
+
+
+        /* Decoration */
+        .bday-header-deco {
+            height: 65px;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            border-radius: 25px 25px 50% 50% / 25px 25px 20px 20px;
+            margin-bottom: 45px;
+        }
+
+        /* Photo Adjustment */
+        .bday-img-box {
+            width: 90px;
+            height: 90px;
+            margin: -90px auto 10px;
+            /* फोटो को ऊपर रखा */
+            position: relative;
+            z-index: 2;
+        }
+
+        .bday-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .cake-badge {
+            position: absolute;
+            bottom: 0;
+            right: -5px;
+            background: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ffebd7;
+            z-index: 3;
+        }
+
+        .bday-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #333;
+            margin: 10px 0 5px;
+        }
+
+        .bday-class {
+            font-size: 12px;
+            color: #ff4b2b;
+            font-weight: 700;
+            background: #fff0f0;
+            padding: 4px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .bday-msg {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+            display: block;
+            font-weight: 500;
+        }
+
+
+
+
+
+        /* --- DEVELOPER BADGE CSS --- */
+        .developer-credit-box {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: #888;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            /* Mobile pe toot ke niche aa jayega */
+        }
+
+        .dev-text {
+            font-weight: 400;
+        }
+
+        .dev-name {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .dev-name:hover {
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(255, 202, 40, 0.5);
+        }
+
+        .divider {
+            color: #444;
+        }
+
+        /* The "Hire Me" Button */
+        .hire-me-btn {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            /* WhatsApp Green */
+            color: white;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+            transition: transform 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        .hire-me-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(37, 211, 102, 0.4);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Mobile Adjustment */
+        @media (max-width: 400px) {
+            .developer-credit-box {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .divider {
+                display: none;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* --- PRINCIPAL SECTION STYLE --- */
+
+        /* --- PRINCIPAL SECTION (Fully Responsive Fix) --- */
+        .principal-container {
+            background: white;
+            max-width: 1100px;
+            margin: 40px auto;
+            /* Upar-Niche gap */
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: flex;
+            /* Desktop: Side by Side */
+            overflow: hidden;
+            position: relative;
+            border-left: 6px solid var(--accent);
+            /* Left Border Style */
+        }
+
+        /* Image Box (Left Side) */
+        /* --- PREMIUM PRINCIPAL FRAME --- */
+        .principal-img-box {
+            width: 35%;
+            position: relative;
+            background: #f8fafc;
+            min-height: 320px;
+            padding: 15px;
+            /* Creates an inner frame effect */
+        }
+
+        .principal-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            border-radius: 10px;
+            /* Slight curve to photo inside the box */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .quote-icon {
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            background: linear-gradient(135deg, var(--accent), #f59e0b);
+            color: #fff;
+            width: 65px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            border-radius: 50%;
+            /* Make it a perfect circle hanging off the edge */
+            z-index: 5;
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.4);
+            border: 4px solid #fff;
+        }
+
+
+        /* Content Box (Right Side) */
+        .principal-content {
+            width: 65%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --- TEXT FORMATTING FIX (Jo bahar ja raha tha) --- */
+        #idx-p-msg {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.7;
+            font-family: 'Poppins', sans-serif;
+
+            /* CRITICAL FIXES FOR OVERFLOW */
+            width: 100%;
+            /* Container se bada na ho */
+            max-width: 100%;
+            /* Limit width */
+            overflow-wrap: break-word;
+            /* Lamba text break kare */
+            word-wrap: break-word;
+            /* Old browser support */
+            word-break: break-word;
+            /* Force break if needed */
+            white-space: normal;
+            /* Normal flow (Rich text handle karega) */
+        }
+
+        /* Rich Editor ke Lists ko style karein */
+        #idx-p-msg ul,
+        #idx-p-msg ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        #idx-p-msg b,
+        #idx-p-msg strong {
+            color: inherit;
+            /* Isse ye normal text ka color le lega (Black/Grey) */
+            font-weight: 700;
+            /* Boldness bani rahegi */
+        }
+
+
+        /* --- MOBILE RESPONSIVE (Phone Layout) --- */
+        @media (max-width: 768px) {
+            .principal-container {
+                flex-direction: column;
+                /* Upar-Niche Layout */
+                width: 92%;
+                /* Screen se chipkega nahi, thoda gap rahega */
+                margin: 20px auto;
+                /* Margin kam kiya */
+                border-left: none;
+                /* Mobile pe left border hata di */
+                border-top: 5px solid var(--accent);
+                /* Top border laga di */
+            }
+
+            .principal-img-box {
+                width: 100%;
+                height: 280px;
+                /* Fixed Height for Mobile */
+            }
+
+            .principal-content {
+                width: 100%;
+                padding: 25px 20px;
+                /* Padding adjust ki */
+                box-sizing: border-box;
+                /* Padding width ke andar rahe */
+            }
+
+            /* Text size thoda chhota mobile ke liye */
+            #idx-p-name {
+                font-size: 20px;
+            }
+
+            #idx-p-msg {
+                font-size: 14px;
+            }
+        }
+
+
+
+
+
+        /* --- 🎓 MODERN ALUMNI SUCCESS WALL --- */
+        .alumni-section {
+            padding: 50px 20px;
+            background: linear-gradient(to bottom, #f8f9fa, #e3f2fd);
+            /* Light Blue Fade */
+            position: relative;
+            text-align: center;
+        }
+
+
+        /* --- ALUMNI TITLE FIX (Responsive One-Liner) --- */
+        #alumni-section .section-title-box h2 {
+            /* 1. Magic Line: Font size screen ke hisab se apne aap adjust hoga */
+            /* Mobile pe 1.2rem (chota) aur Laptop pe 2.2rem (bada) tak jayega */
+            font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+
+            /* 2. Zabardasti Ek Line mein rakhega */
+
+
+            /* 3. Agar screen bahut hi chhoti ho to text katega nahi, '...' dikhayega */
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            /* Spacing adjustments */
+            width: 100%;
+            display: block;
+            margin-bottom: 5px;
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+
+
+
+
+
+
+
+        /* Container for Grid */
+        .alumni-grid-wrapper {
+            max-width: 1200px;
+            margin: 30px auto 0;
+
+            /* Desktop: Grid Layout (Wall of Fame) */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 10px;
+        }
+
+        /* --- CARD DESIGN --- */
+        /* --- ALUMNI HORIZONTAL SCROLL FIX --- */
+        .alumni-grid-wrapper {
+            max-width: 1200px;
+            margin: 30px auto 0;
+            display: flex;
+            /* Grid ko hata kar flex kar diya */
+            gap: 25px;
+            padding: 20px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .alumni-grid-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .alumni-modern-card {
+            min-width: 280px;
+            /* Card ki width fix kar di */
+            max-width: 280px;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            flex-shrink: 0;
+            /* Sikudne se rokne ke liye */
+            background: #fff;
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+
+        /* Card Top Design (Blue Header) */
+        .alumni-card-header {
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            position: relative;
+        }
+
+        /* Batch Badge (Top Right) */
+        .batch-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Photo Styling */
+        /* --- FIXED ALUMNI PHOTO STYLE --- */
+
+
+        /* --- FIXED ALUMNI PHOTO STYLE --- */
+        .alumni-photo-box {
+            width: 110px;
+            /* Size standard rakha hai */
+            height: 110px;
+
+            /* Photo ko card ke upar aadha bahar nikaalne ke liye */
+            margin: -55px auto 10px auto;
+
+            border-radius: 50%;
+            /* Perfect Gola (Circle) */
+            background: #ffffff;
+
+            /* Safed Border - Taaki Blue header se alag dikhe */
+            border: 5px solid #ffffff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            /* Shadow */
+
+            position: relative;
+            z-index: 10;
+            /* Photo sabse upar rahegi */
+            overflow: hidden;
+            /* Photo circle se bahar nahi jayegi */
+        }
+
+        .alumni-photo {
+            width: 100%;
+            height: 100%;
+            display: block;
+
+            /* Photo ko bina pichkaye fit karna */
+            object-fit: cover;
+
+            /* Chehre par focus rakhna */
+            object-position: top center;
+        }
+
+
+
+
+
+
+
+
+
+
+
+        /* Content Styling */
+        .alumni-info {
+            padding: 15px 20px 25px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .alumni-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            margin: 10px 0 5px;
+        }
+
+        .alumni-role {
+            font-size: 14px;
+            color: #1a73e8;
+            /* School Blue */
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .alumni-divider {
+            height: 2px;
+            width: 30px;
+            background: #ffca28;
+            /* Gold */
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        .alumni-quote {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        /* --- MOBILE RESPONSIVE: SLIDER MODE --- */
+        /* --- MOBILE RESPONSIVE: CENTERED SLIDER --- */
+        @media (max-width: 768px) {
+            .alumni-grid-wrapper {
+                display: flex;
+                /* 🔥 MAGIC FORMULA: Isse pehla card bilkul beech mein aayega */
+                padding: 20px calc(50% - 130px) 50px calc(50% - 130px);
+
+                gap: 20px;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                /* Magnet Effect */
+                scroll-behavior: smooth;
+                scrollbar-width: none;
+            }
+
+            .alumni-grid-wrapper::-webkit-scrollbar {
+                display: none;
+            }
+
+            .alumni-modern-card {
+                min-width: 260px;
+                max-width: 260px;
+
+                /* Card ko center mein rokega */
+                scroll-snap-align: center;
+                scroll-snap-stop: always;
+
+                flex-shrink: 0;
+                margin: 0;
+            }
+        }
+
+
+
+        /* --- DESKTOP NAVBAR FIX --- */
+        /* Mobile par in naye links ko chhupa kar rakho */
+        .desktop-nav {
+            display: none;
+        }
+
+        /* Laptop/PC (Screen 769px se badi hone par) */
+        @media (min-width: 769px) {
+
+            /* Hamburger Menu Button (3 lines) chhup jaye */
+            .menu-btn {
+                display: none;
+            }
+
+            /* Desktop Links Dikhne lagein */
+            .desktop-nav {
+                display: flex;
+                align-items: center;
+                gap: 25px;
+                /* Links ke beech ki jagah */
+            }
+
+            .desktop-nav a {
+                text-decoration: none;
+                color: #333;
+                font-weight: 600;
+                font-size: 14px;
+                transition: color 0.3s ease;
+            }
+
+            .desktop-nav a:hover {
+                color: var(--primary);
+                /* Hover par school ka blue color */
+            }
+
+            /* Login button ko alag aur premium dikhane ke liye */
+            /* --- LIQUID GLASS LOGIN BUTTON --- */
+            .desktop-nav .login-btn {
+                background: linear-gradient(135deg, rgba(45, 212, 191, 0.2), rgba(20, 184, 166, 0.2));
+                /* Light Cyan */
+                color: #0f766e;
+                /* Dark Cyan Text */
+                padding: 8px 20px;
+                border-radius: 50px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-weight: 600;
+
+                border: 1px solid rgba(45, 212, 191, 0.4);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+
+                box-shadow:
+                    0 4px 15px rgba(45, 212, 191, 0.15),
+                    inset 0 2px 3px rgba(255, 255, 255, 0.8),
+                    inset 0 -2px 3px rgba(0, 0, 0, 0.05);
+
+                transition: all 0.3s ease;
+            }
+
+            .desktop-nav .login-btn:hover {
+                background: linear-gradient(135deg, rgba(45, 212, 191, 0.4), rgba(20, 184, 166, 0.4));
+                transform: translateY(-2px);
+                box-shadow:
+                    0 8px 20px rgba(45, 212, 191, 0.25),
+                    inset 0 2px 3px rgba(255, 255, 255, 0.9);
+            }
+
+
+            /* --- DRAG TO SCROLL CURSOR --- */
+            .toppers-scroll-container,
+            .birthday-scroll-container,
+            .alumni-grid-wrapper {
+                cursor: grab;
+                /* Mouse le jane par open hand dikhega */
+            }
+
+            .toppers-scroll-container:active,
+            .birthday-scroll-container:active,
+            .alumni-grid-wrapper:active {
+                cursor: grabbing;
+                /* Click karne par closed hand dikhega */
+            }
+    </style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "School",
+  "name": "St. Teresa English School",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Lalganj, Chandi",
+    "addressLocality": "Nalanda",
+    "postalCode": "803108",
+    "addressRegion": "Bihar",
+    "addressCountry": "IN"
+  },
+  "url": "https://st-teresa-english-school.vercel.app",
+  "telephone": "+91-7632852762"
+}
+</script>
+
+</head>
+
+<body>
+
+    <!-- --- MODERN PRELOADER --- -->
+    <div id="preloader">
+        <div class="loader-content">
+            <!-- Real School Logo as Loader -->
+            <img class="loader-logo" src="resources/st_teresa_logo.png" alt="School Logo"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+            <h2 class="loader-text">St. Teresa English School</h2>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-logo" onclick="window.location.href='index.html'">
+            <div class="nav-school-logo-container">
+                <img class="nav-school-logo" src="resources/st_teresa_logo.png" alt="St. Teresa Logo"
+                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+            </div>
+            <div class="logo-text-wrapper">
+                <span class="logo-text-main">St. Teresa</span>
+                <span class="logo-text-sub">English School</span>
+            </div>
+        </div>
+
+        <div class="desktop-nav">
+            <a href="index.html">Home</a>
+            <a href="admission-form.html">Admissions</a>
+            <a href="public-gallery.html">Gallery</a>
+            <a href="public-notice.html">Notice Board</a>
+            <a href="contact-us.html">Contact Us</a>
+            <a href="admin-login.html" class="login-btn"><i class="fas fa-lock"></i> Login</a>
+        </div>
+
+        <button class="menu-btn" onclick="toggleMenu()" aria-label="Toggle Menu"><i class="fas fa-bars"></i></button>
+    </nav>
+
+    <main>
+
+        <header class="hero">
+            <div class="hero-content">
+                <h1>St. Teresa English School</h1>
+                <p>Building strong foundations with knowledge, discipline & values.</p>
+                <a href="admission-form.html" class="cta-btn">Admission Open 2026-2027 <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+        </header>
+
+        <div class="notice-bar">
+            <span class="notice-label">NEW</span>
+
+            <div class="marquee-wrapper">
+                <span id="flash-marquee" class="marquee-text">
+                    Loading latest updates...
+                </span>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="section-title fade-up">Quick Actions</div>
+
+        <div class="grid-menu fade-up">
+
+            <a href="admission-form.html" class="menu-card mc-1">
+                <div class="menu-icon"><i class="fas fa-user-plus"></i></div>
+                <div class="menu-title">Admissions</div>
+            </a>
+            <a href="public-gallery.html" class="menu-card mc-2">
+                <div class="menu-icon"><i class="fas fa-images"></i></div>
+                <div class="menu-title">Gallery</div>
+            </a>
+            <a href="public-notice.html" class="menu-card mc-3">
+                <div class="menu-icon"><i class="fas fa-bullhorn"></i></div>
+                <div class="menu-title">Notices</div>
+            </a>
+            <a href="contact-us.html" class="menu-card mc-4">
+                <div class="menu-icon"><i class="fas fa-headset"></i></div>
+                <div class="menu-title">Contact</div>
+            </a>
+        </div>
+
+
+
+        <section id="birthday-section" class="birthday-section" style="display:none;">
+            <div class="section-title-box">
+                <h2
+                    style="background: linear-gradient(to right, #ff416c, #ff4b2b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    🎂 Today's Birthday Stars 🎈
+                </h2>
+                <p style="color:#666; font-size:14px;">Wishing a very Happy Birthday to our beloved students!</p>
+            </div>
+
+            <div id="birthday-display" class="birthday-scroll-container fade-up">
+
+            </div>
+        </section>
+
+
+
+
+
+
+
+
+
+
+        <section id="toppers-section" class="toppers-section" style="display:none;">
+            <div class="section-title-box">
+                <h2 style="color:#1a73e8; margin-bottom:5px;">🌟 School Toppers🎖️</h2>
+                <p style="color:#666; font-size:14px;">Celebrating our brightest stars</p>
+            </div>
+
+            <div id="toppers-display" class="toppers-scroll-container fade-up">
+
+            </div>
+        </section>
+
+
+
+
+
+
+        <div id="principal-section" style="display: none; margin-top: 40px;">
+            <div class="principal-container fade-up">
+
+                <div class="principal-img-box">
+                    <img id="idx-p-photo" src="" alt="Principal">
+                    <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+                </div>
+                <div class="principal-content">
+                    <h4
+                        style="color:var(--primary); margin:0; font-size:18px; text-transform:uppercase; letter-spacing:1px;">
+                        Principal's Desk</h4>
+                    <h2 id="idx-p-name" style="margin:5px 0; font-size:22px; color:#333;">-</h2>
+                    <p id="idx-p-qual" style="font-size:12px; color:#666; font-weight:600; margin-bottom:15px;">-</p>
+
+                    <p id="idx-p-msg" style="font-size:14px; color:#555; line-height:1.6; font-style:italic;">
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <section id="alumni-section" class="alumni-section" style="display: none;">
+            <div class="section-title-box">
+                <h2
+                    style="background: linear-gradient(to right, #1a73e8, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; text-transform: uppercase;">
+                    🎓 Our Pride, Our Alumni
+                </h2>
+
+                <p style="color: #666; font-size: 14px; margin-top: 5px;">
+                    Inspiring success stories from St. Teresa English School
+                </p>
+            </div>
+
+            <div id="alumni-display" class="alumni-grid-wrapper fade-up">
+
+            </div>
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="section-title fade-up">Why Choose Us?</div>
+
+        <div class="features-scroll fade-up">
+
+            <div class="feature-card">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <h4>Expert Faculty</h3>
+                    <p>Highly qualified and experienced teachers.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h4>Safe Campus</h3>
+                    <p>CCTV surveillance and secure environment.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-laptop-code"></i>
+                <h4>Smart Labs</h3>
+                    <p>Modern computer labs and smart classes.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-bus"></i>
+                <h4>Transport</h3>
+                    <p>Safe bus facility for all routes.</p>
+            </div>
+        </div>
+
+        <div class="stats-box fade-up">
+
+            <div class="stat">
+                <h2 class="counter" data-target="20">0</h2>
+                <p>Years of Excellence</p>
+            </div>
+            <div class="stat">
+                <h2 class="counter" data-target="6000">0</h2>
+                <p>Happy Students</p>
+            </div>
+            <div class="stat">
+                <h2 class="counter" data-target="25">0</h2>
+                <p>Expert Teachers</p>
+            </div>
+            <div class="stat">
+                <h2 class="counter" data-target="100">0</h2>
+                <p>Results</p>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div class="footer-container">
+            <span class="footer-logo">St. Teresa English School</span>
+            <p class="school-address">Lalganj, Chandi (NALANDA) - 803108</p>
+
+            <div class="footer-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <span class="separator">|</span>
+                <a href="disclaimer.html">Disclaimer</a>
+                <span class="separator">|</span>
+                <a href="terms-conditions.html">Terms & Conditions</a>
+            </div>
+
+            <p>&copy; <span id="year"></span> St. Teresa English School - All Rights Reserved.</p>
+
+            <p class="developer-credit">Developed with ❤️ for Education</p>
+        </div>
+
+
+
+        <div class="developer-credit-box">
+
+            <div class="dev-intro">Designed & Developed by</div>
+
+            <div class="dev-profile-line">
+                <span class="dev-name">Mr.Chandan Sharma</span>
+
+                <a href="https://chandu582.github.io/my-portfolio/" class="view-profile-btn">
+                    View Profile <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <a href="https://wa.me/919693776982?text=Hi,%20I%20saw%20St.Teresa%20School%20Website.%20I%20want%20to%20develop%20a%20website."
+                target="_blank" class="hire-me-btn">
+                <i class="fab fa-whatsapp"></i> Get Your Website
+            </a>
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    </footer>
+
+    <script>
+        // Automatic Year Update Script
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        // --- LIVE STATS NUMBER COUNTER (Scroll Reveal) ---
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200; // The lower the slower
+
+        const animateCounters = () => {
+            counters.forEach(counter => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const count = +counter.innerText.replace('+', '').replace('%', '');
+
+                    // Lower inc to slow and higher to fast
+                    const inc = target / speed;
+
+                    // Check if target is reached
+                    if (count < target) {
+                        // Add inc to count and output in counter
+                        // Fallback math.ceil to prevent decimals
+                        if (target === 100) {
+                            counter.innerText = Math.ceil(count + inc) + "%";
+                        } else {
+                            counter.innerText = Math.ceil(count + inc) + "+";
+                        }
+
+                        // Call function every ms
+                        setTimeout(updateCount, 15);
+                    } else {
+                        if (target === 100) {
+                            counter.innerText = target + "%";
+                        } else {
+                            counter.innerText = target + "+";
+                        }
+                    }
+                };
+                updateCount();
+            });
+        };
+
+        // Trigger animation only when user scrolls to it
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.5 // Trigger when 50% of the section is visible
+        };
+
+        const statsObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    // Optional: Unobserve after animating once so it doesn't replay
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Target the stats box parent to trigger observation
+        const statsBox = document.querySelector('.stats-box');
+        if (statsBox) {
+            statsObserver.observe(statsBox);
+        }
+
+    </script>
+
+
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-btn active" aria-label="Home">
+            <i class="fas fa-home"></i>
+        </a>
+
+        <a href="tel:7632852762" class="nav-btn" aria-label="Call Us">
+            <i class="fas fa-phone-alt"></i>
+        </a>
+
+        <a href="https://wa.me/+917632852762?text=Hello%20St.Teresa%20School..." target="_blank" class="nav-btn"
+            aria-label="Chat on WhatsApp">
+            <i class="fab fa-whatsapp" style="font-weight: bold;"></i>
+        </a>
+
+        <a href="school-location.html" class="nav-btn" aria-label="School Location">
+            <i class="fas fa-map-marker-alt"></i>
+        </a>
+
+    </div>
+
+    <style>
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            /* ... aapki baaki design same rahegi ... */
+            transition: transform 0.4s cubic-bezier(0.3, 1, 0.3, 1);
+            /* Ye Nav ko smooth motion dega */
+        }
+
+        /* Jab niche scroll karenge toh ye class nav ko chhupa degi */
+        .bottom-nav.hidden-nav {
+            transform: translate(-50%, 150%);
+        }
+
+
+        /* --- BOTTOM NAV PREMIUM DOT --- */
+        .nav-btn {
+            color: #888;
+            font-size: 22px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            /* Dot niche laane ke liye */
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .nav-btn:hover {
+            color: #1a73e8;
+            transform: translateY(-4px);
+        }
+
+        .nav-btn.active {
+            color: #1a73e8;
+        }
+
+        .nav-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            width: 6px;
+            height: 6px;
+            background: #1a73e8;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(26, 115, 232, 0.5);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+
+
+
+
+        /* --- SAFE SCROLL REVEAL ANIMATIONS --- */
+        /* 1. Static items ke liye (Niche se upar) */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+            will-change: opacity, transform;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 2. Scroll/Slider items ke liye (Sirf halka sa ubhar kar aayega, Layout safe rahega) */
+        .fade-in {
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+            will-change: opacity;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+        }
+    </style>
+
+
+    <script>
+        // YAHAN PASTE KARNA HAI (Bina quotes ke)
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+
+            // Toggle Active Class
+            sidebar.classList.toggle('active');
+
+            // Overlay logic with smooth fade
+            if (sidebar.classList.contains('active')) {
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            }
+        }
+    </script>
+
+
+
+
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+            <button class="close-btn" onclick="toggleMenu()">&times;</button>
+        </div>
+
+        <ul class="sidebar-links">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="admission-form.html"><i class="fas fa-user-plus"></i> Admissions</a></li>
+            <li><a href="public-gallery.html"><i class="fas fa-images"></i> Gallery</a></li>
+            <li><a href="public-notice.html"><i class="fas fa-bullhorn"></i> Notice Board</a></li>
+            <li><a href="contact-us.html"><i class="fas fa-headset"></i> Contact Us</a></li>
+            <li><a href="school-location.html"><i class="fas fa-map-marker-alt"></i> Location</a></li>
+
+            <li>
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+            </li>
+            <li><a href="admin-login.html" style="color: #d32f2f;" aria-label="Admin Login"><i class="fas fa-lock"></i>
+                    Admin, Teachers<br> and Parents Login</a></li>
+
+
+
+        </ul>
+
+        <div style="margin-top: auto; font-size: 12px; color: #555; text-align: center;">
+
+            St. Teresa English School<br>App v1.0
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        // --- PRELOADER REMOVAL SCRIPT ---
+        window.addEventListener('load', function () {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                // Add a tiny delay so the user can see the cool animation briefly even on fast connections
+                setTimeout(() => {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+
+                    // Optional: remove it entirely from DOM after fade out
+                    setTimeout(() => preloader.remove(), 600);
+                }, 800);
+            }
+        });
+
+        // --- FAST LOADING SCRIPT ---
+        document.addEventListener('DOMContentLoaded', function () {
+
+            try {
+                // 1. Firebase Config
+                const firebaseConfig = {
+                    apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+                    authDomain: "sample-school-13ca4.firebaseapp.com",
+                    projectId: "sample-school-13ca4",
+                    storageBucket: "sample-school-13ca4.firebasestorage.app",
+                    messagingSenderId: "198448853287",
+                    appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+                };
+
+                // 2. Check if Firebase is loaded properly
+                if (typeof firebase !== 'undefined') {
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    const db = firebase.firestore();
+
+                    // 3. NOTICE UPDATE
+                    db.collection('settings').doc('flash_notice').onSnapshot(doc => {
+                        if (doc.exists && doc.data().text) {
+                            const marquee = document.getElementById('flash-marquee');
+                            if (marquee) marquee.innerText = doc.data().text;
+                        }
+                    });
+
+                    // 4. HERO IMAGE UPDATE (DYNAMIC SLIDER)
+                    let heroSliderInterval = null;
+
+                    db.collection('settings').doc('hero_image').onSnapshot(doc => {
+                        const heroSection = document.querySelector('.hero');
+                        if (!heroSection) return;
+
+                        // 1. Get the urls, gracefully merge old single url with new array
+                        let images = [];
+                        if (doc.exists) {
+                            const data = doc.data();
+
+                            // Add legacy single image first if it exists
+                            if (data.imageUrl) {
+                                images.push(data.imageUrl);
+                            }
+
+                            // Add new slider images
+                            if (data.imageUrls && data.imageUrls.length > 0) {
+                                data.imageUrls.forEach(img => {
+                                    if (!images.includes(img)) images.push(img);
+                                });
+                            }
+                        }
+
+                        // Default fallback if database has literally nothing
+                        if (images.length === 0) {
+                            images = ['https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop'];
+                        }
+
+                        // 2. Clear old slides (Keep the text content safe)
+                        const oldSlides = heroSection.querySelectorAll('.hero-slide');
+                        oldSlides.forEach(slide => slide.remove());
+                        clearInterval(heroSliderInterval); // Stop old timer
+
+                        // 3. Inject new slides
+                        images.forEach((url, index) => {
+                            const slideDiv = document.createElement('div');
+                            slideDiv.className = `hero-slide ${index === 0 ? 'active' : ''}`;
+                            slideDiv.style.backgroundImage = `url('${url}')`;
+                            // Slide div goes BEFORE the .hero-content
+                            heroSection.insertBefore(slideDiv, heroSection.querySelector('.hero-content'));
+                        });
+
+                        // 4. Start Carousel Animation if more than 1 image
+                        if (images.length > 1) {
+                            let currentSlideIndex = 0;
+                            const allSlides = heroSection.querySelectorAll('.hero-slide');
+
+                            heroSliderInterval = setInterval(() => {
+                                // Fade out current
+                                allSlides[currentSlideIndex].classList.remove('active');
+
+                                // Move to next
+                                currentSlideIndex = (currentSlideIndex + 1) % images.length;
+
+                                // Fade in next
+                                allSlides[currentSlideIndex].classList.add('active');
+                            }, 4000); // 4 Seconds per slide
+                        }
+                    });
+                } else {
+                    console.error("Firebase library not loaded.");
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        });
+
+
+
+        // --- FETCH TOPPERS SCRIPT (Smart Visibility) ---
+        // --- FETCH TOPPERS & AUTO SCROLL SCRIPT ---
+
+
+        // --- ULTIMATE GOLD CAROUSEL SCRIPT ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const db = firebase.firestore();
+            const section = document.getElementById('toppers-section');
+            const container = document.getElementById('toppers-display');
+            let scrollInterval;
+            let isHovering = false;
+
+            db.collection('school_toppers').orderBy('percentage', 'desc').limit(15).get().then((snapshot) => {
+                if (!snapshot.empty) {
+                    container.innerHTML = '';
+                    section.style.display = 'block';
+
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const secText = data.section ? `(${data.section})` : '';
+                        // रोल नंबर टेक्स्ट को छोटा रखा
+                        const rollText = data.rollNo ? `Roll: ${data.rollNo}` : '';
+
+                        // रैंक टेक्स्ट को छोटा करने की लॉजिक
+                        let rankText = data.rank || 'Top';
+                        // अगर रैंक टेक्स्ट बहुत बड़ा है, तो उसे छोटा कर दें
+                        if (rankText.length > 8) {
+                            rankText = rankText.substring(0, 20) + '';
+                        }
+
+                        const photo = data.photoUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+                        const card = `
+                        <div class="topper-card">
+                            <div class="card-header-curve"></div>
+                            
+                            <div class="topper-img-box">
+                                <img src="${photo}" alt="${data.name}" class="topper-img">
+                                <div class="rank-badge">
+                                    <i class="fas fa-crown"></i> ${rankText}
+                                </div>
+                            </div>
+                            
+                            <h4 class="topper-name">${data.name}</h4>
+                            <div class="class-pill">${data.class} ${secText}</div>
+                            <span class="roll-text">${rollText}</span>
+                            
+                            <div>
+                                <span class="percent-val">${data.percentage}<span class="percent-sym">%</span></span>
+                            </div>
+                        </div>
+                    `;
+                        container.innerHTML += card;
+                    });
+
+                    // Agar mobile view hai ya content screen se bahar ja raha hai tabhi scroll karo
+                    if (container.scrollWidth > container.clientWidth || window.innerWidth < 768) {
+                        startAutoScroll();
+                    }
+
+                } else {
+                    section.style.display = 'none';
+                }
+            }).catch(e => console.log("Error loading toppers:", e));
+
+            // --- AUTO SCROLL (Smooth & Continuous) ---
+            // --- SMART AUTO SCROLL (Perfect Center Fix) ---
+            // --- SMART AUTO SCROLL FOR TOPPERS (Loop Fix) ---
+            function startAutoScroll() {
+                const itemFullWidth = 260 + 30; // Topper Card width (260) + gap (30)
+                let lastScrollPos = -1; // Scroll track karne ke liye
+
+                scrollInterval = setInterval(() => {
+                    if (!isHovering) {
+                        let currentScroll = container.scrollLeft;
+
+                        // Agar end me pahunch gaya ho YA aage badhne ki jagah na ho
+                        if (Math.ceil(currentScroll + container.clientWidth) >= container.scrollWidth - 10 || (currentScroll === lastScrollPos && currentScroll > 0)) {
+
+                            // Wapas pehle card par (0)
+                            container.scrollTo({ left: 0, behavior: 'smooth' });
+                            lastScrollPos = -1;
+
+                        } else {
+
+                            // Agle card par scroll karein
+                            container.scrollBy({ left: itemFullWidth, behavior: 'smooth' });
+                            lastScrollPos = currentScroll;
+
+                        }
+                    }
+                }, 3000); // 3 Second Speed
+            }
+
+
+            container.addEventListener('mouseenter', () => { isHovering = true; });
+            container.addEventListener('mouseleave', () => { isHovering = false; });
+            container.addEventListener('touchstart', () => { isHovering = true; });
+            container.addEventListener('touchend', () => { setTimeout(() => isHovering = false, 2000); });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // --- LOAD PRINCIPAL MESSAGE ---
+        // --- LOAD PRINCIPAL MESSAGE (Final Logic) ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const db = firebase.firestore();
+            const section = document.getElementById('principal-section');
+
+            db.collection('settings').doc('principal').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+
+                    if (data.name && data.message) {
+                        document.getElementById('idx-p-name').innerText = data.name;
+                        document.getElementById('idx-p-qual').innerText = data.qualification || '';
+
+                        // ✅ DIRECT HTML ASSIGNMENT (Kyuki Editor ne HTML save kiya hai)
+                        document.getElementById('idx-p-msg').innerHTML = data.message;
+
+                        if (data.photo) document.getElementById('idx-p-photo').src = data.photo;
+
+                        section.style.display = 'block';
+                    }
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+        // --- FETCH ALUMNI SCRIPT (MODERN GRID) ---
+
+        // --- FETCH ALUMNI SCRIPT (AUTO SCROLL & CENTER) ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const db = firebase.firestore();
+            const section = document.getElementById('alumni-section');
+            const container = document.getElementById('alumni-display');
+            let alumniScrollInterval;
+            let isAlumniHovering = false;
+
+            // Limit 12 taaki scroll karne ke liye kaafi content ho
+            db.collection('school_alumni').orderBy('timestamp', 'desc').limit(12).get().then((snapshot) => {
+                if (!snapshot.empty) {
+                    container.innerHTML = '';
+                    section.style.display = 'block';
+
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const photo = data.photoUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+                        const card = `
+                    <div class="alumni-modern-card">
+                        <div class="alumni-card-header">
+                            <div class="batch-badge"><i class="fas fa-graduation-cap"></i> ${data.batch}</div>
+                        </div>
+                        
+                        <div class="alumni-photo-box">
+                            <img src="${photo}" alt="${data.name}" class="alumni-photo">
+                        </div>
+
+                        <div class="alumni-info">
+                            <h3 class="alumni-name">${data.name}</h3>
+                            <span class="alumni-role">${data.job}</span>
+                            <div class="alumni-divider"></div>
+                            
+                            <div style="font-size:11px; color:#28a745; margin-top:5px;">
+                                <i class="fas fa-check-circle"></i> Success Story
+                            </div>
+                        </div>
+                    </div>
+                `;
+                        container.innerHTML += card;
+                    });
+
+                    // Agar mobile view hai ya content zyada hai, tabhi auto scroll chalu karo
+                    if (container.scrollWidth > container.clientWidth || window.innerWidth < 768) {
+                        startAlumniAutoScroll();
+                    }
+
+                } else {
+                    section.style.display = 'none';
+                }
+            }).catch(e => {
+                console.log("Alumni Error:", e);
+                section.style.display = 'none';
+            });
+
+            // --- AUTO SCROLL FUNCTION ---
+            function startAlumniAutoScroll() {
+                const itemFullWidth = 280 + 25; // Alumni Card width + gap
+                let lastScrollPos = -1; // Scroll ruka hai ya chal raha hai, ye check karne ke liye
+
+                alumniScrollInterval = setInterval(() => {
+                    if (!isAlumniHovering) {
+                        let currentScroll = container.scrollLeft;
+
+                        // 1. Agar scroll margin ke paas pahunch gaya ho YA
+                        // 2. Agla card aane ki jagah hi na bachi ho (scroll atak gaya ho)
+                        if (Math.ceil(currentScroll + container.clientWidth) >= container.scrollWidth - 10 || (currentScroll === lastScrollPos && currentScroll > 0)) {
+
+                            // Wapas shuru (0) par le jao
+                            container.scrollTo({ left: 0, behavior: 'smooth' });
+                            lastScrollPos = -1; // Position reset karein
+
+                        } else {
+
+                            // Aage scroll karein
+                            container.scrollBy({ left: itemFullWidth, behavior: 'smooth' });
+                            lastScrollPos = currentScroll; // Agli baar match karne ke liye position save karein
+
+                        }
+                    }
+                }, 3000);
+            }
+
+
+            // User touch kare to scroll rok do
+            container.addEventListener('touchstart', () => { isAlumniHovering = true; });
+            container.addEventListener('touchend', () => { setTimeout(() => isAlumniHovering = false, 3000); });
+            container.addEventListener('mouseenter', () => { isAlumniHovering = true; });
+            container.addEventListener('mouseleave', () => { isAlumniHovering = false; });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // --- 🎂 ULTIMATE BIRTHDAY CELEBRATION SCRIPT ---
+        // --- 🎂 SECURE AUTO-BIRTHDAY SCRIPT (WITH FULL ANIMATIONS & SCROLLING) ---
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Confetti Library Load Karein (Agar nahi hai to)
+            if (typeof confetti === 'undefined') {
+                const script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
+                document.head.appendChild(script);
+            }
+
+            const db = firebase.firestore();
+            const section = document.getElementById('birthday-section');
+            const container = document.getElementById('birthday-display');
+
+            // Auto-scroll variables
+            let bdayScrollInterval;
+            let isBdayHovering = false;
+
+            // Aaj ki date string (Admin script format: D-M-YYYY)
+            const today = new Date();
+            const todayStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+
+            // 2. 🚨 SECURE FETCH: Direct 'students' ke bajaye safe 'settings' padh rahe hain
+            db.collection('settings').doc('todays_birthdays').get().then((doc) => {
+                // Check kar rahe hain ki kya admin panel ne aaj ka data bheja hai
+                if (doc.exists && doc.data().lastSync === todayStr) {
+                    const bdays = doc.data().birthdays || [];
+
+                    if (bdays.length > 0) {
+                        container.innerHTML = ''; // Box khali karein
+
+                        bdays.forEach(data => {
+                            const photo = data.photo || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                            const secText = data.section ? `(${data.section})` : '';
+
+                            // 🔥 HTML UPDATE: onclick Event joda gaya hai
+                            const card = `
+                            <div class="bday-card" onclick="triggerCelebration(this)">
+                                <div class="bday-header-deco"></div>
+                                <div class="bday-img-box">
+                                    <img src="${photo}" class="bday-img">
+                                    <div class="cake-badge">🎂</div>
+                                </div>
+                                <h4 class="bday-name">${data.name}</h4>
+                                <div class="bday-class">Class ${data.class} ${secText}</div>
+                                <span class="bday-msg">Tap to Wish! 🎉</span>
+                            </div>
+                        `;
+                            container.innerHTML += card;
+                        });
+
+                        section.style.display = 'block';
+
+                        // Agar 1 se zyada baccho ka birthday hai tabhi scroll lagao
+                        // Agar mobile view hai ya content screen se bahar ja raha hai tabhi scroll karo
+                        if (container.scrollWidth > container.clientWidth || window.innerWidth < 768) {
+                            startBirthdayAutoScroll();
+                        }
+
+                    } else {
+                        section.style.display = 'none'; // Aaj list khali hai
+                    }
+                } else {
+                    section.style.display = 'none'; // Data sync nahi hua ya purana hai
+                }
+            }).catch(e => {
+                console.log("Bday Error:", e);
+                section.style.display = 'none';
+            });
+
+            // 3. Auto Scroll (Center & Loop Logic)
+            // --- SMART AUTO SCROLL FOR BIRTHDAY (Loop Fix) ---
+            function startBirthdayAutoScroll() {
+                const itemFullWidth = 260 + 20; // Bday Card width (260) + gap (20)
+                let lastScrollPos = -1; // Scroll track karne ke liye
+
+                bdayScrollInterval = setInterval(() => {
+                    if (!isBdayHovering) {
+                        let currentScroll = container.scrollLeft;
+
+                        // Agar end me pahunch gaya ho YA aage badhne ki jagah na ho
+                        if (Math.ceil(currentScroll + container.clientWidth) >= container.scrollWidth - 10 || (currentScroll === lastScrollPos && currentScroll > 0)) {
+
+                            // Wapas pehle card par (0)
+                            container.scrollTo({ left: 0, behavior: 'smooth' });
+                            lastScrollPos = -1;
+
+                        } else {
+
+                            // Agle card par scroll karein
+                            container.scrollBy({ left: itemFullWidth, behavior: 'smooth' });
+                            lastScrollPos = currentScroll;
+
+                        }
+                    }
+                }, 3000); // 3 Second Speed
+            }
+
+
+            // Hover & Touch event taaki scroll ruk jaye jab koi padh raha ho
+            container.addEventListener('mouseenter', () => { isBdayHovering = true; });
+            container.addEventListener('mouseleave', () => { isBdayHovering = false; });
+            container.addEventListener('touchstart', () => { isBdayHovering = true; });
+            container.addEventListener('touchend', () => { setTimeout(() => isBdayHovering = false, 2000); });
+        });
+
+        // --- 🎉 CELEBRATION FUNCTION (Global) ---
+        function triggerCelebration(element) {
+            // 1. Check if library loaded
+            if (typeof confetti === 'undefined') return;
+
+            // 2. Card ki position nikalo
+            const rect = element.getBoundingClientRect();
+
+            // Screen ke hisab se coordinates (0 se 1 ke beech)
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+            // 3. Confetti Blast!
+            const colors = ['#ff416c', '#ff4b2b', '#ffca28', '#ffffff']; // Red/Gold Theme
+
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { x: x, y: y }, // Card ke upar se niklega
+                colors: colors,
+                disableForReducedMotion: true,
+                zIndex: 9999
+            });
+
+            // 4. Thoda aur drama (Multiple bursts)
+            setTimeout(() => {
+                confetti({
+                    particleCount: 500,
+                    angle: 90,
+                    spread: 200,
+                    origin: { x: x, y: y },
+                    colors: colors
+                });
+            }, 200);
+
+            setTimeout(() => {
+                confetti({
+                    particleCount: 500,
+                    angle: 120,
+                    spread: 2005,
+                    origin: { x: x, y: y },
+                    colors: colors
+                });
+            }, 400);
+        }
+
+
+
+
+        // --- SAFE SCROLL OBSERVER ---
+        document.addEventListener("DOMContentLoaded", function () {
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                        obs.unobserve(entry.target); // Ek baar chalne ke baad ruk jayega
+                    }
+                });
+            }, {
+                rootMargin: "0px 0px -40px 0px", // Screen me thoda upar aane par chalega
+                threshold: 0.1
+            });
+
+            // Sirf unhi ko animate karega jisme fade-up class hai
+            document.querySelectorAll(".fade-up").forEach(el => observer.observe(el));
+        });
+
+
+
+
+
+
+
+
+        // --- DESKTOP DRAG-TO-SCROLL FEATURE ---
+        document.addEventListener('DOMContentLoaded', function () {
+            // Teeno sliders ko select kar rahe hain
+            const sliders = document.querySelectorAll('.toppers-scroll-container, .birthday-scroll-container, .alumni-grid-wrapper');
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            sliders.forEach(slider => {
+                slider.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    slider.classList.add('active');
+                    startX = e.pageX - slider.offsetLeft;
+                    scrollLeft = slider.scrollLeft;
+
+                    // Drag karte waqt scroll-snap thodi der ke liye hata dete hain taaki smooth khinche
+                    slider.style.scrollSnapType = 'none';
+                });
+
+                slider.addEventListener('mouseleave', () => {
+                    isDown = false;
+                    slider.classList.remove('active');
+                    slider.style.scrollSnapType = 'x mandatory'; // Wapas snap laga do
+                });
+
+                slider.addEventListener('mouseup', () => {
+                    isDown = false;
+                    slider.classList.remove('active');
+                    slider.style.scrollSnapType = 'x mandatory'; // Wapas snap laga do
+                });
+
+                slider.addEventListener('mousemove', (e) => {
+                    if (!isDown) return; // Agar mouse click nahi hai, toh kuch mat karo
+                    e.preventDefault();
+                    const x = e.pageX - slider.offsetLeft;
+                    const walk = (x - startX) * 1.5; // Scroll ki speed (1.5x)
+                    slider.scrollLeft = scrollLeft - walk;
+                });
+            });
+        });
+
+
+
+
+
+
+
+
+
+        // --- SMART BOTTOM NAV (HIDE ON SCROLL DOWN) ---
+        document.addEventListener('DOMContentLoaded', function () {
+            let lastScrollTop = 0;
+            const bottomNav = document.querySelector('.bottom-nav');
+
+            window.addEventListener('scroll', function () {
+                let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+                // Agar niche scroll kar rahe hain aur page thoda niche aa chuka hai
+                if (currentScroll > lastScrollTop && currentScroll > 150) {
+                    bottomNav.classList.add('hidden-nav'); // Nav chhupa do
+                }
+                // Agar upar scroll kar rahe hain
+                else {
+                    bottomNav.classList.remove('hidden-nav'); // Nav wapas dikha do
+                }
+
+                // Position update karo
+                lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+            }, { passive: true });
+        });
+
+
+
+
+
+
+
+
+    </script>
+
+
+
+
+
+
+    <a href="check-status.html" class="status-float-btn">
+        <i class="fas fa-search-location"></i>Check status
+    </a>
+
+    <style>
+        /* --- LIQUID GLASS FLOATING BUTTON --- */
+        .status-float-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+
+            /* Semi-transparent Orange Gradient */
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.75), rgba(245, 124, 0, 0.75));
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+
+            /* Inner Shine & Outer Glow */
+            box-shadow:
+                0 8px 25px rgba(245, 124, 0, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.7),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.15);
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .status-float-btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.9), rgba(245, 124, 0, 0.9));
+            box-shadow:
+                0 12px 30px rgba(245, 124, 0, 0.5),
+                inset 0 2px 5px rgba(255, 255, 255, 0.9);
+        }
+
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+
+
+
+    <audio id="bdayAudio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
+
+    <!-- AI Chatbot Integration -->
+    <script src="js/chatbot.js?v=19"></script>
+
+</body>
+
+</html>

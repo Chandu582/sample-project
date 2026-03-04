@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    
+    
+    
+    
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Exam Seating | STES</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #4338ca; --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --bg: #f3f4f6; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+        .step-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .step { flex: 1; padding: 10px; background: #e0e7ff; color: var(--primary); text-align: center; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .step.active { background: var(--primary); color: white; }
+
+        /* EDITOR GRID */
+        .editor-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding-bottom: 10px; 
+        }
+        .editor-bench { 
+            background: #fff; border: 2px solid #cbd5e1; border-radius: 8px; padding: 5px; 
+            display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; position: relative;
+        }
+
+        /* FINAL VIEW (2 Columns Screen) */
+        .final-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box;
+        }
+
+        .final-bench { 
+            background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px; 
+            width: 100%; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .bench-label { 
+            width: 100%; text-align: center; font-size: 10px; color: #666; margin-bottom: 2px; font-weight: bold; 
+            background: #f1f5f9; border-radius: 4px; padding: 2px 0;
+        }
+        
+        .seat {
+            width: 45%; height: 40px; 
+            background: #f0fdf4; border: 1px solid #86efac; border-radius: 4px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 9px; cursor: pointer; user-select: none; font-weight: bold; color: #166534; transition: 0.2s;
+        }
+        .seat.filled { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+        .seat.disabled { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #b91c1c !important; cursor: not-allowed; }
+        .seat.disabled::after { content: "✖"; font-size: 14px; }
+        .seat-roll { font-size: 12px; font-weight: 800; }
+        .seat-cls { font-size: 9px; }
+
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-success { background: var(--success); color: white; }
+
+        .class-select-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 15px; }
+        .class-box { border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .class-box.selected { background: #e0e7ff; border-color: var(--primary); }
+
+        #pageLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 20px; color: var(--primary); font-weight: bold; }
+
+        @media print {
+            .no-print, .header, .step-container, .btn, #pageLoader { display: none !important; }
+            body { background: white; padding: 0; margin: 0; -webkit-print-color-adjust: exact; }
+            .container { max-width: 100%; width: 100%; padding: 0; margin: 0; }
+            .card { box-shadow: none; border: none; padding: 0; margin: 0; }
+            .hall-header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 10px; padding: 10px; background: #f0f0f0; }
+            .hall-header h2 { margin: 0; font-size: 24px; text-transform: uppercase; }
+            .room-print-container { page-break-after: always; break-after: page; margin-bottom: 0; width: 100%; }
+            .final-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px; width: 98%; margin: 0 auto; }
+            .final-bench { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; width: 100% !important; padding: 0 !important; border: 1px solid #000; break-inside: avoid; gap: 0 !important; }
+            .bench-label { grid-column: span 4; background: #000; color: #fff !important; padding: 2px 0; font-size: 11px; font-weight: bold; }
+            .seat { width: auto !important; height: 45px !important; border: 1px solid #000; border-radius: 0 !important; margin: 0 !important; }
+            .seat.filled { background: #fff !important; color: #000 !important; }
+            .seat.disabled { background: #ddd !important; border-color: #000 !important; }
+            .seat.disabled::after { content: ""; }
+        }
+        
+        
+            /* --- PRINT CONTROL CSS (Paste inside <style> tag) --- */
+            /* --- NEW ROBUST PRINT LOGIC --- */
+    
+    /* Ye Code Screen aur Print dono par kaam karega */
+    /* Jab Map Mode ho, to Attendance chhupa do */
+    body.view-mode-map .attendance-section { display: none !important; }
+    
+    /* Jab Summary Mode ho, to Map chhupa do */
+    body.view-mode-summary .map-section { display: none !important; }
+
+    /* Print specific settings */
+    @media print {
+        .no-print { display: none !important; }
+        
+        /* Input formatting for print */
+        input.print-input { 
+            border: none !important; 
+            background: transparent !important; 
+            font-weight: bold; color: #000; padding: 0; margin: 0;
+        }
+        
+        body { background: white; padding: 0; }
+        .room-print-container { page-break-after: always; border:none !important; box-shadow:none !important; }
+    }
+    
+    
+    
+    
+    
+    /* Drag & Drop Visuals */
+.seat { cursor: grab; }
+.seat:active { cursor: grabbing; }
+.seat.over { border: 2px dashed #000 !important; background: #e0f2fe !important; transform: scale(1.1); z-index: 10; }
+.seat[draggable="true"] { touch-action: none; } /* Mobile support fix needed later, currently for Desktop */
+
+
+
+
+        /* --- SPOTLIGHT SEARCH CSS --- */
+@keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); transform: scale(1); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); transform: scale(1.1); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); transform: scale(1); }
+}
+
+.seat.highlighted {
+    animation: pulseRing 1.5s infinite;
+    background-color: #ffe4e6 !important; /* Light Red bg */
+    border: 2px solid #e11d48 !important; /* Dark Red border */
+    color: #be123c !important;
+    z-index: 100;
+    font-weight: 900 !important;
+}
+
+/* Search Bar Styling */
+.search-toolbar {
+    display: flex; gap: 10px; margin-top: 10px; padding: 10px; 
+    background: #fff; border: 1px solid #ddd; border-radius: 8px; flex-wrap: wrap;
+}
+.search-input {
+    flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;
+}
+.search-select {
+    padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white;
+}
+
+
+        
+        
+        
+        
+    </style>
+</head>
+<body>
+
+<div id="pageLoader"><i class="fas fa-spinner fa-spin"></i> &nbsp; Loading Database...</div>
+
+<div class="container">
+    <div class="header no-print">
+        <h2 style="color: var(--primary); margin:0;"><i class="fas fa-database"></i> Exam Seating</h2>
+        <button onclick="window.location.href='admin-dashboard.html'" class="btn" style="background:#e5e7eb; color:#333;">Dashboard</button>
+    </div>
+
+    <div class="step-container no-print">
+        <div class="step active" id="step1-btn" onclick="showStep(1)">1. Room Layout</div>
+        <div class="step" id="step2-btn" onclick="showStep(2)">2. Select Classes</div>
+        <div class="step" id="step3-btn" onclick="showStep(3)">3. Generate Plan</div>
+    </div>
+
+    <div id="step1" class="section">
+        <div class="card no-print">
+            <h3 style="margin-top:0;">Add / Edit Room</h3>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                <div><label>Room Name</label><input type="text" id="roomName" placeholder="e.g. Hall 1" style="width:100%;"></div>
+                <div><label>Rows</label><input type="number" id="roomRows" value="5" style="width:100%;"></div>
+                <div><label>Cols</label><input type="number" id="roomCols" value="4" style="width:100%;"></div>
+                <input type="hidden" id="editRoomId"> 
+                <button onclick="saveRoom()" id="saveRoomBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+        <div id="roomsContainer"></div>
+    </div>
+
+    <div id="step2" class="section" style="display:none;">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">Select Classes</h3>
+                <button onclick="fetchStudentData()" class="btn btn-warning"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+            <div id="classSelectionContainer" class="class-select-grid"></div>
+            <div style="text-align:right; margin-top:20px;">
+                <button onclick="generateSeating()" class="btn btn-success"><i class="fas fa-check-circle"></i> Generate Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="step3" class="section" style="display:none;">
+        <div class="card no-print">
+            <h3 style="margin-top:0;">Final Seating Plan</h3>
+            <p id="statsText" style="font-size:14px; color:#4b5563;"></p>
+            <div style="display:flex; gap:10px;">
+                <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print Plan</button>
+                <button onclick="showStep(1)" class="btn btn-warning"><i class="fas fa-edit"></i> Modify Layout</button>
+            </div>
+        </div>
+        <div id="finalOutput"></div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let rooms = [];
+    let studentsRawData = []; 
+    
+    
+    // Yahan hum database se aayi value store karenge
+    let globalExamName = "";
+    let globalExamDate = "";
+
+    // WINDOW ONLOAD UPDATE
+    window.onload = function() { 
+        loadRoomsFromDB();
+        loadSettings(); // Ye naya function call hai
+    };
+
+    // Database se purani settings lane ka function
+    function loadGlobalSettings() {
+        db.collection('settings').doc('exam_config').onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                globalExamName = data.examName || "";
+                globalExamDate = data.examDate || "";
+                
+                // Agar inputs screen par hain to unhe update kar do
+                const nameInput = document.getElementById('masterExamName');
+                const dateInput = document.getElementById('masterExamDate');
+                
+                if(nameInput) {
+                    nameInput.value = globalExamName;
+                    syncInputs('name', globalExamName);
+                }
+                if(dateInput) {
+                    dateInput.value = globalExamDate;
+                    syncInputs('date', globalExamDate);
+                }
+            }
+        });
+    }
+
+    // Database me save karne ka function
+    function saveGlobalSettings() {
+        const name = document.getElementById('masterExamName').value;
+        const date = document.getElementById('masterExamDate').value;
+        
+        db.collection('settings').doc('exam_config').set({
+            examName: name,
+            examDate: date
+        }, { merge: true })
+        .then(() => {
+            console.log("Settings Saved!");
+        })
+        .catch(err => console.error("Error saving settings: ", err));
+    }
+    
+    
+    
+
+    window.onload = function() { loadRoomsFromDB(); };
+
+    function showStep(n) {
+        document.querySelectorAll('.section').forEach(d => d.style.display = 'none');
+        document.getElementById('step' + n).style.display = 'block';
+        document.querySelectorAll('.step').forEach(d => d.classList.remove('active'));
+        document.getElementById('step' + n + '-btn').classList.add('active');
+    }
+
+        // --- UPDATED LOAD FUNCTION (Auto-Load Saved Plan) ---
+    function loadRoomsFromDB() {
+        document.getElementById('pageLoader').style.display = 'flex'; // Show loader
+        
+        db.collection('exam_rooms').orderBy('createdAt', 'asc').onSnapshot(snap => {
+            rooms = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            renderRoomsEditor(); // Step 1 ka view update karo
+            document.getElementById('pageLoader').style.display = 'none';
+
+            // 🔥 LOGIC ADDED: Check karo agar pehle se bache baithe hain
+            let totalSeatedNow = 0;
+            rooms.forEach(r => {
+                if(r.benches) {
+                    r.benches.forEach(b => {
+                        if(b.allocated) {
+                            b.allocated.forEach(s => { if(s) totalSeatedNow++; });
+                        }
+                    });
+                }
+            });
+
+            // Agar data mila, to seedha Final View (Step 3) dikhao
+            if(totalSeatedNow > 0) {
+                renderFinalSeating(0, totalSeatedNow); // 0 passed for 'Candidates' initially
+                showStep(3);
+                console.log("Saved plan loaded automatically!");
+            }
+        });
+    }
+
+
+    async function saveRoom() {
+        const name = document.getElementById('roomName').value.trim();
+        const rows = parseInt(document.getElementById('roomRows').value);
+        const cols = parseInt(document.getElementById('roomCols').value);
+        const editId = document.getElementById('editRoomId').value;
+        const btn = document.getElementById('saveRoomBtn');
+
+        if(!name) return alert("Enter Room Name");
+        btn.innerHTML = "Saving..."; btn.disabled = true;
+
+        try {
+            let benches = [];
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) benches.push({ rowId: r+1, colId: c+1, seats: [true, true, true, true] });
+            }
+
+            if(editId) {
+                const oldRoom = rooms.find(r => r.id === editId);
+                if(oldRoom.rows === rows && oldRoom.cols === cols) benches = oldRoom.benches;
+                else if(!confirm("Dimension change will reset disabled seats. Continue?")) { btn.disabled=false; btn.innerHTML="Save"; return; }
+
+                await db.collection('exam_rooms').doc(editId).update({ name, rows, cols, benches });
+                document.getElementById('editRoomId').value = "";
+                btn.innerHTML = 'Save';
+            } else {
+                await db.collection('exam_rooms').add({ name, rows, cols, benches, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            }
+            document.getElementById('roomName').value = "";
+        } catch(e) { console.error(e); } finally { btn.disabled = false; }
+    }
+
+    function removeRoom(id) { if(confirm("Delete room?")) db.collection('exam_rooms').doc(id).delete(); }
+    
+    function editRoom(id) {
+        const r = rooms.find(x => x.id === id);
+        document.getElementById('roomName').value = r.name;
+        document.getElementById('roomRows').value = r.rows;
+        document.getElementById('roomCols').value = r.cols;
+        document.getElementById('editRoomId').value = id;
+        document.getElementById('saveRoomBtn').innerHTML = 'Update';
+        window.scrollTo(0,0);
+    }
+
+    function toggleSeat(roomId, benchIdx, seatIdx) {
+        const room = rooms.find(r => r.id === roomId);
+        if(!room) return;
+        room.benches[benchIdx].seats[seatIdx] = !room.benches[benchIdx].seats[seatIdx];
+        renderRoomsEditor(); 
+        db.collection('exam_rooms').doc(roomId).update({ benches: room.benches });
+    }
+
+    function renderRoomsEditor() {
+        const container = document.getElementById('roomsContainer');
+        container.innerHTML = "";
+        
+        rooms.forEach((room) => {
+            let html = `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <h3>${room.name}</h3>
+                    <div>
+                        <button onclick="editRoom('${room.id}')" class="btn btn-warning btn-sm no-print">Edit</button>
+                        <button onclick="removeRoom('${room.id}')" class="btn btn-danger btn-sm no-print">Delete</button>
+                    </div>
+                </div>
+                <div class="editor-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">`;
+
+            room.benches.forEach((bench, bIdx) => {
+                html += `<div class="editor-bench">
+                    <div class="bench-label">R${bench.rowId}-C${bench.colId}</div>`;
+                bench.seats.forEach((active, sIdx) => {
+                    html += `<div class="seat ${active?'':'disabled'}" onclick="toggleSeat('${room.id}', ${bIdx}, ${sIdx})">
+                        ${active ? (sIdx+1) : ''}
+                    </div>`;
+                });
+                html += `</div>`;
+            });
+            html += `</div></div>`;
+            container.innerHTML += html;
+        });
+    }
+
+    async function fetchStudentData() {
+        const container = document.getElementById('classSelectionContainer');
+        container.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Fetching...`;
+        try {
+            const snap = await db.collection('students').where('status', '==', 'Active').get();
+            studentsRawData = snap.docs.map(doc => doc.data());
+            let classes = [...new Set(studentsRawData.map(s => s.class))].sort();
+            container.innerHTML = "";
+            classes.forEach(cls => {
+                const count = studentsRawData.filter(s => s.class === cls).length;
+                container.innerHTML += `<label class="class-box"><input type="checkbox" value="${cls}" checked> <b>${cls}</b> (${count})</label>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // =========================================================================
+    // ✅ ULTIMATE SEATING ALGORITHM (GAP LOGIC + SWAP + SECTION ORDER)
+    // =========================================================================
+        // =========================================================================
+    // ✅ FINAL GOD MODE: LINEAR STREAM FILL (STRICT ASCENDING + NO GAPS + SPREAD)
+    // =========================================================================
+    function generateSeating() {
+        if(rooms.length === 0) return alert("Please add at least one room.");
+        const checkboxes = document.querySelectorAll('.class-select-grid input:checked');
+        const selectedClasses = Array.from(checkboxes).map(cb => cb.value);
+        if(selectedClasses.length === 0) return alert("Select at least one class.");
+
+        // --- 1. PREPARE SORTED QUEUES (STRICT ASCENDING) ---
+        let rawStudents = studentsRawData.filter(s => selectedClasses.includes(s.class));
+        
+        // Data structure to track each class
+        let classTracker = {};
+        
+        selectedClasses.forEach(cls => {
+            // Strict Sort: Section A -> B, Roll 1 -> 100
+            let students = rawStudents.filter(s => s.class === cls).sort((a, b) => {
+                if (a.section !== b.section) return a.section.localeCompare(b.section);
+                return (parseInt(a.roll)||0) - (parseInt(b.roll)||0);
+            });
+            
+            if(students.length > 0) {
+                classTracker[cls] = {
+                    queue: students,
+                    total: students.length,
+                    lastGlobalIndex: -9999, // To track gap
+                    idealGap: 0 // Will calculate later
+                };
+            }
+        });
+
+        // --- 2. IDENTIFY ACTIVE HALLS (SMART CAPACITY) ---
+        // Sirf utne hall lo jitne zaruri hain. No Empty Hall logic.
+        
+        let totalStudents = rawStudents.length;
+        let activeBenches = [];
+        let accumulatedCapacity = 0;
+        
+        for (let room of rooms) {
+            room.benches.forEach(b => b.allocated = [null, null, null, null]); // Reset
+
+            if (accumulatedCapacity >= totalStudents) continue; // Stop if we have enough space
+
+            // Collect Seats
+            room.benches.forEach((bench, bIdx) => {
+                bench.seats.forEach((active, sIdx) => {
+                    if(active) {
+                        activeBenches.push({
+                            roomObj: room,
+                            benchObj: bench,
+                            seatIdx: sIdx,
+                            globalIndex: activeBenches.length // 0, 1, 2, 3... Linear Order
+                        });
+                    }
+                });
+            });
+            accumulatedCapacity = activeBenches.length;
+        }
+
+        if (totalStudents > accumulatedCapacity) {
+             // Fallback: Agar calculation tight thi, to sare rooms le lo
+             // (Dobara loop nahi likh raha hu, usually smart cap works)
+             alert("⚠️ Warning: Students exceed capacity of selected smart halls. Some might not be seated.");
+        }
+
+        // --- 3. CALCULATE IDEAL GAPS ---
+        // Agar Total Seats 500 hain aur Class A me 50 bache hain.
+        // To Ideal Gap = 500 / 50 = 10.
+        // Hamein koshish karni hai ki har 10 seat baad Class A aaye.
+        Object.keys(classTracker).forEach(cls => {
+            let info = classTracker[cls];
+            info.idealGap = Math.floor(accumulatedCapacity / info.total);
+            if(info.idealGap < 1) info.idealGap = 1;
+        });
+
+        // --- 4. LINEAR STREAM FILLING (THE MAIN LOGIC) ---
+        // Hum Seat 0 se lekar Seat End tak loop chalayenge.
+        // Har Seat par BEST class choose karenge.
+
+        for (let i = 0; i < activeBenches.length; i++) {
+            let currentSeat = activeBenches[i];
+            let bench = currentSeat.benchObj;
+
+            // Step A: Find Valid Candidates
+            // Kaunsi classes available hain?
+            let availableClasses = Object.keys(classTracker).filter(c => classTracker[c].queue.length > 0);
+            
+            if (availableClasses.length === 0) break; // Sab khatam
+
+            // Filter 1: Conflict Check (Is Bench par ye class nahi honi chahiye)
+            let existingClasses = bench.allocated.filter(s => s).map(s => s.class);
+            let candidates = availableClasses.filter(c => !existingClasses.includes(c));
+
+            // Fallback 1: Agar sab conflict kar rahe hain (Majburi), to saare available wapas le lo
+            if (candidates.length === 0) candidates = availableClasses;
+
+            // Step B: Choose the Best Candidate
+            // Criteria 1: Gap Rule (Kya Ideal Gap meet ho raha hai?)
+            // Criteria 2: Load Balancing (Jiske bache sabse jada bache hain)
+            
+            candidates.sort((classA, classB) => {
+                let infoA = classTracker[classA];
+                let infoB = classTracker[classB];
+
+                // Check "Readiness" based on Gap
+                // Score banayenge: Jitna Gap se dur, utna accha.
+                let distA = i - infoA.lastGlobalIndex;
+                let distB = i - infoB.lastGlobalIndex;
+                
+                let readyA = distA >= infoA.idealGap;
+                let readyB = distB >= infoB.idealGap;
+
+                // Agar A ready hai aur B nahi, to A jeetega
+                if (readyA && !readyB) return -1;
+                if (!readyA && readyB) return 1;
+
+                // Agar dono ready hain (ya dono ready nahi hain), to Size dekho
+                // Badi class pehle (Load Balancing)
+                return infoB.queue.length - infoA.queue.length;
+            });
+
+            // Pick Winner
+            let bestClass = candidates[0];
+            let tracker = classTracker[bestClass];
+
+            // Assign
+            // Hum .shift() use kar rahe hain, isliye Sequence 1, 2, 3... hi rahega.
+            let student = tracker.queue.shift();
+            
+            bench.allocated[currentSeat.seatIdx] = student;
+            tracker.lastGlobalIndex = i; // Update position
+        }
+
+        // --- 5. RENDER ---
+        let totalSeated = 0;
+        activeBenches.forEach(b => {
+             if(b.benchObj.allocated[b.seatIdx]) totalSeated++;
+        });
+        
+        renderFinalSeating(rawStudents.length, totalSeated);
+        // 🔥 NEW: Generate hote hi database me save kar do
+        saveAllocationToDB(); 
+
+        showStep(3);
+    }
+
+
+        // =========================================================================
+    // ✅ RENDER FUNCTION: SEPARATE SECTIONS FOR MAP & ATTENDANCE
+    // =========================================================================
+        function renderFinalSeating(totalNeeded, totalSeated) {
+        const container = document.getElementById('finalOutput');
+        container.innerHTML = "";
+        
+        // Step 3 ke buttons ko update karein
+                // Step 3 Buttons Update with SHOW ALL feature
+                // Step 3 Buttons Update
+                // Step 3 Buttons Update with DATABASE SYNC
+                // Step 3 Buttons Update (FIXED)
+        const statsArea = document.getElementById('step3').querySelector('.card');
+                    // --- STEP 3 HEADER UPDATE (With Search Bar) ---
+        if(statsArea) {
+            // Get unique classes for dropdown
+                        // --- FIX START: Dropdown Logic Updated ---
+            let classesSet = new Set();
+
+            // 1. Agar abhi fresh generate kiya hai to Raw Data se classes lo
+            if(studentsRawData && studentsRawData.length > 0) {
+                studentsRawData.forEach(s => classesSet.add(s.class));
+            }
+
+            // 2. Agar Page Reload hua hai (Saved Plan), to Rooms me baithe bacho se classes nikalo
+            rooms.forEach(r => {
+                if(r.benches) {
+                    r.benches.forEach(b => {
+                        if(b.allocated) {
+                            b.allocated.forEach(s => {
+                                if(s && s.class) classesSet.add(s.class);
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Set ko Array banaya aur Sort kiya
+            let uniqueClasses = [...classesSet].sort();
+            // --- FIX END ---
+
+            let classOptions = `<option value="">All Classes</option>` + uniqueClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            statsArea.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <h3 style="margin:0;">Final Seating Plan</h3>
+                    <div style="display:flex; gap:10px; background:#f3f4f6; padding:5px; border-radius:6px;">
+                        <input type="text" id="masterExamName" value="${globalExamName}" placeholder="Exam Name" oninput="syncInputs('name', this.value)" onchange="saveExamSettings()" style="border:1px solid #ccc; padding:5px; border-radius:4px;">
+                        <input type="text" id="masterExamDate" value="${globalExamDate}" placeholder="Date" oninput="syncInputs('date', this.value)" onchange="saveExamSettings()" style="border:1px solid #ccc; padding:5px; border-radius:4px;">
+                    </div>
+                </div>
+
+                <div class="search-toolbar no-print">
+    <input type="text" id="searchInput" class="search-input" 
+           placeholder="🔍 Search Name, STES ID, or Roll No..." 
+           onkeyup="debounceSearch()"> <select id="filterClass" class="search-select" onchange="debounceSearch()">${classOptions}</select>
+    <select id="filterSection" class="search-select" onchange="debounceSearch()">
+        <option value="">All Sections</option>
+        <option value="A">Sec A</option><option value="B">Sec B</option><option value="C">Sec C</option><option value="D">Sec D</option>
+    </select>
+</div>
+
+                
+                <p id="statsText" style="font-size:14px; color:#4b5563; margin-top:5px;">Seated: <b>${totalSeated}</b> | Candidates: <b>${totalNeeded}</b></p>
+                
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                    <button onclick="saveAllocationToDB()" class="btn" style="background:#2563eb; color:white;"><i class="fas fa-save"></i> Save Changes</button>
+                    <button id="resetBtn" onclick="resetSeatingPlan()" class="btn" style="background:#ef4444; color:white;">
+    <i class="fas fa-trash-alt"></i> Reset Plan
+</button>
+
+                    <button onclick="printMap()" class="btn btn-primary"><i class="fas fa-map"></i> Print Maps</button>
+                    <button onclick="printSummary()" class="btn btn-success"><i class="fas fa-list-alt"></i> Print Attendance</button>
+                    <button onclick="showStep(1)" class="btn btn-warning"><i class="fas fa-edit"></i> Modify</button>
+                </div>
+            `;
+        }
+
+
+
+
+
+
+        rooms.forEach(room => {
+            let roomStats = {}; 
+            let roomTotalStudents = 0;
+
+            let html = `
+            <div class="card room-print-container" style="margin-bottom: 30px;">
+                
+                            
+                <div class="hall-header" style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h2 style="margin:0; font-size: 28px;">${room.name}</h2>
+                    
+                    <div style="margin: 10px 0; display: flex; justify-content: center; gap: 15px; font-weight: 600;">
+                        <span>Exam: <input type="text" class="print-input sync-name" value="${globalExamName}" placeholder="Exam Name" style="width:150px; border-bottom: 1px dashed #ccc;"></span>
+                        <span>Date: <input type="text" class="print-input sync-date" value="${globalExamDate}" placeholder="Date" style="width:100px; border-bottom: 1px dashed #ccc;"></span>
+                    </div>
+
+                    <h3 style="margin:5px 0 0 0; font-size: 18px; color: #444; text-transform: uppercase; letter-spacing: 1px;">Seating Arrangement</h3>
+                </div>
+
+
+                <div class="map-section">
+                    <div class="final-grid">`; 
+
+            // Inside renderFinalSeating loop...
+// room loop -> bench loop -> seat loop:
+
+                    // --- IS CODE KO PASTE KAREIN (Updated with Search Data) ---
+            room.benches.forEach((bench, bIdx) => {
+                const alloc = bench.allocated || [null, null, null, null];
+                const rIdx = rooms.findIndex(r => r.id === room.id);
+
+                html += `<div class="final-bench"><div class="bench-label">R${bench.rowId}-B${bench.colId}</div>`;
+
+                bench.seats.forEach((active, sIdx) => {
+                    if (!active) {
+                        html += `<div class="seat disabled"></div>`;
+                    } else {
+                        const s = alloc[sIdx];
+                        
+                        // Drag Events
+                        let dragEvents = `draggable="true" ondragstart="handleDragStart(event, ${rIdx}, ${bIdx}, ${sIdx})" ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${rIdx}, ${bIdx}, ${sIdx})" ondragend="handleDragEnd(event)"`;
+
+                        if (s) {
+                            // Stats update
+                            let key = `${s.class} (${s.section})`;
+                            if(!roomStats[key]) roomStats[key] = [];
+                            roomStats[key].push(s.roll);
+                            roomTotalStudents++;
+
+                            // 🔥 SEARCH DATA ATTRIBUTES ADDED HERE (Name, ID, Class hidden tags)
+                            // Note: s.name aur s.stesId tabhi aayenge agar database me honge.
+                            let searchTags = `data-name="${(s.name || '').toLowerCase()}" data-stes="${(s.stesId || '').toLowerCase()}" data-roll="${s.roll}" data-class="${s.class}" data-section="${s.section}"`;
+
+                            html += `<div class="seat filled" ${dragEvents} ${searchTags}>
+                                <span class="seat-roll">${s.roll || '-'}</span>
+                                <span class="seat-cls">${s.class} (${s.section})</span>
+                            </div>`;
+                        } else {
+                            html += `<div class="seat" ${dragEvents} style="color:#ccc; border:1px dashed #ccc;">Empty</div>`;
+                        }
+                    }
+                });
+                html += `</div>`;
+            });
+            // --- CODE END ---
+
+
+            html += `</div></div> `;
+
+            // --- SECTION: ATTENDANCE ---
+            html += `<div class="attendance-section">`;
+if(roomTotalStudents > 0) {
+    let sortedClasses = Object.keys(roomStats).sort();
+    html += `
+    <div style="margin-top: 20px; padding: 10px;">
+        <h3 style="text-align:center; text-decoration: underline; margin-bottom: 15px;">Attendance Sheet</h3>
+        <table style="width: 100%; border-collapse: collapse; border: 2px solid #000;">
+            <tr style="background: #f3f4f6;">
+                <th style="border: 1px solid #000; padding: 8px;">Class</th>
+                <th style="border: 1px solid #000; padding: 8px;">Roll Numbers</th>
+                <th style="border: 1px solid #000; padding: 8px; width:60px;">Count</th>
+                </tr>`;
+
+    sortedClasses.forEach(clsKey => {
+        let rolls = roomStats[clsKey].sort((a, b) => (parseInt(a)||0) - (parseInt(b)||0));
+        html += `<tr>
+                <td style="border: 1px solid #000; padding: 8px; font-weight: bold;">${clsKey}</td>
+                <td style="border: 1px solid #000; padding: 8px; font-size: 13px;">${rolls.join(', ')}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${rolls.length}</td>
+                </tr>`;
+    });
+
+    html += `<tr style="background: #e0e7ff;">
+                <td colspan="2" style="border: 1px solid #000; padding: 10px; text-align: right; font-weight: bold;">HALL TOTAL:</td>
+                <td style="border: 1px solid #000; padding: 10px; text-align: center; font-weight: bold;">${roomTotalStudents}</td>
+                </tr>
+        </table>
+    </div>`;
+}
+html += `</div> `;
+html += `</div>`; // End Card
+container.innerHTML += html;
+});
+}
+
+
+    
+    
+           // --- FINAL FIXED LOGIC: PRINT, SYNC & DATABASE ---
+
+    // 1. SYNC FUNCTION (Ye missing tha, isliye copy nahi ho raha tha)
+    function syncInputs(type, value) {
+        if (type === 'name') {
+            // Master input update karo
+            if(document.getElementById('masterExamName')) {
+                 document.getElementById('masterExamName').value = value;
+            }
+            // Sabhi room headers update karo
+            document.querySelectorAll('.sync-name').forEach(el => el.value = value);
+            globalExamName = value; // Variable update
+        } 
+        else if (type === 'date') {
+            if(document.getElementById('masterExamDate')) {
+                 document.getElementById('masterExamDate').value = value;
+            }
+            document.querySelectorAll('.sync-date').forEach(el => el.value = value);
+            globalExamDate = value; // Variable update
+        }
+    }
+
+    // 2. SAVE SETTINGS (Database me save karne ke liye)
+    function saveExamSettings() {
+        const name = document.getElementById('masterExamName').value;
+        const date = document.getElementById('masterExamDate').value;
+        
+        // Sync Visuals First
+        syncInputs('name', name);
+        syncInputs('date', date);
+
+        // Save to Firebase
+        db.collection('settings').doc('exam_config').set({
+            examName: name,
+            examDate: date
+        }, { merge: true })
+        .then(() => console.log("Exam Details Saved to DB"))
+        .catch(err => console.error("Save Error:", err));
+    }
+
+    // 3. LOAD SETTINGS (Refresh hone par wapas laane ke liye)
+    function loadSettings() {
+        db.collection('settings').doc('exam_config').onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                globalExamName = data.examName || "";
+                globalExamDate = data.examDate || "";
+                
+                // Screen par data dikhao
+                syncInputs('name', globalExamName);
+                syncInputs('date', globalExamDate);
+            }
+        });
+    }
+
+    // 4. PRINT VIEW MODES (Refresh issue fix)
+    function setViewMode(mode) {
+        document.body.classList.remove('view-mode-map', 'view-mode-summary');
+        const btn = document.getElementById('toggleViewBtn');
+        
+        if (mode === 'map') {
+            document.body.classList.add('view-mode-map');
+            if(btn) btn.innerHTML = '<i class="fas fa-eye"></i> Show All';
+        } else if (mode === 'summary') {
+            document.body.classList.add('view-mode-summary');
+            if(btn) btn.innerHTML = '<i class="fas fa-eye"></i> Show All';
+        } else {
+            if(btn) btn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Extra';
+        }
+    }
+
+    function toggleViewMode() {
+        if (document.body.classList.contains('view-mode-map') || document.body.classList.contains('view-mode-summary')) {
+            setViewMode('all');
+        } else {
+            setViewMode('map'); 
+        }
+    }
+
+    function printMap() {
+        setViewMode('map');
+        setTimeout(() => window.print(), 500);
+    }
+
+    function printSummary() {
+        setViewMode('summary');
+        setTimeout(() => window.print(), 500);
+    }
+    
+    
+    
+    
+    
+    // --- 1. SAVE FUNCTION: Ye plan ko database me permanent karega ---
+function saveAllocationToDB() {
+    // Button par "Saving..." dikhayein
+    const btn = document.querySelector('button[onclick="saveAllocationToDB()"]');
+    if(btn) { let oldText = btn.innerHTML; btn.innerHTML = "Saving..."; btn.disabled = true; }
+
+    const batch = db.batch(); // Batch write for efficiency
+
+    rooms.forEach(room => {
+        const roomRef = db.collection('exam_rooms').doc(room.id);
+        // Hum sirf benches update karenge jisme allocation data hai
+        batch.update(roomRef, { benches: room.benches });
+    });
+
+    batch.commit().then(() => {
+        console.log("Seating Plan Saved to Database!");
+        if(btn) { btn.innerHTML = "Saved!"; setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; btn.disabled = false; }, 1000); }
+    }).catch(err => {
+        console.error("Save Error:", err);
+        alert("Error saving plan. Check console.");
+    });
+}
+
+
+
+
+
+
+        // --- 2. DRAG & DROP VARIABLES ---
+let dragSrcEl = null;
+let dragSourceIndices = null; // Stores {roomIdx, benchIdx, seatIdx}
+
+// --- Drag Start: Jab user drag shuru kare ---
+function handleDragStart(e, rIdx, bIdx, sIdx) {
+    dragSrcEl = e.target;
+    dragSourceIndices = { r: rIdx, b: bIdx, s: sIdx };
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.innerHTML);
+    e.target.style.opacity = '0.4';
+}
+
+// --- Drag Over: Allow dropping ---
+function handleDragOver(e) {
+    if (e.preventDefault) e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+// --- Drag Enter: Visual styling ---
+function handleDragEnter(e) {
+    this.classList.add('over');
+}
+
+// --- Drag Leave: Remove styling ---
+function handleDragLeave(e) {
+    this.classList.remove('over');
+}
+
+// --- DROP: Main Logic (Swap Data) ---
+// --- UPDATED DROP LOGIC (With Safety Warning) ---
+function handleDrop(e, targetR, targetB, targetS) {
+    if (e.stopPropagation) e.stopPropagation();
+    
+    // UI Cleanup
+    if (dragSrcEl) dragSrcEl.style.opacity = '1';
+    document.querySelectorAll('.seat').forEach(col => col.classList.remove('over'));
+
+    // Indices check
+    if (!dragSourceIndices) return false;
+    
+    // Source Data (Jisko uthaya hai)
+    const sRoom = rooms[dragSourceIndices.r];
+    const sBench = sRoom.benches[dragSourceIndices.b];
+    const sourceStudent = sBench.allocated ? sBench.allocated[dragSourceIndices.s] : null;
+
+    // Target Data (Jahan rakh rahe hain)
+    const tRoom = rooms[targetR];
+    const tBench = tRoom.benches[targetB];
+    
+    // Ensure allocated array exists
+    if(!sBench.allocated) sBench.allocated = [null,null,null,null];
+    if(!tBench.allocated) tBench.allocated = [null,null,null,null];
+
+    const targetStudent = tBench.allocated[targetS];
+
+    // Agar khali seat utha rahe ho to kuch mat karo
+    if (!sourceStudent) return false;
+
+    // 🔥 SAFETY CHECK: Conflict Warning
+    // Check karo ki Target Bench par same class ka koi aur bacha hai kya?
+    // (Lekin wo khud nahi hona chahiye, aur jis seat par rakh rahe hain wo bhi count mat karo)
+    
+    const conflict = tBench.allocated.some((student, idx) => {
+        return student && // Bacha hona chahiye
+               idx !== targetS && // Jis seat par drop kar rahe wo check mat karo
+               student.class === sourceStudent.class; // Class Same hai kya?
+    });
+
+    if (conflict) {
+        // Warning Sound (Optional)
+        // const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'); audio.play();
+
+        const proceed = confirm(`⚠️ WARNING: Conflict Detected!\n\nClass '${sourceStudent.class}' ka ek student already is bench par baitha hai.\n\nKya aap fir bhi swap karna chahte hain?`);
+        
+        if (!proceed) return false; // User ne Cancel kar diya
+    }
+
+    // --- SWAP LOGIC (Wahi purana wala) ---
+    // 1. Source seat par Target student ko bithao
+    sBench.allocated[dragSourceIndices.s] = targetStudent;
+    
+    // 2. Target seat par Source student ko bithao
+    tBench.allocated[targetS] = sourceStudent;
+
+    // --- RE-RENDER & SAVE ---
+    renderFinalSeating(0, 0); 
+    
+    // 🔥 Auto Save
+    saveAllocationToDB();
+
+    return false;
+}
+
+
+function handleDragEnd(e) {
+    this.style.opacity = '1';
+    document.querySelectorAll('.seat').forEach(col => col.classList.remove('over'));
+}
+
+
+        
+            // --- INVIGILATOR SEARCH FUNCTION ---
+    // --- ✅ 1. DEBOUNCE TIMER (Jhatka roke ga) ---
+let searchTimer;
+
+function debounceSearch() {
+    // Agar user abhi type kar raha hai to purana timer cancel karo
+    clearTimeout(searchTimer);
+    
+    // 400ms (adhe second se kam) ruk kar search chalao
+    searchTimer = setTimeout(() => {
+        runInvigilatorSearch();
+    }, 400);
+}
+
+// --- ✅ 2. ADVANCED SEARCH LOGIC (Missing Name Fix) ---
+function runInvigilatorSearch() {
+    let input = document.getElementById('searchInput').value.toLowerCase().trim();
+    let clsFilter = document.getElementById('filterClass').value;
+    let secFilter = document.getElementById('filterSection').value;
+
+    let seats = document.querySelectorAll('.seat.filled');
+    let found = false;
+
+    // Pehle saare highlights hata do
+    seats.forEach(seat => seat.classList.remove('highlighted'));
+
+    // Agar sab khali hai to wapas jao
+    if (input === "" && clsFilter === "" && secFilter === "") return;
+
+    seats.forEach(seat => {
+        // Safe Read Attributes
+        let name = (seat.getAttribute('data-name') || "").toLowerCase();
+        let stes = (seat.getAttribute('data-stes') || "").toLowerCase();
+        let roll = (seat.getAttribute('data-roll') || "").toString(); // String banaya
+        let sClass = seat.getAttribute('data-class') || "";
+        let sSec = seat.getAttribute('data-section') || "";
+
+        // --- MATCHING LOGIC ---
+        // Name Logic: Naam ka koi bhi hissa match ho (e.g. 'Mona' matches 'Mona Priya')
+        let matchName = input && name.includes(input);
+        
+        // ID Logic: Partial match (e.g. '2600' matches 'STES26001')
+        let matchID = input && stes.includes(input);
+        
+        // Roll Logic: Loose match (e.g. '5' matches '5' and '05', but not '15' ideally, but here partial allowed)
+        // Agar exact chahiye to (roll === input) karein, par user friendly ke liye includes thik hai
+        let matchRoll = input && roll === input; 
+
+        let matchesKeyword = (input === "") || (matchName || matchID || matchRoll);
+        let matchesClass = (clsFilter === "") || (sClass === clsFilter);
+        let matchesSec = (secFilter === "") || (sSec === secFilter);
+
+        // Final Decision
+        if (matchesKeyword && matchesClass && matchesSec) {
+            seat.classList.add('highlighted');
+            
+            // Sirf pehle match par scroll karo
+            if (!found) { 
+                seat.scrollIntoView({behavior: "smooth", block: "center"}); 
+                found = true; 
+            }
+        }
+    });
+    
+    if(!found && input.length > 0) {
+        console.log("No match found for: " + input);
+    }
+}
+
+
+
+
+            // --- RESET FUNCTION: Sab kuch delete kar dega ---
+    function resetSeatingPlan() {
+        if(!confirm("⚠️ ARE YOU SURE?\n\nIsse puri seating arrangement delete ho jayegi aur sab reset ho jayega.\n\nKya aap proceed karna chahte hain?")) {
+            return;
+        }
+
+        const btn = document.getElementById('resetBtn');
+        if(btn) { btn.innerHTML = "Clearing..."; btn.disabled = true; }
+
+        const batch = db.batch();
+
+        rooms.forEach(room => {
+            const roomRef = db.collection('exam_rooms').doc(room.id);
+            // Har bench ka allocated array saaf kar do
+            const cleanBenches = room.benches.map(b => ({
+                ...b, // Row/Col preserve karo
+                allocated: [null, null, null, null] // Data uda do
+            }));
+            
+            batch.update(roomRef, { benches: cleanBenches });
+        });
+
+        batch.commit().then(() => {
+            alert("Plan Reset Successfully!");
+            window.location.reload(); // Page refresh to start fresh
+        }).catch(err => {
+            console.error(err);
+            alert("Error resetting plan.");
+        });
+    }
+
+
+
+        // admin-fees.html aur baaki data wale pages ke liye
+firebase.auth().onAuthStateChanged((user) => {
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+    if (user && isLoggedIn && userData.role === 'admin') {
+        // Asli test
+        db.collection('admins').doc(user.uid).get().then((doc) => {
+            if (doc.exists && doc.data().role === 'SuperAdmin') {
+                
+                loadData(); // <-- Yahan page ka main function call hoga
+                
+            } else {
+                auth.signOut().then(() => window.location.replace("admin-login.html"));
+            }
+        });
+    } else {
+        window.location.replace("admin-login.html");
+    }
+});
+
+
+
+
+
+    
+
+</script>
+
+</body>
+</html>

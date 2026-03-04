@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions | St. Teresa English School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Royal Purple Theme for Authority */
+            --primary-purple: #4a148c; 
+            --accent-indigo: #311b92;
+            --highlight-bg: #f3e5f5;
+            --text-dark: #2c3e50;
+            --text-light: #546e7a;
+            --bg-color: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            line-height: 1.8;
+        }
+
+        /* --- HEADER BANNER (Royal Gradient) --- */
+        .terms-header-banner {
+            background: linear-gradient(135deg, var(--primary-purple), #7b1fa2);
+            color: white;
+            padding: 70px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Background Pattern Effect (Optional subtle circles) */
+        .terms-header-banner::before {
+            content: ''; position: absolute; top: -50px; right: -50px;
+            width: 200px; height: 200px; background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .terms-header-banner h1 { margin: 0; font-size: 2.5rem; font-weight: 700; letter-spacing: 1px; }
+        .terms-header-banner p { opacity: 0.9; font-size: 1.1rem; margin-top: 10px; font-weight: 300; }
+
+        /* --- MAIN CONTENT CONTAINER --- */
+        .main-content {
+            max-width: 900px;
+            margin: -50px auto 60px; /* Overlap header */
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- BACK BUTTON --- */
+        .back-btn-container { margin-bottom: 25px; }
+        .back-btn {
+            display: inline-flex; align-items: center; text-decoration: none;
+            color: var(--primary-purple); font-weight: 600; background: white;
+            padding: 12px 25px; border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.3s ease;
+        }
+        .back-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(74, 20, 140, 0.25); }
+        .back-btn svg { margin-right: 8px; height: 20px; width: 20px; }
+
+        /* --- CARD DESIGN --- */
+        .term-card {
+            background: white; border-radius: 16px; padding: 40px;
+            margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--primary-purple);
+            transition: all 0.3s ease;
+        }
+        .term-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+
+        /* Special Card for Fees (Money Logic) */
+        .term-card.fee-card {
+            border-left-color: #2e7d32; /* Green for money */
+            background: #f1f8e9;
+        }
+
+        .card-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        
+        .card-icon {
+            background: var(--highlight-bg); color: var(--primary-purple);
+            width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;
+            border-radius: 14px; margin-right: 20px; flex-shrink: 0;
+        }
+        .fee-card .card-icon { background: #c8e6c9; color: #2e7d32; }
+        
+        .card-icon svg { height: 28px; width: 28px; }
+
+        .card-title { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
+        
+        .card-content ul { padding-left: 20px; margin: 0; }
+        .card-content li { margin-bottom: 12px; color: var(--text-light); font-size: 0.95rem; }
+        .card-content strong { color: var(--primary-purple); }
+
+        /* --- FOOTER --- */
+        .terms-footer {
+            text-align: center; padding: 40px; color: var(--text-light);
+            font-size: 0.9rem; border-top: 1px solid #e0e0e0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .terms-header-banner { padding: 50px 20px 80px; }
+            .terms-header-banner h1 { font-size: 1.8rem; }
+            .term-card { padding: 25px; }
+            .card-title { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="terms-header-banner">
+        <h1>Terms & Conditions</h1>
+        <p>Rules, Regulations & School Policies</p>
+    </header>
+
+    <main class="main-content">
+        
+        <div class="back-btn-container">
+            <a href="index.html" class="back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+            </a>
+        </div>
+
+        <section class="term-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="card-title">Admission Policy</h2>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li>Admission is granted purely on <strong>merit and availability of seats</strong>. The Principal's decision regarding admission is final and binding.</li>
+                    <li>Parents must submit valid documents (Birth Certificate, Aadhar, TC from previous school) at the time of admission. Failure to do so may result in cancellation.</li>
+                    <li>The school reserves the right to deny admission to any candidate without assigning a reason.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="term-card fee-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="card-title">Fee Payment Rules</h2>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li>School fees must be paid by the <strong>10th of every month</strong>. Late fees will be applicable after the due date.</li>
+                    <li>Fees once paid are <strong>Non-Refundable</strong> and Non-Transferable under any circumstances.</li>
+                    <li>If fees are pending for more than 2 months, the student's name may be struck off the rolls, and re-admission charges will apply.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="term-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="card-title">Code of Conduct</h2>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li>Students must maintain <strong>75% attendance</strong> to be eligible for final examinations.</li>
+                    <li><strong>Zero Tolerance Policy:</strong> Ragging, bullying, or use of abusive language within the campus will lead to immediate suspension or expulsion.</li>
+                    <li>Possession of mobile phones, smartwatches, or any electronic gadgets by students is strictly prohibited within school premises.</li>
+                    <li>Students must come to school in proper, clean, and ironed uniforms.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="term-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <h2 class="card-title">Parental Cooperation</h2>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li>Parents are requested to attend all <strong>Parent-Teacher Meetings (PTMs)</strong> to discuss their child's progress.</li>
+                    <li>Any change in address or phone number must be immediately intimated to the school office.</li>
+                    <li>Parents are liable to pay for any damage to school property caused by their ward.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="terms-footer">
+        <p>By enrolling your child at St. Teresa English School, you agree to abide by the above terms.</p>
+        &copy; <span id="year"></span> St. Teresa English School. All Rights Reserved.
+    </footer>
+
+    <script>
+        // Automatic Year Update
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>

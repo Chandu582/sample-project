@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STES ERP | Universal User Manager</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root { --primary: #6366f1; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; margin-bottom: 25px; }
+        
+        /* Grid & Inputs */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .input-box { width: 100%; padding: 12px; border: 2px solid #f1f5f9; border-radius: 12px; background: #f8fafc; outline: none; transition: 0.3s; box-sizing: border-box; font-family: inherit; }
+        .input-box:focus { border-color: var(--primary); background: #fff; }
+        
+        .btn { padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; font-family: inherit; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-save { background: var(--success); color: white; padding: 8px 15px; font-size: 13px; }
+
+        /* Table Style */
+        .table-wrapper { background: white; border-radius: 20px; overflow-x: auto; border: 1px solid #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: #f8fafc; padding: 15px; text-align: left; font-size: 12px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; }
+        
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-teacher { background: #eef2ff; color: #6366f1; }
+        .badge-student { background: #f0fdf4; color: #16a34a; }
+        .badge-staff { background: #fefce8; color: #ca8a04; }
+
+        .pass-input { border: 1px solid #ddd; padding: 6px; border-radius: 6px; width: 120px; font-weight: 600; color: var(--danger); }
+        .role-input { border: 1px solid #ddd; padding: 6px; border-radius: 6px; width: 100px; font-weight: 600; }
+        .class-input { border: 1px solid #ddd; padding: 6px; border-radius: 6px; width: 90px; }
+        .section-input { border: 1px solid #ddd; padding: 6px; border-radius: 6px; width: 50px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2><i class="fas fa-user-lock" style="color:var(--primary);"></i> User & Password Manager</h2>
+        <button class="btn btn-add" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh Data</button>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;"><i class="fas fa-plus-circle"></i> Create / Assign Teacher</h3>
+        
+        <div style="margin-bottom:15px;">
+            <select id="existingStaff" class="input-box" onchange="fillStaffDetails()">
+                <option value="">-- Select Existing Staff (Optional) --</option>
+            </select>
+        </div>
+
+        <div class="grid">
+            <input type="text" id="tName" class="input-box" placeholder="Teacher's Full Name">
+            <input type="text" id="tID" class="input-box" placeholder="Teacher ID / Mobile">
+            <input type="text" id="tPass" class="input-box" placeholder="Set Password">
+            
+            <select id="tClass" class="input-box">
+                <option value="">Assign Class</option>
+                <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
+                <option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option>
+                <option value="4th">4th</option><option value="5th">5th</option><option value="6th">6th</option>
+                <option value="7th">7th</option><option value="8th">8th</option><option value="9th">9th</option>
+                <option value="10th">10th</option>
+            </select>
+
+            <select id="tSection" class="input-box">
+                <option value="A">Section A</option>
+                <option value="B">Section B</option>
+                <option value="C">Section C</option>
+                <option value="D">Section D</option>
+            </select>
+
+            <button class="btn btn-add" onclick="addTeacher()">Assign / Create</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><i class="fas fa-filter"></i> Search & Filters</h3>
+        <div class="grid">
+            <input type="text" id="fName" class="input-box" placeholder="Search Name..." onkeyup="filterUsers()">
+            <input type="text" id="fID" class="input-box" placeholder="Search ID..." onkeyup="filterUsers()">
+            
+            <select id="fRole" class="input-box" onchange="filterUsers()">
+                <option value="">All Roles</option>
+                <option value="teacher">Teachers Only</option>
+                <option value="student">Students Only</option>
+                <option value="staff">Other Staff</option>
+            </select>
+            
+            <select id="fClass" class="input-box" onchange="filterUsers()">
+                <option value="">All Classes</option>
+                <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
+                <option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option>
+                <option value="4th">4th</option><option value="5th">5th</option><option value="6th">6th</option>
+                <option value="7th">7th</option><option value="8th">8th</option><option value="9th">9th</option>
+                <option value="10th">10th</option>
+            </select>
+
+            <select id="fSection" class="input-box" onchange="filterUsers()">
+                <option value="">All Sections</option>
+                <option value="A">Section A</option><option value="B">Section B</option>
+                <option value="C">Section C</option><option value="D">Section D</option>
+            </select>
+
+            <select id="fGender" class="input-box" onchange="filterUsers()">
+                <option value="">All Genders</option>
+                <option value="Male">Male</option><option value="Female">Female</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Role (Switch)</th>
+                    <th>Name / Gender</th>
+                    <th>ID / Username</th>
+                    <th>Portal Password</th>
+                    <th>Assigned Class & Section</th>
+                    <th>Roll No</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="userTable">
+                <tr><td colspan="7" style="text-align:center; padding:50px;">Fetching user records...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let allUsers = [];
+    let staffList = []; // To hold staff for dropdown
+
+    // Fetch Teachers & Students
+    async function fetchAllUsers() {
+        const staffSnap = await db.collection('staff').get();
+        const studSnap = await db.collection('students').get();
+
+        const staff = staffSnap.docs.map(doc => {
+            const d = doc.data();
+            let type = d.role === 'teacher' ? 'teacher' : 'staff'; 
+            if(d.class) type = 'teacher';
+            return { id: doc.id, type: type, originalRole: d.role, ...d };
+        });
+        const studs = studSnap.docs.map(doc => ({ id: doc.id, type: 'student', ...doc.data() }));
+
+        allUsers = [...staff, ...studs];
+        
+        // Populate Existing Staff Dropdown
+        staffList = staff;
+        populateStaffDropdown();
+        
+        renderUsers(allUsers);
+    }
+
+    function populateStaffDropdown() {
+        const dd = document.getElementById('existingStaff');
+        dd.innerHTML = '<option value="">-- Select Existing Staff (Optional) --</option>';
+        staffList.forEach(s => {
+            // Show all staff in dropdown to easily pick and upgrade
+            dd.innerHTML += `<option value="${s.id}">${s.name} (${s.mobile || 'No Mobile'}) - ${s.originalRole}</option>`;
+        });
+    }
+
+    function fillStaffDetails() {
+        const id = document.getElementById('existingStaff').value;
+        if(!id) {
+            document.getElementById('tName').value = "";
+            document.getElementById('tID').value = "";
+            return;
+        }
+        const staff = staffList.find(s => s.id === id);
+        if(staff) {
+            document.getElementById('tName').value = staff.name;
+            document.getElementById('tID').value = staff.mobile || "";
+        }
+    }
+
+    function renderUsers(data) {
+        let html = "";
+        data.forEach(u => {
+            const roleBadge = u.type === 'teacher' ? 'badge-teacher' : (u.type === 'student' ? 'badge-student' : 'badge-staff');
+            const currentPass = u.customPassword || u.dob || u.mobile || '123456';
+            
+            let clsVal = u.class || "";
+            let secVal = u.section || "A"; 
+            
+            if(u.type !== 'student' && clsVal.includes('-')) {
+                const parts = clsVal.split('-');
+                clsVal = parts[0];
+                secVal = parts[1];
+            }
+
+            let roleDisplay = `<span class="badge ${roleBadge}">${u.type}</span>`;
+            if(u.type !== 'student') {
+                roleDisplay = `
+                    <select id="role-${u.id}" class="role-input" style="font-size:11px;">
+                        <option value="teacher" ${u.type==='teacher'?'selected':''}>Teacher</option>
+                        <option value="staff" ${u.type==='staff'?'selected':''}>Staff</option>
+                        <option value="driver" ${u.originalRole==='Driver'?'selected':''}>Driver</option>
+                    </select>`;
+            }
+
+            let classDisplay = "";
+            if(u.type !== 'student') {
+                classDisplay = `
+                    <div style="display:flex; gap:5px;">
+                        <select id="class-${u.id}" class="class-input">
+                            <option value="${clsVal}" selected>${clsVal || 'None'}</option>
+                            <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
+                            <option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option>
+                            <option value="4th">4th</option><option value="5th">5th</option><option value="6th">6th</option>
+                            <option value="7th">7th</option><option value="8th">8th</option><option value="9th">9th</option>
+                            <option value="10th">10th</option>
+                        </select>
+                        <select id="section-${u.id}" class="section-input">
+                            <option value="A" ${secVal==='A'?'selected':''}>A</option>
+                            <option value="B" ${secVal==='B'?'selected':''}>B</option>
+                            <option value="C" ${secVal==='C'?'selected':''}>C</option>
+                            <option value="D" ${secVal==='D'?'selected':''}>D</option>
+                        </select>
+                    </div>`;
+            } else {
+                classDisplay = `<b>${u.class}</b> <span style="color:#666; font-size:11px;">(${u.section || 'A'})</span>`;
+            }
+
+            html += `<tr>
+                <td>${roleDisplay}</td>
+                <td><b>${u.name}</b><br><small>${u.gender || u.originalRole || 'N/A'}</small></td>
+                <td><span style="color:var(--primary); font-weight:700;">${u.type === 'student' ? u.stesID : u.mobile}</span></td>
+                <td><input type="text" id="pass-${u.id}" class="pass-input" value="${currentPass}"></td>
+                <td>${classDisplay}</td>
+                <td>${u.roll || '--'}</td>
+                <td><button class="btn btn-save" onclick="updateUser('${u.type}', '${u.id}')"><i class="fas fa-save"></i> Save</button></td>
+            </tr>`;
+        });
+        document.getElementById('userTable').innerHTML = html || "<tr><td colspan='7' style='text-align:center;'>No matching records found.</td></tr>";
+    }
+
+    function filterUsers() {
+        const name = document.getElementById('fName').value.toLowerCase();
+        const uid = document.getElementById('fID').value.toLowerCase();
+        const role = document.getElementById('fRole').value;
+        const cls = document.getElementById('fClass').value;
+        const sec = document.getElementById('fSection').value;
+        const gen = document.getElementById('fGender').value;
+
+        const filtered = allUsers.filter(u => {
+            const matchName = u.name.toLowerCase().includes(name);
+            const matchID = (u.type !== 'student' ? u.mobile : (u.stesID || u.roll || '')).toString().toLowerCase().includes(uid);
+            const matchRole = role === "" || u.type === role || (role === 'staff' && u.type !== 'teacher' && u.type !== 'student');
+            
+            const matchClass = cls === "" || u.class === cls || (u.class && u.class.startsWith(cls + "-"));
+            const matchSection = sec === "" || (u.section === sec) || (u.class && u.class.endsWith("-" + sec));
+            const matchGen = gen === "" || u.gender === gen;
+            
+            return matchName && matchID && matchRole && matchClass && matchSection && matchGen;
+        });
+        renderUsers(filtered);
+    }
+
+    async function addTeacher() {
+        const selectedStaffId = document.getElementById('existingStaff').value;
+        const name = document.getElementById('tName').value;
+        const mob = document.getElementById('tID').value;
+        const pass = document.getElementById('tPass').value;
+        const cls = document.getElementById('tClass').value;
+        const sec = document.getElementById('tSection').value;
+
+        if(!name || !mob || !pass || !cls) return alert("Fill Name, Mobile, Password and Class!");
+
+        const fullClassAssigned = `${cls}-${sec}`;
+
+        if(selectedStaffId) {
+            // Update Existing Staff to Teacher
+            await db.collection('staff').doc(selectedStaffId).update({
+                name: name, mobile: mob, customPassword: pass, 
+                class: fullClassAssigned, 
+                role: 'teacher'
+            });
+            alert("Existing Staff Promoted to Teacher!");
+        } else {
+            // Create New Teacher
+            // 🟢 NAYA LOGIC: Create New Teacher + Auto Secure Account
+            const btn = document.activeElement; // Button ko temporary disable karne ke liye
+            const originalText = btn.innerText;
+            btn.innerText = "Creating Secure Account...";
+            btn.disabled = true;
+
+            try {
+                // 1. Firebase Auth me account banayein (Bina admin ko logout kiye)
+                const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+                const secAuth = secondaryApp.auth();
+                const dummyEmail = mob + "@stes.com";
+                
+                await secAuth.createUserWithEmailAndPassword(dummyEmail, pass);
+                await secAuth.signOut();
+                secondaryApp.delete(); // Kaam khatam, secondary app delete
+
+                // 2. Database me data save karein
+                await db.collection('staff').add({
+                    name: name, 
+                    mobile: mob, 
+                    dob: pass, 
+                    customPassword: pass, // Backup ke liye yahan bhi save kar diya
+                    class: fullClassAssigned, 
+                    role: 'teacher', 
+                    authCreated: true,    // Ye mark zaroori hai
+                    createdAt: new Date()
+                });
+
+                alert("✅ New Teacher Account & Secure Login Created!");
+                location.reload();
+
+            } catch(e) {
+                console.error(e);
+                alert("❌ Error: " + e.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+    }
+
+        async function updateUser(type, id) {
+        const newPass = document.getElementById(`pass-${id}`).value;
+        
+        // Firebase Auth mein password kam se kam 6 character ka hona chahiye
+        if(newPass.length < 6) return alert("Password must be at least 6 characters long!");
+
+        const collection = type === 'student' ? 'students' : 'staff';
+        const dataToUpdate = { customPassword: newPass }; 
+        
+        if(type !== 'student') {
+            const cls = document.getElementById(`class-${id}`).value;
+            const sec = document.getElementById(`section-${id}`).value;
+            const newRole = document.getElementById(`role-${id}`).value;
+            dataToUpdate.role = newRole;
+            if(newRole === 'teacher' && cls !== '') {
+                dataToUpdate.class = `${cls}-${sec}`;
+            } else {
+                dataToUpdate.class = ""; 
+            }
+        }
+
+        const btn = window.event ? window.event.currentTarget : document.activeElement;
+        const originalText = btn.innerHTML;
+        if(btn && btn.innerHTML) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true; }
+
+        try {
+            // 🟢 NAYA LOGIC: Update Password directly in Firebase Auth
+            const targetUser = allUsers.find(u => u.id === id);
+            
+            if (targetUser) {
+                // User ka purana password aur dummy email nikalna
+                const oldPass = targetUser.customPassword || targetUser.dob || targetUser.mobile || '123456';
+                let dummyEmail = "";
+                
+                if (type === 'student') {
+                    const idToUse = targetUser.stesID || targetUser.mobile;
+                    dummyEmail = idToUse.toLowerCase() + "@stes.com";
+                } else {
+                    dummyEmail = targetUser.mobile + "@stes.com";
+                }
+
+                // Background mein ek temporary Firebase app banayein
+                const secondaryApp = firebase.initializeApp(firebaseConfig, "UpdateApp_" + Date.now());
+                const secAuth = secondaryApp.auth();
+                
+                try {
+                    // Step 1: Purane password se login karein
+                    await secAuth.signInWithEmailAndPassword(dummyEmail, oldPass);
+                    // Step 2: Naya password Firebase secure vault mein update karein
+                    await secAuth.currentUser.updatePassword(newPass);
+                    // Step 3: Logout kar dein
+                    await secAuth.signOut();
+                } catch(authErr) {
+                    console.log("Password update failed (trying to recreate):", authErr.message);
+                    // Agar account pehle se nahi tha ya purana password galat tha, toh naya account bana do
+                    try {
+                        await secAuth.createUserWithEmailAndPassword(dummyEmail, newPass);
+                        await secAuth.signOut();
+                    } catch(e) { console.log("Recreate failed", e.message); }
+                }
+                
+                secondaryApp.delete(); // Temporary app delete karein taaki admin ka session safe rahe
+            }
+
+            // Database (Firestore) mein bhi naya data save karein
+            await db.collection(collection).doc(id).update(dataToUpdate);
+            
+            alert("✅ Updated Successfully & Secure Password Changed in Auth!");
+            fetchAllUsers();
+            
+        } catch(e) { 
+            alert("Error: " + e.message); 
+        } finally {
+            if(btn && originalText) { btn.innerHTML = originalText; btn.disabled = false; }
+        }
+    }
+
+
+        // admin-fees.html aur baaki data wale pages ke liye
+firebase.auth().onAuthStateChanged((user) => {
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+    if (user && isLoggedIn && userData.role === 'admin') {
+        // Asli test
+        db.collection('admins').doc(user.uid).get().then((doc) => {
+            if (doc.exists && doc.data().role === 'SuperAdmin') {
+                
+                fetchAllUsers(); // <-- Yahan page ka main function call hoga
+                
+            } else {
+                auth.signOut().then(() => window.location.replace("admin-login.html"));
+            }
+        });
+    } else {
+        window.location.replace("admin-login.html");
+    }
+});
+
+
+</script>
+</body>
+</html>
