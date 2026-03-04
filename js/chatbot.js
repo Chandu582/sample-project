@@ -348,7 +348,7 @@ function injectChatbotUI() {
                     width: calc(100% - 30px);
                     height: 450px; /* Reduced height to fit modern phones */
                     right: 15px;
-                    bottom: 90px; /* Sits just above the Floating Button */
+                    bottom: 130px; /* Sits just above the Floating Button and keyboard */
                 }
                 .chat-footer {
                     padding: 10px 8px;
@@ -455,6 +455,11 @@ function setupChatbotEvents() {
         document.body.classList.remove("chat-active");
     }
 
+    // Prevent input focus loss on send button tap/click
+    sendBtn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+    });
+
     // Send Message
     sendBtn.addEventListener("click", handleUserMessage);
     inputField.addEventListener("keypress", (e) => {
@@ -519,6 +524,9 @@ async function handleUserMessage() {
     // 1. Show User Message
     addMessageToChat(message, 'user');
     inputField.value = "";
+
+    // Explicitly keep focus on input field (for mobile keyboard)
+    inputField.focus();
 
     // 2. Show Typing Indicator
     showTypingIndicator();
