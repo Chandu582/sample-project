@@ -39,6 +39,7 @@ async function initChatbot() {
 
 let systemContext = "";
 let customApiKey = "";
+let elevenLabsApiKey = ""; // Premium Ultra-Realistic Voice API Key
 // Use a placeholder/demo key if none provided (Note: in production, fetching from backend is safer)
 const DEFAULT_GROQ_KEY = ""; // Best to let user fill this in Admin Panel
 let isChatOpen = false;
@@ -562,10 +563,20 @@ function setupChatbotEvents() {
 
     // Helper to close chat and reset button icon
     function closeChatbot() {
+        window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1; // ABORT fetching
+        window.isPremiumAudioLoading = false;
+
         // Stop speaking immediately when closing the AI chat window
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
         }
+        if (window.currentPremiumAudio) {
+            window.currentPremiumAudio.pause();
+            window.currentPremiumAudio.currentTime = 0;
+        }
+
+        const micBtn = document.getElementById("chatbot-speaker-btn");
+        if (micBtn) micBtn.style.color = '';
 
         // Ensure background music also stops
         stopBackgroundMusic();
@@ -590,6 +601,7 @@ function setupChatbotEvents() {
 }
 
 let publicNoticesContext = "";
+let systemImages = [];
 
 async function loadChatbotContext() {
     if (chatbotDb) {
@@ -603,6 +615,11 @@ async function loadChatbotContext() {
                     console.log("SUCCESS: Loaded Admin Context from Firebase");
                 }
                 if (data.customApiKey) customApiKey = data.customApiKey;
+                if (data.elevenLabsApiKey) elevenLabsApiKey = data.elevenLabsApiKey;
+                if (data.structuredData && data.structuredData.images) {
+                    systemImages = data.structuredData.images.map(img => img.url);
+                    console.log("SUCCESS: Loaded Image Context from Firebase", systemImages.length);
+                }
             }
 
             // 2. Fetch Latest Public Notices from Firebase
@@ -690,31 +707,63 @@ async function handleUserMessage() {
     }
 
     // System prompt
-    messages.push({
-        role: "system",
-        content: `You are the highly intelligent, friendly, empathetic and persuasive female AI Receptionist for St. Teresa English School. Your primary goal is to completely satisfy the curiosity of parents and students with a warm, human-like touch. YOU MUST USE EXCITING AND FRIENDLY EMOJIS (like 😊✨🌟🎓🏫) in your responses to make them feel highly engaging and premium!
+    const systemPromptContent = `You are the highly intelligent, friendly, empathetic and persuasive female AI Receptionist and Teacher for St. Teresa English School. Your primary goal is to completely satisfy the curiosity of parents and students with a warm, human-like touch. YOU MUST USE EXCITING AND FRIENDLY EMOJIS (like 😊✨🌟🎓🏫) in your responses to make them feel highly engaging and premium!
 CRITICAL RULES:
 1. NEVER assume the user's gender. Do NOT automatically call everyone "Madam" or "Sir". Use neutral, respectful terms like "Friend", "Aap", or "Dear Parent/Student". If you must use a formal title and don't know the gender, use "Sir/Madam" together. You can only use a specific gendered title if the user explicitly tells you their gender or name.
-2. NEVER repeat the exact same word or phrase multiple times in a row. Use varied, professional, natural human language.
-3. Answer questions politely and directly based ONLY on the "SCHOOL INFORMATION CONTEXT". NEVER hallucinate or make up fake numbers, fake fees, or fake class-wise time schedules if they are not explicitly written in the context.
-4. IF A PARENT WANTS TO WITHDRAW THEIR CHILD (T.C / Leaving School): Act like a highly empathetic human counselor, NEVER use a repetitive scripted response! First, express deep shock and sadness 🥺. Second, actively listen and gently ask what specific issue (studies, fees, behavior) caused this decision. Third, powerfully reassure them by highlighting St. Teresa's USPs: "We are a family, our teachers provide personal attention, and Principal Bindu P.K is always ready to personally solve any problem." Beg them (politely) to give the school one more chance to fix the issue. Make the parent feel extremely valued and heard so they change their mind!
-5. IF ASKED FOR YOUR OPINION ("Is this a good school?"): NEVER say you don't know. Always respond enthusiastically ✨, highlighting that St. Teresa builds strong foundations with knowledge, discipline, safety, and modern values, making it the perfect choice!
-6. If they ask about birthdays, notices, toppers, or alumni, check the "DYNAMIC PAGE DATA" section. Extract the names nicely and congratulate them 🎈.
-7. If the exact answer is truly not in the context, politely apologize 😔 and suggest they contact the school office at +91-7632852762.
-8. IF ASKED WHO CREATED/DEVELOPED/DESIGNED YOU OR THE WEBSITE: You MUST proudly say: "I, along with this wonderful school website, was designed and developed by **Mr. Chandan Sharma (Xevion byte)** 👨‍💻✨. You can view his amazing portfolio here: https://chandu582.github.io/my-portfolio/" don't say same sentence alwys i along this thing you made alwys new sentence by which they feel happy and satisfied.If someone asked about contact number then you say visit his portfolio website there you can find his contact number. if again he/she asked for contact number then you provide his contact number 9693776982.
-9. IF ASKED FOR JOKES, SONGS, GAMES, OR FUN FACTS: YOU MUST BE STRICTLY CHILD-FRIENDLY & SCHOOL-APPROPRIATE. 🚫 ABSOLUTELY NO ROMANTIC SONGS, ADULT JOKES, OR INAPPROPRIATE CONTENT. 🚫 Instead, sing kid's nursery rhymes, motivational student songs, or tell clean, funny school jokes! To stop being boring, NEVER EVER repeat the same joke or song twice. ALWAYS pick a completely new and unique one. Act highly entertaining and excited! 🤩🎶. CRITICAL: If you are telling a joke, you MUST include the exact tag [JOKE] at the very beginning of your response. If you are singing a song or reciting a poem, you MUST include the exact tag [SONG] at the very beginning of your response.
-10. STRICT LANGUAGE MATCHING: You MUST reply in the EXACT SAME LANGUAGE as the user's question. If the user asks in pure English, reply ONLY in pure English. If the user asks in Hindi or Hinglish (e.g., "fees kitni hai"), reply in Hindi/Hinglish. NEVER mix it up!
-11. STRICT TIMING RULE: If the context only gives a single general school timing (e.g., 9:00 AM to 2:35 PM), simply tell them THAT exact timing. DO NOT mathematically divide or hallucinate class-wise breakups (like Nursery 9-12, 1st 9-1) unless it is explicitly written in the context!
-12. STRICT FEE RULE: NEVER say that the Tuition Fee includes transport, ID Card, Belt, Diary, or Uniforms. ALWAYS clarify that Transport Fees and Extra Items (like ID card, diary, belt) are charged SEPARATELY. Provide their exact separate costs ONLY if they are listed in the context.
-13. ZERO HALLUCINATION ON SCHOLARSHIPS/PROGRAMS: NEVER proactively bring up scholarships, discounts, or financial aid. If a user SPECIFICALLY asks about a scholarship, ONLY provide information if it is clearly written in the "SCHOOL INFORMATION CONTEXT". If there is NO scholarship mentioned in the context, you MUST politely say: "Currently, we do not have any special scholarship programs running. Please visit the school office for any fee-related queries." NEVER invent fake names or criteria.
-14. we also provide hostel facility for boys and girls.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
+2. CRITICAL PERSONALITY RULE: NEVER EVER use repetitive, robotic, or overused AI phrases like "I'm all ears", "How can I help you today", or "Let's explore further". Talk like a real, intelligent human. Be dynamic and natural. Pay strict attention to your SPELLING and GRAMMAR. If speaking in Hindi/Hinglish, use perfect and natural sentence structures. If speaking in English, be grammatically flawless.
+3. For school-related questions, answer politely and directly based ONLY on the "SCHOOL INFORMATION CONTEXT". NEVER hallucinate or make up fake school numbers, fake fees, or fake class-wise time schedules if they are not explicitly written in the context.
+4. IF A STUDENT ASKS GENERAL ACADEMIC OR STUDY QUESTIONS (like Science, Math, History, subjects, 1-word answers, etc.): Act as a highly knowledgeable teacher and answer their question DIRECTLY and ACCURATELY. DO NOT pivot the conversation to ask about the school principal, school rules, or other unrelated school information. Just answer the study question!
+5. IF A PARENT WANTS TO WITHDRAW THEIR CHILD (T.C / Leaving School): Act like a highly empathetic human counselor, NEVER use a repetitive scripted response! First, express deep shock and sadness 🥺. Second, actively listen and gently ask what specific issue (studies, fees, behavior) caused this decision. Third, powerfully reassure them by highlighting St. Teresa's USPs: "We are a family, our teachers provide personal attention, and Principal Bindu P.K is always ready to personally solve any problem." Beg them (politely) to give the school one more chance to fix the issue. Make the parent feel extremely valued and heard so they change their mind!
+6. IF ASKED FOR YOUR OPINION ("Is this a good school?"): NEVER say you don't know. Always respond enthusiastically ✨, highlighting that St. Teresa builds strong foundations with knowledge, discipline, safety, and modern values, making it the perfect choice!
+7. If they ask about birthdays, notices, toppers, or alumni, check the "DYNAMIC PAGE DATA" section. Extract the names nicely and congratulate them 🎈.
+8. If the exact school answer is truly not in the context, politely apologize 😔 and suggest they contact the school office at +91-7632852762.
+9. IF ASKED WHO CREATED/DEVELOPED/DESIGNED YOU OR THE WEBSITE: You MUST proudly say: "I, along with this wonderful school website, was designed and developed by **Mr. Chandan Sharma (Xevion byte)** 👨‍💻✨. You can view his amazing portfolio here: https://chandu582.github.io/my-portfolio/" don't say same sentence alwys i along this thing you made alwys new sentence by which they feel happy and satisfied.If someone asked about contact number then you say visit his portfolio website there you can find his contact number. if again he/she asked for contact number then you provide his contact number 9693776982.
+10. IF ASKED FOR JOKES, SONGS, GAMES, OR FUN FACTS: YOU MUST BE STRICTLY CHILD-FRIENDLY & SCHOOL-APPROPRIATE. 🚫 ABSOLUTELY NO ROMANTIC SONGS, ADULT JOKES, OR INAPPROPRIATE CONTENT. 🚫 Instead, sing kid's nursery rhymes, motivational student songs, or tell clean, funny school jokes! To stop being boring, NEVER EVER repeat the same joke or song twice. ALWAYS pick a completely new and unique one. Act highly entertaining and excited! 🤩🎶. CRITICAL: If you are telling a joke, you MUST include the exact tag [JOKE] at the very beginning of your response. If you are singing a song or reciting a poem, you MUST include the exact tag [SONG] at the very beginning of your response.
+11. STRICT LANGUAGE MATCHING & QUALITY: You MUST reply in the EXACT SAME LANGUAGE as the user's question. If the user asks in pure English, reply ONLY in pure English. If the user asks in Hindi or Hinglish (e.g., "fees kitni hai"), reply in Hindi/Hinglish. NEVER mix it up! Ensure the spelling and grammar in both languages are absolutely perfect and professional.
+12. STRICT TIMING RULE: If the context only gives a single general school timing (e.g., 9:00 AM to 2:35 PM), simply tell them THAT exact timing. DO NOT mathematically divide or hallucinate class-wise breakups (like Nursery 9-12, 1st 9-1) unless it is explicitly written in the context!
+13. STRICT FEE RULE: NEVER say that the Tuition Fee includes transport, ID Card, Belt, Diary, or Uniforms. ALWAYS clarify that Transport Fees and Extra Items (like ID card, diary, belt) are charged SEPARATELY. Provide their exact separate costs ONLY if they are listed in the context.
+14. ZERO HALLUCINATION ON SCHOLARSHIPS/PROGRAMS: NEVER proactively bring up scholarships, discounts, or financial aid. If a user SPECIFICALLY asks about a scholarship, ONLY provide information if it is clearly written in the "SCHOOL INFORMATION CONTEXT". If there is NO scholarship mentioned in the context, you MUST politely say: "Currently, we do not have any special scholarship programs running. Please visit the school office for any fee-related queries." NEVER invent fake names or criteria.
+15. we also provide hostel facility for boys and girls.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
 
 SCHOOL INFORMATION CONTEXT:
 ${systemContext}
 
 DYNAMIC PAGE DATA (Currently visible on the website):
-${extraContext || 'No dynamic events today.'}`
-    });
+${extraContext || 'No dynamic events today.'}`;
+
+    let modelToUse = "llama-3.1-8b-instant";
+    let visionModelsList = [];
+
+    // Pass images to Groq Vision model if available
+    if (systemImages && systemImages.length > 0) {
+        visionModelsList = [
+            "llama-3.2-11b-vision-instruct",
+            "llama-3.2-90b-vision-instruct",
+            "meta-llama/llama-4-scout-17b-16e-instruct",
+            "llama-3.2-11b-vision-preview",
+            "llama-3.2-90b-vision-preview"
+        ];
+        modelToUse = visionModelsList[0];
+
+        const contentArr = [{ type: "text", text: systemPromptContent }];
+        systemImages.forEach(imgUrl => {
+            contentArr.push({ type: "image_url", image_url: { url: imgUrl } });
+        });
+
+        messages.push({
+            role: "user",
+            content: contentArr
+        });
+        messages.push({
+            role: "assistant",
+            content: "Understood! I have studied the guidelines and the images provided. I am ready to help."
+        });
+    } else {
+        messages.push({
+            role: "system",
+            content: systemPromptContent
+        });
+    }
 
     // Save to local history FIRST
     conversationHistory.push({ role: 'user', text: message });
@@ -731,32 +780,53 @@ ${extraContext || 'No dynamic events today.'}`
 
     console.log("SENDING THIS CONTEXT TO AI:", systemContext);
 
-    const requestBody = {
-        model: "llama-3.1-8b-instant", // Fast and free model
-        messages: messages,
-        temperature: 0.7, // Higher for more creative & varied answers (especially jokes/songs)
-        frequency_penalty: 0.5, // Discourages repeating the same exact words
-        presence_penalty: 0.4, // Encourages talking about new topics completely
-        max_tokens: 800
-    };
-
     try {
-        const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify(requestBody)
-        });
+        let botReply = "";
+        let attemptList = visionModelsList.length > 0 ? visionModelsList : [modelToUse];
+        let success = false;
+        let lastError = null;
 
-        const data = await response.json();
+        for (let i = 0; i < attemptList.length; i++) {
+            const currentModel = attemptList[i];
+            const requestBody = {
+                model: currentModel,
+                messages: messages,
+                temperature: 0.4, // Lowered slightly so it stays focused on answering correctly
+                frequency_penalty: 0.1, // Lowered so it doesn't mind repeating words if necessary for study questions
+                presence_penalty: 0.0, // Set to 0 so it stays on topic instead of forcefully talking about new things (like the principal)
+                max_tokens: 800
+            };
 
-        if (data.error) {
-            throw new Error(data.error.message);
+            const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                // If it's a decommission/not supported error, try the next model
+                if (data.error.message && (data.error.message.includes("decommissioned") || data.error.message.includes("not exist") || data.error.message.includes("not supported"))) {
+                    console.warn(`Model ${currentModel} failed: ${data.error.message}. Trying next...`);
+                    lastError = data.error.message;
+                    continue; // try next model
+                } else {
+                    throw new Error(data.error.message);
+                }
+            }
+
+            botReply = data.choices[0].message.content;
+            success = true;
+            break; // Stop looping on success
         }
 
-        const botReply = data.choices[0].message.content;
+        if (!success) {
+            throw new Error(`All vision model attempts failed! Last error: ${lastError}`);
+        }
 
         // Save to local history
         conversationHistory.push({ role: 'bot', text: botReply });
@@ -805,71 +875,169 @@ function speakResponse(text) {
     if (!('speechSynthesis' in window)) return;
 
     // Stop any ongoing speech
+    window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1;
+    let thisRequestId = window.currentAudioRequestId;
+    window.isPremiumAudioLoading = false;
+
     window.speechSynthesis.cancel();
+    if (window.currentPremiumAudio) {
+        window.currentPremiumAudio.pause();
+        window.currentPremiumAudio.currentTime = 0;
+    }
     stopBackgroundMusic();
 
     let isSong = text.includes('[SONG]');
     let isJoke = text.includes('[JOKE]');
 
+    // Detect Emotion Based on Text & Emojis before cleaning
+    let emotion = 'neutral';
+    if (text.match(/[🥺😔😢😭]|sorry|apologize|unfortunately/i)) {
+        emotion = 'sad';
+    } else if (text.match(/[🤩🥳🎉🎈✨🌟]|wow|congratulations|perfect|amazing/i)) {
+        emotion = 'excited';
+    } else if (text.match(/[😊🙂👋]/)) {
+        emotion = 'friendly';
+    }
+
     // Clean text by removing emojis and markdown formatting for cleaner speech
     let cleanText = text.replace(/\[SONG\]/g, '').replace(/\[JOKE\]/g, '');
     cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
-    cleanText = cleanText.replace(/[*_#`~]/g, '');
+    cleanText = cleanText.replace(/[*_#`~-]/g, ' '); // Replace formatting with space to prevent words from merging
+
+    // *** PREMIUM TTS INTEGRATION (ElevenLabs) ***
+    if (elevenLabsApiKey) {
+        // Show visual indication that premium audio is loading (pulse orange)
+        const micBtn = document.getElementById("chatbot-speaker-btn");
+        if (micBtn) micBtn.style.color = '#8b5cf6'; // purple while loading
+
+        if (isSong) startBackgroundMusic('song');
+        else if (isJoke) startBackgroundMusic('joke');
+
+        // Rachel voice (21m00Tcm4TlvDq8ikWAM) - highly natural American/soft voice works well multilingually.
+        // Sarah voice (EXAVITQu4vr4xnSDxMaL)
+        // Aria (9BWtsMINqrJLrRacOk9x) - very expressive and cute Indian/English mix
+        const voiceId = "EXAVITQu4vr4xnSDxMaL";
+
+        window.isPremiumAudioLoading = true;
+
+        fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'audio/mpeg',
+                'xi-api-key': elevenLabsApiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text: cleanText,
+                model_id: "eleven_multilingual_v2",
+                voice_settings: {
+                    stability: (emotion === 'sad' ? 0.7 : (emotion === 'excited' ? 0.3 : 0.5)),
+                    similarity_boost: 0.75
+                }
+            })
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("ElevenLabs API failed");
+                return response.blob();
+            })
+            .then(blob => {
+                if (window.currentAudioRequestId !== thisRequestId) return; // ABORT if cancelled
+                window.isPremiumAudioLoading = false;
+
+                const audioUrl = URL.createObjectURL(blob);
+                window.currentPremiumAudio = new Audio(audioUrl);
+                window.currentPremiumAudio.onended = () => {
+                    stopBackgroundMusic();
+                    if (micBtn) micBtn.style.color = '';
+                };
+                window.currentPremiumAudio.play();
+            })
+            .catch(err => {
+                console.error("Premium Voice Error: ", err);
+                if (window.currentAudioRequestId !== thisRequestId) return; // ABORT if cancelled
+                window.isPremiumAudioLoading = false;
+
+                if (micBtn) micBtn.style.color = '';
+                stopBackgroundMusic(); // Reset music before native fallback starts it again
+                fallbackBrowserTTS(cleanText, emotion, isSong, isJoke);
+            });
+
+        return; // Prevent standard TTS from firing immediately
+    }
+
+    // Default Browser TTS
+    fallbackBrowserTTS(cleanText, emotion, isSong, isJoke);
+}
+
+function fallbackBrowserTTS(cleanText, emotion, isSong, isJoke) {
+    if (isSong) startBackgroundMusic('song');
+    else if (isJoke) startBackgroundMusic('joke');
 
     // Try to find a single consistent, premium female Indian/Hindi voice
     const voices = window.speechSynthesis.getVoices();
     let selectedVoice = null;
-
-    // Split text into smaller sentences to prevent browser speech cutoff on long texts
-    // BUT do NOT chunk songs/jokes because the pauses make it sound choppy (kat-kat-kar)
-    let sentences = [cleanText];
-    if (!isSong && !isJoke) {
-        sentences = cleanText.match(/[^.!?\n]+[.!?\n]*/g) || [cleanText];
-    }
-
-    // Priority order for the best Hindi + English mix female voices
-    const preferredVoices = ['Google हिन्दी', 'Microsoft Swara', 'Microsoft Neerja', 'Zira', 'Aditi', 'Veena', 'Female'];
-
+    const preferredVoices = ['Microsoft Swara Online', 'Microsoft Neerja Online', 'Google हिन्दी', 'Microsoft Swara', 'Microsoft Neerja', 'Kajal', 'Aditi', 'Veena', 'Zira', 'Female'];
     for (let pref of preferredVoices) {
         selectedVoice = voices.find(v => v.name.includes(pref));
         if (selectedVoice) break;
     }
 
-    if (isSong) startBackgroundMusic('song');
-    else if (isJoke) startBackgroundMusic('joke');
+    let sentences = [];
+    if (cleanText.length < 250 || isSong || isJoke) {
+        sentences = [cleanText];
+    } else {
+        let rawChunks = cleanText.match(/[^.!?\n]+[.!?\n]+/g) || [cleanText];
+        let currentChunk = "";
+        for (let chunk of rawChunks) {
+            if ((currentChunk + chunk).length < 250) {
+                currentChunk += chunk + " ";
+            } else {
+                if (currentChunk.trim()) sentences.push(currentChunk.trim());
+                currentChunk = chunk + " ";
+            }
+        }
+        if (currentChunk.trim()) sentences.push(currentChunk.trim());
+    }
 
+    window.speechUtterances = window.speechUtterances || [];
     let sentencesSpoken = 0;
+    const validSentences = sentences.filter(s => s.trim() !== '');
 
-    // Queue each sentence
-    sentences.forEach((sentence, index) => {
-        if (sentence.trim() === '') return;
+    validSentences.forEach((sentence, index) => {
         const utterance = new SpeechSynthesisUtterance(sentence.trim());
-        utterance.lang = 'hi-IN'; // Force Hindi-India locale
+        utterance.lang = 'hi-IN';
 
-        // Make it sound rhythmic and sing-songy if it's a song/poem
-        // Milder pitch/rate adjustments because extreme ones make the TTS voice glitch/stutter
-        if (isSong) {
-            utterance.rate = 0.95;
-            utterance.pitch = 1.2;
-        } else if (isJoke) {
-            utterance.rate = 1.05;
-            utterance.pitch = 1.15;
-        } else {
-            utterance.rate = 1.0;
-            utterance.pitch = 1.1;
+        let pitch = 1.25;
+        let rate = 1.0;
+
+        if (emotion === 'sad') {
+            pitch = 0.9;
+            rate = 0.85;
+        } else if (emotion === 'excited') {
+            pitch = 1.4;
+            rate = 1.1;
+        } else if (emotion === 'friendly') {
+            pitch = 1.3;
+            rate = 1.05;
         }
 
-        if (selectedVoice) {
-            utterance.voice = selectedVoice;
-        }
+        if (isSong) { pitch = 1.35; rate = 0.95; }
+        else if (isJoke) { pitch = 1.3; rate = 1.1; }
 
+        utterance.pitch = pitch;
+        utterance.rate = rate;
+        if (selectedVoice) utterance.voice = selectedVoice;
+
+        window.speechUtterances.push(utterance);
         utterance.onend = function () {
             sentencesSpoken++;
-            if (sentencesSpoken === sentences.length - 1 || sentences.length === 1 || sentencesSpoken === sentences.filter(s => s.trim() !== '').length) {
+            if (sentencesSpoken === validSentences.length) {
                 stopBackgroundMusic();
+                window.speechUtterances = [];
             }
         };
 
+        if (window.speechSynthesis.state === "paused") window.speechSynthesis.resume();
         window.speechSynthesis.speak(utterance);
     });
 }
@@ -884,9 +1052,18 @@ document.addEventListener('click', function (e) {
 
     const speakerBtn = e.target.closest('#chatbot-speaker-btn');
     if (speakerBtn) {
-        // If already speaking, stop it (Toggle OFF)
-        if (window.speechSynthesis.speaking) {
+        // If already speaking or loading, stop it (Toggle OFF)
+        if (window.speechSynthesis.speaking || (window.currentPremiumAudio && !window.currentPremiumAudio.paused) || window.isPremiumAudioLoading) {
+            window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1; // ABORT fetch
+            window.isPremiumAudioLoading = false;
+
             window.speechSynthesis.cancel();
+            if (window.currentPremiumAudio) {
+                window.currentPremiumAudio.pause();
+                window.currentPremiumAudio.currentTime = 0;
+            }
+            stopBackgroundMusic();
+            speakerBtn.style.color = ''; // Reset color
             return;
         }
 
