@@ -9,10 +9,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="config.js"></script>
+
 
     <style>
         body {
@@ -267,11 +269,21 @@
         <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
         <!-- TRANSPORT -->
-        <h4 style="margin-bottom: 10px; color: #333;"><i class="fas fa-bus"></i> Transport Pricing</h4>
+        <h4 style="margin-bottom: 10px; color: #333;"><i class="fas fa-bus"></i> Transport Pricing & Info</h4>
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <button class="btn-outline" onclick="downloadSampleExcel()"
+                style="padding: 8px 15px; border-radius: 5px; cursor: pointer; border: 1px solid #ccc; background: #fff;"><i
+                    class="fas fa-download"></i> Sample Excel</button>
+            <input type="file" id="transportExcelInput" style="display:none" accept=".xlsx, .xls"
+                onchange="uploadTransportExcel(event)">
+            <button class="btn-outline" onclick="document.getElementById('transportExcelInput').click()"
+                style="padding: 8px 15px; border-radius: 5px; cursor: pointer; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;"><i
+                    class="fas fa-file-excel"></i> Upload Excel</button>
+        </div>
         <div id="transportList" class="dynamic-list">
             <!-- Dynamic Transport Items Go Here -->
         </div>
-        <button class="btn-add" onclick="addTransportRow()"><i class="fas fa-plus"></i> Add Route/Distance</button>
+        <button class="btn-add" onclick="addTransportRow()"><i class="fas fa-plus"></i> Add Route Manually</button>
 
         <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
@@ -283,6 +295,47 @@
         </div>
         <button class="btn-add" onclick="addItemRow()"><i class="fas fa-plus"></i> Add Extra Item</button>
 
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+        <!-- IMAGE KNOWLEDGE BASE -->
+        <h4 style="margin-bottom: 10px; color: #333;"><i class="fas fa-image"></i> Image Knowledge Base (Timetables,
+            Routines)</h4>
+        <p style="font-size:12px; color:#666; margin-bottom: 10px;">Upload images like exam routines so the AI can read
+            them and answer questions.</p>
+        <div id="imageKbList" class="dynamic-list">
+            <!-- Dynamic Image Items Go Here -->
+        </div>
+        <div style="margin-bottom: 20px;">
+            <input type="file" id="kbImageInput" style="display:none" accept="image/*" onchange="uploadKbImage()">
+            <button class="btn-add" onclick="document.getElementById('kbImageInput').click()" id="kbUploadBtn">
+                <i class="fas fa-upload"></i> Upload Image
+            </button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+        <!-- GENERIC DOCUMENT KNOWLEDGE BASE (Coming Soon) -->
+        <h4 style="margin-bottom: 10px; color: #333; opacity: 0.6;"><i class="fas fa-file-alt"></i> Document Knowledge
+            Base
+            (Syllabus, Sports Day, Notices, etc) <span
+                style="font-size: 11px; padding: 3px 6px; background: #fef08a; color: #854d0e; border-radius: 4px; margin-left: 5px; font-weight: 500;">Coming
+                Soon</span></h4>
+        <p style="font-size:12px; color:#666; margin-bottom: 10px; opacity: 0.6;">Upload Excel (.xlsx, .xls) or Word
+            (.docx) files
+            containing any
+            information you want the AI to memorize. <strong>(This feature is currently unavailable while under
+                maintenance).</strong></p>
+        <div id="genericExcelKbList" class="dynamic-list" style="opacity: 0.5; pointer-events: none;">
+            <!-- Dynamic Generic Excel Items Go Here -->
+        </div>
+        <div style="margin-bottom: 20px;">
+            <button class="btn-add" disabled
+                style="background: #e2e8f0; border: 1px solid #cbd5e1; color: #94a3b8; cursor: not-allowed;">
+                <i class="fas fa-file-upload"></i> Upload Excel/Word Data (Currently Unavailable)
+            </button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
         <div style="margin-top: 20px;">
             <button onclick="saveKnowledgeBase()" class="btn-save" id="saveBtn">
@@ -299,23 +352,44 @@
         <p style="font-size:13px; color:#666; margin-bottom: 20px;">
 
             <a href="https://console.groq.com/keys" target="_blank" style="color: #8b5cf6; font-weight: bold;">
-            </a>Plzz... Don't touch or share this key with anyone othwise your A.I Chatbot star doing malfunctioning and
-            penality will be charged from your account isliye tej na bane yaa ise chedne ki koshish na karein🙏😄
+            </a>Plzz... Don't touch or share this key with anyone othwise your A.I Chatbot star doing malfunctioning
+            and
+            penality will be charged from your account isliye ise chedne ki koshish na karein🙏😄
         </p>
         <div class="form-group">
-            <label> </label>
+            <label>API Key</label>
             <input type="password" id="geminiApiKey" class="api-input"
                 placeholder="gsk_... (Leave blank to use default)">
+        </div>
+        <div class="form-group" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+            <label>API Key - 2 </label>
+            <input type="password" id="elevenLabsApiKey" class="api-input"
+                placeholder="sk_... (Get from elevenlabs.io)">
             <span class="help-text">
+                😊😋
             </span>
         </div>
         <button onclick="saveApiKey()" class="btn-save" style="background: #333;">
-            <i class="fas fa-check"></i> Update API Key
+            <i class="fas fa-check"></i> Update API Keys
         </button>
     </div>
 
 
     <script>
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+            authDomain: "sample-school-13ca4.firebaseapp.com",
+            projectId: "sample-school-13ca4",
+            storageBucket: "sample-school-13ca4.firebasestorage.app",
+            messagingSenderId: "198448853287",
+            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         // Check Admin Auth (Robust protection)
         firebase.auth().onAuthStateChanged((user) => {
             const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -352,6 +426,8 @@
                     }
 
                     if (data.customApiKey) document.getElementById('geminiApiKey').value = data.customApiKey;
+                    if (data.elevenLabsApiKey) document.getElementById('elevenLabsApiKey').value = data.elevenLabsApiKey;
+                    if (data.elevenLabsVoiceId) document.getElementById('elevenLabsVoiceId').value = data.elevenLabsVoiceId;
 
                     // Load structured data
                     const struct = data.structuredData || { fees: [], items: [], transport: [] };
@@ -362,8 +438,18 @@
                     if (struct.items && struct.items.length > 0) struct.items.forEach(i => addItemRow(i.name, i.amount));
                     else addItemRow();
 
-                    if (struct.transport && struct.transport.length > 0) struct.transport.forEach(t => addTransportRow(t.name, t.amount));
+                    if (struct.transport && struct.transport.length > 0) struct.transport.forEach(t => addTransportRow(t.route || t.name, t.fee || t.amount, t.vehicle, t.driver));
                     else addTransportRow();
+
+                    if (struct.images && struct.images.length > 0) {
+                        struct.images.forEach(img => addKbImageRow(img.title, img.url));
+                    }
+
+                    if (struct.genericExcel && struct.genericExcel.length > 0) {
+                        struct.genericExcel.forEach(doc => addGenericExcelRow(doc.title, doc.contentData));
+                    }
+
+
 
                 } else {
                     addFeeRow();
@@ -388,18 +474,238 @@
             container.appendChild(div);
         }
 
+        function addKbImageRow(title = '', url = '') {
+            const container = document.getElementById('imageKbList');
+            const div = document.createElement('div');
+            // Adding margin-bottom ensures they stack properly one below another
+            div.className = 'dynamic-item border p-2 rounded';
+            div.style.background = '#f9fafb';
+            div.style.border = '1px solid #e5e7eb';
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">
+                <input type="text" class="item-name" placeholder="Image Title (e.g. Class 10 Routine)" value="${title}" style="flex:1;">
+                <input type="hidden" class="item-url" value="${url}">
+                <button class="btn-remove" onclick="this.parentElement.remove()" style="flex: 0 0 auto;"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addGenericExcelRow(title = '', contentData = '') {
+            const container = document.getElementById('genericExcelKbList');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item border p-2 rounded';
+            div.style.flexDirection = 'column';
+            div.style.alignItems = 'stretch';
+            div.style.background = '#f8fafc';
+            div.style.border = '1px solid #e2e8f0';
+
+            // We use a textarea to store the parsed text representation of the excel data so it can be viewed/edited manually if needed
+            div.innerHTML = `
+                <div style="display:flex; width: 100%; margin-bottom: 5px;">
+                    <input type="text" class="item-title" placeholder="Document Title (e.g. Class 10 Syllabus)" value="${title}" style="flex:1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-weight: bold;">
+                    <button class="btn-remove" onclick="this.parentElement.parentElement.remove()" style="margin-left: 10px; padding: 10px;"><i class="fas fa-trash"></i></button>
+                </div>
+                <textarea class="item-content" rows="4" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: monospace; font-size: 12px;" placeholder="Excel Data will appear here as text...">${contentData}</textarea>
+            `;
+            container.appendChild(div);
+        }
+
         function addFeeRow(name = '', amt = '') { createRowHTML('feeList', 'Class (e.g., Nursery to UKG)', 'Amount (e.g., Rs 500/month)', name, amt); }
         function addItemRow(name = '', amt = '') { createRowHTML('itemList', 'Item Name (e.g., Tie, Belt, ID Card)', 'Price (e.g., Rs 150)', name, amt); }
-        function addTransportRow(name = '', amt = '') { createRowHTML('transportList', 'Route/Distance (e.g., 0-5 km)', 'Fee (e.g., Rs 600/month)', name, amt); }
+
+        function createTransportRowHTML(route = '', fee = '', vehicle = '', driver = '') {
+            const container = document.getElementById('transportList');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item border p-2 rounded';
+            div.style.background = '#f9fafb';
+            div.style.border = '1px solid #e5e7eb';
+            div.style.flexWrap = 'wrap';
+            div.innerHTML = `
+                <input type="text" class="item-route" placeholder="Route/Location" value="${route}" style="flex:1; min-width: 150px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                <input type="text" class="item-fee" placeholder="Fee (Rs)" value="${fee}" style="flex:0.5; min-width: 100px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                <input type="text" class="item-vehicle" placeholder="Vehicle (Bus 1)" value="${vehicle}" style="flex:1; min-width: 100px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                <input type="text" class="item-driver" placeholder="Driver Info" value="${driver}" style="flex:1; min-width: 150px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                <button class="btn-remove" onclick="this.parentElement.remove()" style="flex: 0 0 auto; padding: 10px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addTransportRow(route = '', fee = '', vehicle = '', driver = '') {
+            createTransportRowHTML(route, fee, vehicle, driver);
+        }
+
+        function addKbImageRow(title = '', url = '') {
+            const container = document.getElementById('imageKbList');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item border p-2 rounded';
+            div.style.background = '#f9fafb';
+            div.style.border = '1px solid #e5e7eb';
+            div.innerHTML = `
+                <img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">
+                <input type="text" class="item-name" placeholder="Image Title (e.g. Class 10 Routine)" value="${title}" style="flex:1;">
+                <input type="hidden" class="item-url" value="${url}">
+                <button class="btn-remove" onclick="this.parentElement.remove()" style="flex: 0 0 auto;"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        async function uploadKbImage() {
+            const file = document.getElementById('kbImageInput').files[0];
+            if (!file) return;
+
+            const btn = document.getElementById('kbUploadBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            btn.disabled = true;
+
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('upload_preset', 'school_gallery'); // Cloudinary preset
+
+                const res = await fetch('https://api.cloudinary.com/v1_1/dngejhffd/image/upload', { method: 'POST', body: fd });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    addKbImageRow('', data.secure_url);
+                } else {
+                    throw new Error("Upload failed: " + (data.error ? data.error.message : 'Unknown error'));
+                }
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            document.getElementById('kbImageInput').value = '';
+        }
 
         function gatherList(containerId) {
             const items = [];
             document.querySelectorAll(`#${containerId} .dynamic-item`).forEach(row => {
-                const name = row.querySelector('.item-name').value.trim();
-                const amt = row.querySelector('.item-value').value.trim();
+                const nameNode = row.querySelector('.item-name');
+                const valNode = row.querySelector('.item-value');
+                const name = nameNode ? nameNode.value.trim() : '';
+                const amt = valNode ? valNode.value.trim() : '';
                 if (name || amt) items.push({ name, amount: amt });
             });
             return items;
+        }
+
+        function gatherTransportList() {
+            const items = [];
+            document.querySelectorAll('#transportList .dynamic-item').forEach(row => {
+                const route = row.querySelector('.item-route').value.trim();
+                const fee = row.querySelector('.item-fee').value.trim();
+                const vehicle = row.querySelector('.item-vehicle').value.trim();
+                const driver = row.querySelector('.item-driver').value.trim();
+                if (route || fee) items.push({ route, fee, vehicle, driver, name: route, amount: fee });
+            });
+            return items;
+        }
+
+        function downloadSampleExcel() {
+            const ws = XLSX.utils.json_to_sheet([
+                { Route: "Afjalbigha", Fee: "850/Month", Vehicle: "Bus No 1", Driver: "Ramu (9876543210)" },
+                { Route: "Ajaypur", Fee: "700/Month", Vehicle: "Van 3", Driver: "Shyam" }
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "TransportFees");
+            XLSX.writeFile(wb, "Sample_Transport_Fees.xlsx");
+        }
+
+        function uploadTransportExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.SheetNames[0];
+                const excelRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+                if (excelRows.length > 0) {
+                    if (confirm("Do you want to clear existing transport rows before adding from Excel?")) {
+                        document.getElementById('transportList').innerHTML = '';
+                    }
+
+                    excelRows.forEach(row => {
+                        const route = row.Route || row.route || '';
+                        const fee = row.Fee || row.fee || '';
+                        const vehicle = row.Vehicle || row.vehicle || '';
+                        const driver = row.Driver || row.driver || '';
+                        if (route || fee) addTransportRow(route, fee, vehicle, driver);
+                    });
+                } else {
+                    alert("Excel file is empty or invalid format. Please use the Sample Excel.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            document.getElementById('transportExcelInput').value = '';
+        }
+
+        function uploadGenericDocument(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const title = file.name.replace(/\.[^/.]+$/, ""); // Get filename without extension
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+
+                if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                    // Excel Parsing
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    let allTextData = "";
+
+                    // Parse all sheets
+                    workbook.SheetNames.forEach(sheetName => {
+                        const excelRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                        if (excelRows.length > 0) {
+                            allTextData += `\n--- Sheet: ${sheetName} ---\n`;
+
+                            // Extract headers
+                            const headers = Object.keys(excelRows[0]);
+                            allTextData += headers.join(" | ") + "\n";
+
+                            // Extract rows
+                            excelRows.forEach(row => {
+                                const rowValues = headers.map(h => row[h]);
+                                allTextData += rowValues.join(" | ") + "\n";
+                            });
+                        }
+                    });
+
+                    if (allTextData.trim() !== "") {
+                        addGenericExcelRow(title, allTextData.trim());
+                    } else {
+                        alert("Excel file is empty or could not be parsed.");
+                    }
+                } else if (fileExtension === 'docx') {
+                    // Word Document Parsing via Mammoth.js
+                    mammoth.extractRawText({ arrayBuffer: data.buffer })
+                        .then(function (result) {
+                            const text = result.value; // The raw text
+                            if (text.trim() !== "") {
+                                addGenericExcelRow(title, text.trim());
+                            } else {
+                                alert("Word Document is empty or could not be parsed.");
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error("Error parsing Word Document:", err);
+                            alert("Failed to parse the Word document.");
+                        });
+                } else {
+                    alert("Unsupported file format. Please upload .xlsx, .xls, or .docx.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            document.getElementById('kbGenericExcelInput').value = '';
         }
 
         // Save Context
@@ -407,9 +713,25 @@
             const generalContext = document.getElementById('aiContext').value.trim();
             const fees = gatherList('feeList');
             const items = gatherList('itemList');
-            const transport = gatherList('transportList');
+            const transport = gatherTransportList();
 
             const btn = document.getElementById('saveBtn');
+
+            const genericExcel = [];
+            document.querySelectorAll('#genericExcelKbList .dynamic-item').forEach(row => {
+                const title = row.querySelector('.item-title').value.trim();
+                const contentData = row.querySelector('.item-content').value.trim();
+                if (title && contentData) genericExcel.push({ title, contentData });
+            });
+
+            const images = [];
+            document.querySelectorAll('#imageKbList .dynamic-item').forEach(row => {
+                const titleNode = row.querySelector('.item-name');
+                const urlNode = row.querySelector('.item-url');
+                const title = titleNode ? titleNode.value.trim() : '';
+                const url = urlNode ? urlNode.value : '';
+                if (url) images.push({ title, url });
+            });
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             btn.disabled = true;
@@ -428,12 +750,26 @@
                 finalPromptString += "\n";
             }
             if (transport.length > 0) {
-                finalPromptString += "*** TRANSPORT FEES ***\n";
-                transport.forEach(t => { finalPromptString += `${t.name}: ${t.amount}\n`; });
+                finalPromptString += "*** TRANSPORT FEES & INFO ***\n";
+                transport.forEach(t => {
+                    finalPromptString += `Route: ${t.route}, Fee: ${t.fee}, Vehicle: ${t.vehicle || 'N/A'}, Driver: ${t.driver || 'N/A'}\n`;
+                });
                 finalPromptString += "\n";
             }
+            if (images.length > 0) {
+                finalPromptString += "*** IMAGE KNOWLEDGE BASE SOURCES ***\n";
+                finalPromptString += "Note: You have been provided images in the chat context representing the following information. Refer to the images to answer questions about these topics:\n";
+                images.forEach(img => { finalPromptString += `- ${img.title}\n`; });
+                finalPromptString += "\n";
+            }
+            if (genericExcel.length > 0) {
+                finalPromptString += "*** SCHOOL DOCUMENTS KNOWLEDGE BASE ***\n";
+                genericExcel.forEach(doc => {
+                    finalPromptString += `[Document Title: ${doc.title}]\n${doc.contentData}\n\n`;
+                });
+            }
 
-            const structuredData = { fees, items, transport };
+            const structuredData = { fees, items, transport, images, genericExcel };
 
             db.collection('settings').doc('chatbot_config').set({
                 context: finalPromptString.trim(), // Chatbot reads this
@@ -457,17 +793,17 @@
         // Save Custom API Key
         function saveApiKey() {
             const key = document.getElementById('geminiApiKey').value.trim();
+            const elevenLabsKey = document.getElementById('elevenLabsApiKey').value.trim();
+            const elevenLabsVoice = document.getElementById('elevenLabsVoiceId').value.trim();
 
             db.collection('settings').doc('chatbot_config').set({
                 customApiKey: key,
+                elevenLabsApiKey: elevenLabsKey,
+                elevenLabsVoiceId: elevenLabsVoice,
                 apiKeyUpdated: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true })
                 .then(() => {
-                    if (key) {
-                        alert("Custom API Key Saved!");
-                    } else {
-                        alert("Custom API Key cleared. Now using Default Key.");
-                    }
+                    alert("API Keys have been successfully saved!");
                 })
                 .catch(err => {
                     alert("Error saving API Key: " + err.message);
@@ -475,6 +811,5 @@
         }
     </script>
 </body>
-
 
 </html>
