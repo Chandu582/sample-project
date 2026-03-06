@@ -561,6 +561,159 @@
             flex: 1;
             border-radius: 4px;
         }
+
+        /* WhatsApp Defaulters List Modal */
+        .wa-list-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 5000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .wa-list-modal.active {
+            display: flex;
+        }
+
+        .wa-list-box {
+            background: white;
+            width: 95%;
+            max-width: 520px;
+            border-radius: 20px;
+            overflow: hidden;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wa-list-header {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            padding: 18px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wa-list-header h3 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .wa-list-header .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .wa-list-search {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .wa-list-search input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .wa-list-search input:focus {
+            border-color: #25d366;
+        }
+
+        .wa-list-body {
+            overflow-y: auto;
+            flex: 1;
+            padding: 8px 12px;
+        }
+
+        .wa-student-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        .wa-student-row:hover {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .wa-student-info {
+            flex: 1;
+        }
+
+        .wa-student-name {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 13px;
+        }
+
+        .wa-student-meta {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .wa-student-due {
+            font-size: 13px;
+            font-weight: 800;
+            color: #ef4444;
+            margin-right: 12px;
+        }
+
+        .wa-send-btn {
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .wa-send-btn.unsent {
+            background: #25d366;
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+
+        .wa-send-btn.unsent:hover {
+            transform: scale(1.05);
+        }
+
+        .wa-send-btn.sent {
+            background: #3b82f6;
+            color: white;
+            border: 1px solid #2563eb;
+        }
+
+        .wa-list-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            background: #f8fafc;
+        }
     </style>
 </head>
 
@@ -666,7 +819,10 @@
                             <h3 class="chart-title">Massive Defaulters</h3>
                             <span class="chart-subtitle">Students with highest pending fees.</span>
                         </div>
-                        <div style="display:flex; gap:10px;">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button onclick="openDefaulterWhatsAppList()" class="act-btn"
+                                style="background:#25d366; color:white; padding:6px 12px; font-size:12px; box-shadow:none;">
+                                <i class="fab fa-whatsapp"></i> WhatsApp Defaulters</button>
                             <button id="defaulterPrevBtn" onclick="prevDefaultersPage()" class="act-btn"
                                 style="background:#f1f5f9; color:#334155; padding:6px 12px; font-size:12px; box-shadow:none; border:1px solid #cbd5e1;"
                                 disabled><i class="fas fa-chevron-left"></i> Prev</button>
@@ -1630,7 +1786,8 @@
                         students.push({
                             name: s.name,
                             class: s.class + (s.section ? '-' + s.section : ''),
-                            due: finalGrandTotal
+                            due: finalGrandTotal,
+                            mobile: s.mobile || ''
                         });
                     }
                 });
@@ -2081,8 +2238,140 @@
             }
         });
 
+        // ===== WHATSAPP DEFAULTER LIST FEATURE =====
+        const WA_SENT_KEY = 'stes_wa_defaulter_sent';
+
+        function getSentMap() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(WA_SENT_KEY) || '{}');
+                const now = Date.now();
+                // Clean entries older than 24 hours
+                const cleaned = {};
+                for (const key in raw) {
+                    if (now - raw[key] < 24 * 60 * 60 * 1000) cleaned[key] = raw[key];
+                }
+                localStorage.setItem(WA_SENT_KEY, JSON.stringify(cleaned));
+                return cleaned;
+            } catch { return {}; }
+        }
+
+        function markAsSent(studentKey) {
+            const map = getSentMap();
+            map[studentKey] = Date.now();
+            localStorage.setItem(WA_SENT_KEY, JSON.stringify(map));
+        }
+
+        function openDefaulterWhatsAppList() {
+            const list = globalDefaultersList || [];
+            if (list.length === 0) return alert('No defaulters found!');
+            renderDefaulterList(list);
+            document.getElementById('waListModal').classList.add('active');
+        }
+
+        function closeDefaulterList() {
+            document.getElementById('waListModal').classList.remove('active');
+        }
+
+        function renderDefaulterList(list) {
+            const body = document.getElementById('waListBody');
+            const sentMap = getSentMap();
+            let totalDue = 0;
+            let html = '';
+
+            list.forEach((d, idx) => {
+                let phone = String(d.mobile || '').trim().replace(/\s+/g, '');
+                if (phone.startsWith('+91')) phone = phone.slice(3);
+                if (phone.startsWith('91') && phone.length === 12) phone = phone.slice(2);
+                const isValid = phone && phone.length === 10 && /^\d{10}$/.test(phone);
+                const studentKey = `${d.name}_${d.class}_${phone}`;
+                const isSent = !!sentMap[studentKey];
+                const amt = d.due.toLocaleString('en-IN');
+                totalDue += d.due;
+
+                const btnClass = isSent ? 'sent' : 'unsent';
+                const btnText = isSent ? '<i class="fas fa-check"></i> Sent (Resend?)' : '<i class="fab fa-whatsapp"></i> Send';
+
+                html += `
+                <div class="wa-student-row" data-name="${d.name.toLowerCase()}">
+                    <div class="wa-student-info">
+                        <div class="wa-student-name">${d.name}</div>
+                        <div class="wa-student-meta">Class: ${d.class} ${isValid ? '• 📱 ' + phone : '• ❌ No valid number'}</div>
+                    </div>
+                    <span class="wa-student-due">₹${amt}</span>
+                    ${isValid ? `<button class="wa-send-btn ${btnClass}" id="waBtn_${idx}" onclick="sendDefaulterMsg(${idx}, '${d.name}', '${d.class}', '${phone}', ${d.due}, this)">${btnText}</button>` : '<span style="font-size:11px; color:#ef4444; font-weight:600;">N/A</span>'}
+                </div>`;
+            });
+
+            body.innerHTML = html;
+            document.getElementById('waListCount').innerText = `${list.length} students • Total: ₹${totalDue.toLocaleString('en-IN')}`;
+        }
+
+        function filterDefaulterList() {
+            const query = document.getElementById('waListSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.wa-student-row');
+            rows.forEach(row => {
+                row.style.display = row.dataset.name.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function sendDefaulterMsg(idx, name, cls, phone, due, btnEl) {
+            const amt = due.toLocaleString('en-IN');
+            const msg = `*St. Teresa English School* 🎓%0a` +
+                `━━━━━━━━━━━━━━━━━━%0a%0a` +
+                `*FEE REMINDER* 🔔%0a%0a` +
+                `Dear Parent 🙏,%0a%0a` +
+                `Your ward *${name}* (Class: *${cls}*) has a pending fee of *Rs.${amt}* 💰%0a%0a` +
+                `Kindly clear the dues at the earliest to avoid any inconvenience. 🙂%0a%0a` +
+                `*Payment Options:* 💳%0a` +
+                `- Cash at school counter 🏫%0a` +
+                `- UPI: *7632852762@ybl* 📲%0a` +
+                `- PhonePe/GooglePay: *7632852762* 📲%0a%0a` +
+                `📝 *Request:* Jab bhi aap *online payment* (UPI / PhonePe / GooglePay) karein, kripya school office ko payment details / screenshot ke saath inform kar dein taki aapke ward ka fee record turant update kiya ja sake. 🙏%0a%0a` +
+                `For any queries, please contact ☎️:%0a` +
+                `Phone: *7632852762*%0a%0a` +
+                `━━━━━━━━━━━━━━━━━━%0a` +
+                `Thank you for your cooperation! 🤝%0a` +
+                `*St. Teresa English School* 🎓`;
+
+            const waUrl = `https://wa.me/91${phone}?text=${msg}`;
+            window.open(waUrl, '_blank');
+
+            // Mark as sent (24hr tracking)
+            const studentKey = `${name}_${cls}_${phone}`;
+            markAsSent(studentKey);
+
+            // Update button UI instantly
+            if (btnEl) {
+                btnEl.className = 'wa-send-btn sent';
+                btnEl.innerHTML = '<i class="fas fa-check"></i> Sent (Resend?)';
+            }
+        }
 
     </script>
+
+    <!-- WhatsApp Defaulter List Modal -->
+    <div class="wa-list-modal" id="waListModal">
+        <div class="wa-list-box">
+            <div class="wa-list-header">
+                <div>
+                    <h3><i class="fab fa-whatsapp"></i> Fee Due Reminders</h3>
+                    <div style="font-size:11px; opacity:0.85; margin-top:3px;" id="waListCount">0 students</div>
+                </div>
+                <button class="close-btn" onclick="closeDefaulterList()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="wa-list-search">
+                <input type="text" id="waListSearch" onkeyup="filterDefaulterList()"
+                    placeholder="🔍 Search student name...">
+            </div>
+            <div class="wa-list-body" id="waListBody">
+                <p style="text-align:center; color:#94a3b8; padding:30px;">Loading...</p>
+            </div>
+            <div class="wa-list-footer">
+                Send button pe click karein → WhatsApp khulega → Send dabayein ✅<br>
+                Sent button 24 ghante ke liye blue rahega
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
