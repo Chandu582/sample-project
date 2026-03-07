@@ -1399,18 +1399,23 @@
             padding: 20px 20px 50px 20px;
         }
 
-        /* 🔥 DESKTOP (Laptop/PC) Setting: Center Align all cards and disable forced scroll */
+        /* 🔥 DESKTOP (Laptop/PC) Setting: Enable Horizontal Scroll for all */
         @media (min-width: 769px) {
-
             .toppers-scroll-container,
             .birthday-scroll-container,
             .alumni-grid-wrapper,
             .features-scroll {
-                justify-content: center !important;
-                flex-wrap: wrap;
-                /* Wrap extra cards to next line instead of hiding them */
-                overflow-x: hidden;
-                /* Remove ugly scrollbars on desktop */
+                justify-content: flex-start !important; /* Start se shuru hoga taaki drag smooth chale */
+                flex-wrap: nowrap; /* Niche agli line me jaane se rokega */
+                overflow-x: auto; /* Scroll enable karega */
+            }
+            
+            /* Desktop par ugly scrollbars ko hide karne ke liye */
+            .toppers-scroll-container::-webkit-scrollbar,
+            .birthday-scroll-container::-webkit-scrollbar,
+            .alumni-grid-wrapper::-webkit-scrollbar,
+            .features-scroll::-webkit-scrollbar {
+                display: none;
             }
         }
 
@@ -2810,15 +2815,16 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             try {
-                // 1. Firebase Config
-                const firebaseConfig = {
-                    apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-                    authDomain: "sample-school-13ca4.firebaseapp.com",
-                    projectId: "sample-school-13ca4",
-                    storageBucket: "sample-school-13ca4.firebasestorage.app",
-                    messagingSenderId: "198448853287",
-                    appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-                };
+                // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
+
 
                 // 2. Check if Firebase is loaded properly
                 if (typeof firebase !== 'undefined') {
