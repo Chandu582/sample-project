@@ -362,11 +362,19 @@
                 placeholder="gsk_... (Leave blank to use default)">
         </div>
         <div class="form-group" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
-            <label>API Key - 2 </label>
+            <label>ElevenLabs API Key (Premium Voice)</label>
             <input type="password" id="elevenLabsApiKey" class="api-input"
                 placeholder="sk_... (Get from elevenlabs.io)">
             <span class="help-text">
-                😊😋
+                Parents ko natural human-like voice sunne ke liye. Free tier available.
+            </span>
+        </div>
+        <div class="form-group">
+            <label>Voice ID (Optional)</label>
+            <input type="text" id="elevenLabsVoiceId" class="api-input"
+                placeholder="EXAVITQu4vr4xnSDxMaL (Sarah - default)">
+            <span class="help-text">
+                Sarah, Rachel, Aria - elevenlabs.io par voices dekhein. Blank = Sarah (warm, friendly).
             </span>
         </div>
         <button onclick="saveApiKey()" class="btn-save" style="background: #333;">

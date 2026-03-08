@@ -1028,7 +1028,6 @@
         }
 
         /* Bahar nikla hua */
-        }
 
         .sidebar-header {
             display: flex;
@@ -1401,15 +1400,19 @@
 
         /* 🔥 DESKTOP (Laptop/PC) Setting: Enable Horizontal Scroll for all */
         @media (min-width: 769px) {
+
             .toppers-scroll-container,
             .birthday-scroll-container,
             .alumni-grid-wrapper,
             .features-scroll {
-                justify-content: flex-start !important; /* Start se shuru hoga taaki drag smooth chale */
-                flex-wrap: nowrap; /* Niche agli line me jaane se rokega */
-                overflow-x: auto; /* Scroll enable karega */
+                justify-content: flex-start !important;
+                /* Start se shuru hoga taaki drag smooth chale */
+                flex-wrap: nowrap;
+                /* Niche agli line me jaane se rokega */
+                overflow-x: auto;
+                /* Scroll enable karega */
             }
-            
+
             /* Desktop par ugly scrollbars ko hide karne ke liye */
             .toppers-scroll-container::-webkit-scrollbar,
             .birthday-scroll-container::-webkit-scrollbar,
@@ -1427,7 +1430,7 @@
             content: '';
             margin: auto;
         }
-        }
+
 
         /* 🔥 MOBILE Setting: Pehla card screen ke perfect beech mein rahe (Snap Effect) */
         @media (max-width: 768px) {
@@ -1803,6 +1806,10 @@
             border-left: 6px solid var(--accent);
             /* Left Border Style */
         }
+        /* 🔥 YAHAN ADD KIYA: Director ke liye Mobile par Green Patti 🔥 */
+            #director-section .principal-container {
+                border-top-color: #00897b !important;
+            }
 
         /* Image Box (Left Side) */
         /* --- PREMIUM PRINCIPAL FRAME --- */
@@ -2259,6 +2266,333 @@
                 cursor: grabbing;
                 /* Click karne par closed hand dikhega */
             }
+        }
+
+
+
+
+
+
+
+
+            /* ========================================== */
+            /* --- ABOUT US, VISION & MISSION CSS --- */
+            /* ========================================== */
+            .about-vision-section {
+                padding: 50px 20px;
+                background: radial-gradient(circle at 50% 0%, #f8fafc 0%, #ffffff 100%);
+                position: relative;
+            }
+
+            .about-vision-section .container {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            /* --- LIQUID GLASS ABOUT CARD --- */
+            .about-glass-card {
+                background: rgba(255, 255, 255, 0.6);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                border-radius: 25px;
+                padding: 40px;
+                margin-bottom: 50px;
+                /* Neeche card se gap */
+                box-shadow:
+                    0 15px 35px rgba(0, 0, 0, 0.03),
+                    inset 0 2px 5px rgba(255, 255, 255, 1);
+                text-align: center;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .about-glass-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 40px rgba(26, 115, 232, 0.08), inset 0 2px 5px rgba(255, 255, 255, 1);
+            }
+
+            .about-glass-card h3 {
+                font-size: 24px;
+                color: var(--primary-dark);
+                margin-top: 0;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .about-glass-card p {
+                font-size: 15px;
+                color: #444;
+                line-height: 1.8;
+                margin-bottom: 15px;
+            }
+
+            /* --- VISION & MISSION GRID --- */
+            .vm-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 40px;
+                /* Cards ke beech ki jagah */
+                padding-top: 20px;
+            }
+
+            /* --- FLOATING VM CARDS --- */
+            .vm-card {
+                background: #ffffff;
+                border-radius: 25px;
+                padding: 50px 30px 30px;
+                /* Top padding zyada di hai icon ke liye */
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                border: 1px solid #f0f4f8;
+                border-top: 5px solid var(--primary);
+                position: relative;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .vm-card:nth-child(2) {
+                border-top-color: #ff416c;
+                /* Mission wale card ka border lal rahega */
+            }
+
+            .vm-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+                border-color: #e3f2fd;
+            }
+
+            /* --- FLOATING GRADIENT ICONS --- */
+            .vm-icon {
+                width: 75px;
+                height: 75px;
+                background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+                color: white;
+                font-size: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                position: absolute;
+                top: -37px;
+                /* Card ke aadha bahar, aadha andar */
+                left: 50%;
+                transform: translateX(-50%);
+                box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3);
+                border: 5px solid #fff;
+                transition: transform 0.3s ease;
+            }
+
+            .vm-card:hover .vm-icon {
+                transform: translateX(-50%) scale(1.1) rotate(5deg);
+            }
+
+            .vm-card h3 {
+                font-size: 22px;
+                color: #1e293b;
+                margin-top: 10px;
+                margin-bottom: 15px;
+                font-weight: 700;
+            }
+
+            .vm-card p {
+                font-size: 14.5px;
+                color: #64748b;
+                line-height: 1.7;
+            }
+
+            /* --- MISSION LIST STYLING --- */
+            .mission-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                text-align: left;
+                /* List ko left align rakha hai padhne me aasani ke liye */
+                width: 100%;
+            }
+
+            .mission-list li {
+                font-size: 14px;
+                color: #444;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                line-height: 1.5;
+                padding-bottom: 10px;
+                border-bottom: 1px dashed #eee;
+            }
+
+            .mission-list li:last-child {
+                border-bottom: none;
+            }
+
+            .mission-list li i {
+                color: #25D366;
+                /* Success Green tick */
+                font-size: 18px;
+                margin-top: 2px;
+            }
+
+            /* --- MOBILE ADJUSTMENTS --- */
+            @media (max-width: 768px) {
+                .about-vision-section {
+                    padding: 30px 15px;
+                }
+
+                .about-glass-card {
+                    padding: 25px 15px;
+                    border-radius: 20px;
+                }
+
+                .vm-grid {
+                    gap: 50px;
+                    /* Mobile par gap badhaya taaki icon upar na chade */
+                }
+
+                .vm-card {
+                    padding: 45px 20px 20px;
+                }
+            }
+
+
+
+
+
+
+
+            /* ========================================== */
+            /* --- CORE VALUES CSS --- */
+            /* ========================================== */
+            .core-values-section {
+                padding: 20px 20px 60px;
+                /* Thoda gap balance karne ke liye */
+                background: #ffffff;
+            }
+
+            .core-values-section .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                text-align: center;
+            }
+
+            .cv-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 25px;
+                padding: 10px;
+            }
+
+            .cv-card {
+                background: #f8fafc;
+                /* Halka blueish grey background */
+                border-radius: 20px;
+                padding: 30px 20px;
+                border: 1px solid rgba(0, 0, 0, 0.03);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                position: relative;
+                z-index: 1;
+            }
+
+            .cv-card:hover {
+                transform: translateY(-8px);
+                background: #ffffff;
+                box-shadow: 0 15px 30px rgba(26, 115, 232, 0.08);
+                border-color: #e3f2fd;
+            }
+
+            /* --- GLOWING ICONS --- */
+            .cv-icon {
+                width: 65px;
+                height: 65px;
+                margin: 0 auto 20px;
+                border-radius: 18px;
+                /* Squircle (halka gol) shape */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 26px;
+                color: #ffffff;
+                transition: transform 0.4s ease;
+            }
+
+            .cv-card:hover .cv-icon {
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            .cv-card h4 {
+                font-size: 18px;
+                color: #1e293b;
+                margin: 0 0 10px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+
+            .cv-card p {
+                font-size: 13.5px;
+                color: #64748b;
+                line-height: 1.6;
+                margin: 0;
+                font-weight: 500;
+            }
+
+            /* --- MOBILE ADJUSTMENTS --- */
+            @media (max-width: 768px) {
+                .cv-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                    /* Mobile par 2 column grid */
+                    gap: 15px;
+                }
+
+                .cv-card {
+                    padding: 25px 15px;
+                }
+
+                .cv-icon {
+                    width: 50px;
+                    height: 50px;
+                    font-size: 20px;
+                    margin-bottom: 15px;
+                }
+
+                .cv-card h4 {
+                    font-size: 16px;
+                }
+
+                .cv-card p {
+                    font-size: 12px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .cv-grid {
+                    grid-template-columns: 1fr;
+                    /* Bahut chote phone par 1 column */
+                }
+            }
+
+
+
+
+                /* --- WHY CHOOSE US DESKTOP CENTER FIX --- */
+        @media (min-width: 769px) {
+            .features-scroll {
+                justify-content: center !important;
+            }
+        }
+
+
+
+
+
+
     </style>
     <script type="application/ld+json">
 {
@@ -2407,6 +2741,34 @@
 
 
 
+        <!-- Director Section — same design, teal left border -->
+        <div id="director-section" style="display: none; margin-top: 25px;">
+            <div class="principal-container fade-up" style="border-left-color: #00897b;">
+
+                <div class="principal-img-box">
+                    <img id="idx-d-photo" src="" alt="Director">
+                    <div class="quote-icon"
+                        style="background: linear-gradient(135deg, #00897b, #00574f); box-shadow: 0 10px 20px rgba(0,137,123,0.4);">
+                        <i class="fas fa-quote-right"></i>
+                    </div>
+                </div>
+                <div class="principal-content">
+                    <h4 style="color:#00897b; margin:0; font-size:18px; text-transform:uppercase; letter-spacing:1px;">
+                        Director's Desk</h4>
+                    <h2 id="idx-d-name" style="margin:5px 0; font-size:22px; color:#333;">-</h2>
+                    <p id="idx-d-qual" style="font-size:12px; color:#666; font-weight:600; margin-bottom:15px;">-</p>
+                    <div id="idx-d-msg"
+                        style="font-size:14px; color:#555; line-height:1.6; font-style:italic; overflow-wrap:break-word; word-break:break-word;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
         <div id="principal-section" style="display: none; margin-top: 40px;">
             <div class="principal-container fade-up">
 
@@ -2429,6 +2791,159 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+        <section id="about-section" class="about-vision-section">
+            <div class="container fade-up">
+
+                <div class="section-title-box">
+                    <h2
+                        style="background: linear-gradient(135deg, #1a73e8, #0d47a1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; text-transform: uppercase; font-size: clamp(1.5rem, 4vw, 2.5rem); margin-bottom: 5px;">
+                        Welcome to Our School
+                    </h2>
+                    <p style="color:#78909c; font-size:14px; margin-bottom: 25px;">Discover the foundation of our
+                        educational journey</p>
+                </div>
+
+                <div class="about-glass-card fade-up">
+                    <h3><i class="fas fa-school" style="color: var(--accent);"></i> About Us</h3>
+                    <p>Welcome to <strong>ST. TERESA ENGLISH SCHOOL</strong>, a dedicated educational institution
+                        nestled in the heart of Lalganj, Chandi, Nalanda (Bihar). Founded on the belief that every child
+                        is a precious gift with limitless potential, we are committed to providing an education that
+                        extends far beyond traditional classroom learning.</p>
+                    <p>Our school is a vibrant, inclusive learning community where students are encouraged to discover
+                        their unique talents in a safe and stimulating environment. By blending modern teaching
+                        methodologies with deeply rooted moral values, we focus on the holistic development of every
+                        child—academically, socially, emotionally, and physically.</p>
+                </div>
+
+                <div class="vm-grid">
+                    <div class="vm-card fade-up">
+                        <div class="vm-icon"><i class="fas fa-eye"></i></div>
+                        <h3>Our Vision</h3>
+                        <p>To be a beacon of educational excellence that empowers every student to become a compassionate, innovative, and responsible lifelong learner, deeply rooted in strong moral values and equipped to lead with confidence.</p>
+                        
+                        <p style="margin-top: 10px;">We aspire to create a dynamic and inclusive learning ecosystem where curiosity is celebrated, individual potential is nurtured, and children are prepared to positively shape a rapidly changing world.</p>
+                    </div>
+
+                    <div class="vm-card fade-up">
+                        <div class="vm-icon" style="background: linear-gradient(135deg, #ff416c, #ff4b2b);"><i
+                                class="fas fa-bullseye"></i></div>
+                        <h3>Our Mission</h3>
+                        <ul class="mission-list">
+                            <li><i class="fas fa-check-circle"></i>
+                                <div><strong>Foster Holistic Growth:</strong> Safe, nurturing, and dynamic learning
+                                    environment.</div>
+                            </li>
+                            <li><i class="fas fa-check-circle"></i>
+                                <div><strong>Empower Students:</strong> Modern academic practices with strong ethical
+                                    roots.</div>
+                            </li>
+                            <li><i class="fas fa-check-circle"></i>
+                                <div><strong>Build Partnerships:</strong> Hand-in-hand with parents and the community.
+                                </div>
+                            </li>
+                            <li><i class="fas fa-check-circle"></i>
+                                <div><strong>Cultivate Leadership:</strong> Instilling essential life skills and social
+                                    responsibility.</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+
+
+
+
+
+        <section id="core-values-section" class="core-values-section">
+            <div class="container fade-up">
+
+                <div class="section-title-box">
+                    <h2
+                        style="background: linear-gradient(135deg, #0d47a1, #1a73e8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; text-transform: uppercase; font-size: clamp(1.5rem, 4vw, 2.5rem); margin-bottom: 5px;">
+                        Our Core Values
+                    </h2>
+                    <p style="color:#78909c; font-size:14px; margin-bottom: 35px;">The guiding principles that shape our
+                        students' character</p>
+                </div>
+
+                <div class="cv-grid">
+                    <div class="cv-card fade-up">
+                        <div class="cv-icon"
+                            style="background: linear-gradient(135deg, #4facfe, #00f2fe); box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Integrity</h4>
+                        <p>We believe in honesty, transparency, and doing the right thing, even when no one is watching.
+                        </p>
+                    </div>
+
+                    <div class="cv-card fade-up" style="transition-delay: 0.1s;">
+                        <div class="cv-icon"
+                            style="background: linear-gradient(135deg, #f6d365, #fda085); box-shadow: 0 8px 20px rgba(253, 160, 133, 0.4);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h4>Excellence</h4>
+                        <p>We strive for the highest standards in academics, extracurriculars, and personal conduct.</p>
+                    </div>
+
+                    <div class="cv-card fade-up" style="transition-delay: 0.2s;">
+                        <div class="cv-icon"
+                            style="background: linear-gradient(135deg, #ff0844, #ffb199); box-shadow: 0 8px 20px rgba(255, 8, 68, 0.4);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4>Compassion</h4>
+                        <p>We foster a culture of kindness, empathy, and respect for all individuals.</p>
+                    </div>
+
+                    <div class="cv-card fade-up" style="transition-delay: 0.3s;">
+                        <div class="cv-icon"
+                            style="background: linear-gradient(135deg, #43e97b, #38f9d7); box-shadow: 0 8px 20px rgba(67, 233, 123, 0.4);">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Resilience</h4>
+                        <p>We teach our students to embrace challenges, learn from failures, and never give up.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <section id="alumni-section" class="alumni-section" style="display: none;">
             <div class="section-title-box">
                 <h2
@@ -2445,6 +2960,16 @@
 
             </div>
         </section>
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2816,14 +3341,14 @@
 
             try {
                 // --- FIREBASE CONFIGURATION ---
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
+                const firebaseConfig = {
+                    apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+                    authDomain: "sample-school-13ca4.firebaseapp.com",
+                    projectId: "sample-school-13ca4",
+                    storageBucket: "sample-school-13ca4.firebasestorage.app",
+                    messagingSenderId: "198448853287",
+                    appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+                };
 
 
                 // 2. Check if Firebase is loaded properly
@@ -3035,25 +3560,32 @@
         // --- LOAD PRINCIPAL MESSAGE (Final Logic) ---
         document.addEventListener('DOMContentLoaded', function () {
             const db = firebase.firestore();
-            const section = document.getElementById('principal-section');
 
+            // Load Principal
             db.collection('settings').doc('principal').get().then(doc => {
                 if (doc.exists) {
                     const data = doc.data();
-
                     if (data.name && data.message) {
                         document.getElementById('idx-p-name').innerText = data.name;
                         document.getElementById('idx-p-qual').innerText = data.qualification || '';
-
-                        // ✅ DIRECT HTML ASSIGNMENT (Kyuki Editor ne HTML save kiya hai)
                         document.getElementById('idx-p-msg').innerHTML = data.message;
-
                         if (data.photo) document.getElementById('idx-p-photo').src = data.photo;
-
-                        section.style.display = 'block';
+                        document.getElementById('principal-section').style.display = 'block';
                     }
-                } else {
-                    section.style.display = 'none';
+                }
+            });
+
+            // Load Director (same logic — shows only if data exists)
+            db.collection('settings').doc('director').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.name && data.message) {
+                        document.getElementById('idx-d-name').innerText = data.name;
+                        document.getElementById('idx-d-qual').innerText = data.qualification || '';
+                        document.getElementById('idx-d-msg').innerHTML = data.message;
+                        if (data.photo) document.getElementById('idx-d-photo').src = data.photo;
+                        document.getElementById('director-section').style.display = 'block';
+                    }
                 }
             });
         });
@@ -3449,7 +3981,7 @@
         /* --- LIQUID GLASS FLOATING BUTTON --- */
         .status-float-btn {
             position: fixed;
-            bottom: 120px;
+            bottom: 100px;
             /* Moved up to clear chatbot button */
             right: 20px;
 
@@ -3505,7 +4037,7 @@
             .status-float-btn {
                 right: 15px;
                 /* Keep on right side */
-                bottom: 112px;
+                bottom: 90px;
                 /* Raised much higher to stay above the Chatbot button */
                 padding: 8px 16px;
                 /* Shrink button size */

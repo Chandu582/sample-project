@@ -71,208 +71,273 @@
 
 <div class="admin-box">
     <a href="admin-dashboard.html" style="text-decoration:none; color:#666; font-size:14px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-    <h2><i class="fas fa-user-tie"></i> Principal's Desk</h2>
+    <h2><i class="fas fa-chalkboard-teacher"></i> Leadership Messages</h2>
 
-    <div class="form-group" style="text-align:center;">
-        <img id="pPreview" src="https://via.placeholder.com/150?text=No+Image" class="img-preview">
-        <input type="file" id="pFile" accept="image/*" style="margin-top:10px;">
-        <input type="hidden" id="pPhotoUrl">
+    <!-- Tab Switcher -->
+    <div style="display:flex; gap:10px; margin-bottom:25px; background:#f4f7f6; padding:6px; border-radius:10px;">
+        <button id="tab-p" onclick="switchTab('principal')"
+            style="flex:1; padding:10px; border:none; border-radius:8px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; background:#1a73e8; color:white; transition:0.2s;">
+            <i class="fas fa-user-tie"></i> Principal's Desk
+        </button>
+        <button id="tab-d" onclick="switchTab('director')"
+            style="flex:1; padding:10px; border:none; border-radius:8px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; background:transparent; color:#555; transition:0.2s;">
+            <i class="fas fa-crown"></i> Director's Desk
+        </button>
     </div>
 
-    <div class="form-group">
-        <label>Principal's Name</label>
-        <input type="text" id="pName" placeholder="Ex: Mr. Chandu😎😄">
-    </div>
-
-    <div class="form-group">
-        <label>Qualification</label>
-        <input type="text" id="pQual" placeholder="Ex: M.A., B.Ed. etc..">
-    </div>
-
-    <div class="form-group">
-        <label>Message (Design & Format Here)</label>
-        <div class="editor-container">
-            <div class="editor-toolbar">
-                <select onchange="formatDoc('fontName', this.value)" class="toolbar-select" title="Font Style">
-                    <option value="Poppins">Default Font</option>
-                    <option value="Arial">Arial</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Courier New">Courier</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Impact">Impact</option>
-                </select>
-
-                <select onchange="formatDoc('fontSize', this.value)" class="toolbar-select" title="Font Size" style="width: 70px;">
-                    <option value="3">Normal</option>
-                    <option value="1">Small</option>
-                    <option value="2">Medium</option>
-                    <option value="4">Large</option>
-                    <option value="5">X-Large</option>
-                    <option value="6">Huge</option>
-                    <option value="7">Giant</option>
-                </select>
-
-                <div style="width:1px; height:25px; background:#ddd; margin:0 5px;"></div>
-
-                <button class="toolbar-btn" onclick="formatDoc('bold')" title="Bold"><i class="fas fa-bold"></i></button>
-                <button class="toolbar-btn" onclick="formatDoc('italic')" title="Italic"><i class="fas fa-italic"></i></button>
-                <button class="toolbar-btn" onclick="formatDoc('underline')" title="Underline"><i class="fas fa-underline"></i></button>
-
-                <div class="color-wrapper" title="Text Color">
-                    <i class="fas fa-font" style="font-size:12px; color:#555;"></i>
-                    <input type="color" onchange="formatDoc('foreColor', this.value)">
-                </div>
-
-                <div class="color-wrapper" title="Highlight Color">
-                    <i class="fas fa-highlighter" style="font-size:12px; color:#555;"></i>
-                    <input type="color" value="#ffffff" onchange="formatDoc('hiliteColor', this.value)">
-                </div>
-                
-                <div style="width:1px; height:25px; background:#ddd; margin:0 5px;"></div>
-
-                <button class="toolbar-btn" onclick="formatDoc('justifyLeft')" title="Left"><i class="fas fa-align-left"></i></button>
-                <button class="toolbar-btn" onclick="formatDoc('justifyCenter')" title="Center"><i class="fas fa-align-center"></i></button>
-                
-                <button class="toolbar-btn" onclick="formatDoc('insertOrderedList')" title="1,2,3..."><i class="fas fa-list-ol"></i></button>
-                <button class="toolbar-btn" onclick="formatDoc('insertUnorderedList')" title="Bullets"><i class="fas fa-list-ul"></i></button>
-            </div>
-            
-            <div id="editor-content" contenteditable="true">
-                Type your message here...
-            </div>
+    <!-- ═══ PRINCIPAL PANEL ═══ -->
+    <div id="panel-principal">
+        <div class="form-group" style="text-align:center;">
+            <img id="pPreview" src="https://via.placeholder.com/150?text=No+Image" class="img-preview">
+            <input type="file" id="pFile" accept="image/*" style="margin-top:10px;">
+            <input type="hidden" id="pPhotoUrl">
         </div>
-        <small style="color:#666; font-size:11px;">* Use size/color carefully. "Arial" or "Georgia" looks professional.</small>
+
+        <div class="form-group">
+            <label>Principal's Name</label>
+            <input type="text" id="pName" placeholder="Ex: Mr. Chandu😎😄">
+        </div>
+
+        <div class="form-group">
+            <label>Qualification</label>
+            <input type="text" id="pQual" placeholder="Ex: M.A., B.Ed. etc..">
+        </div>
+
+        <div class="form-group">
+            <label>Message (Design & Format Here)</label>
+            <div class="editor-container">
+                <div class="editor-toolbar">
+                    <select onchange="formatDoc('p-editor', 'fontName', this.value)" class="toolbar-select" title="Font Style">
+                        <option value="Poppins">Default Font</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Courier New">Courier</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Impact">Impact</option>
+                    </select>
+                    <select onchange="formatDoc('p-editor', 'fontSize', this.value)" class="toolbar-select" style="width:70px;">
+                        <option value="3">Normal</option><option value="1">Small</option>
+                        <option value="2">Medium</option><option value="4">Large</option>
+                        <option value="5">X-Large</option><option value="6">Huge</option><option value="7">Giant</option>
+                    </select>
+                    <div style="width:1px; height:25px; background:#ddd; margin:0 5px;"></div>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','bold')" title="Bold"><i class="fas fa-bold"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','italic')" title="Italic"><i class="fas fa-italic"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','underline')" title="Underline"><i class="fas fa-underline"></i></button>
+                    <div class="color-wrapper" title="Text Color">
+                        <i class="fas fa-font" style="font-size:12px; color:#555;"></i>
+                        <input type="color" onchange="formatDoc('p-editor','foreColor', this.value)">
+                    </div>
+                    <div class="color-wrapper" title="Highlight Color">
+                        <i class="fas fa-highlighter" style="font-size:12px; color:#555;"></i>
+                        <input type="color" value="#ffffff" onchange="formatDoc('p-editor','hiliteColor', this.value)">
+                    </div>
+                    <div style="width:1px; height:25px; background:#ddd; margin:0 5px;"></div>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','justifyLeft')"><i class="fas fa-align-left"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','justifyCenter')"><i class="fas fa-align-center"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('p-editor','insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                </div>
+                <div id="p-editor" contenteditable="true" style="min-height:250px; max-height:500px; overflow-y:auto; padding:20px; outline:none; font-size:14px; line-height:1.6; color:#333;">
+                    Type your message here...
+                </div>
+            </div>
+            <small style="color:#666; font-size:11px;">* Use size/color carefully. "Arial" or "Georgia" looks professional.</small>
+        </div>
+
+        <button onclick="saveData('principal')" id="pSaveBtn" class="main-btn"><i class="fas fa-save"></i> Save / Update Principal Message</button>
+        <button onclick="deleteData('principal')" class="btn-delete" id="pDelBtn" style="display:none;">
+            <i class="fas fa-trash"></i> Delete Principal Message
+        </button>
     </div>
 
-    <button onclick="saveMessage()" id="saveBtn" class="main-btn"><i class="fas fa-save"></i> Save / Update Message</button>
-    
-    <button onclick="deleteMessage()" class="btn-delete" id="delBtn" style="display:none;">
-        <i class="fas fa-trash"></i> Delete Message
-    </button>
+    <!-- ═══ DIRECTOR PANEL ═══ -->
+    <div id="panel-director" style="display:none;">
+        <div class="form-group" style="text-align:center;">
+            <img id="dPreview" src="https://via.placeholder.com/150?text=No+Image" class="img-preview" style="border-color:#00897b;">
+            <input type="file" id="dFile" accept="image/*" style="margin-top:10px;">
+            <input type="hidden" id="dPhotoUrl">
+        </div>
+
+        <div class="form-group">
+            <label>Director's Name</label>
+            <input type="text" id="dName" placeholder="Ex: Mrs. Sunita Devi">
+        </div>
+
+        <div class="form-group">
+            <label>Qualification</label>
+            <input type="text" id="dQual" placeholder="Ex: M.B.A., Ph.D. etc..">
+        </div>
+
+        <div class="form-group">
+            <label>Message (Design & Format Here)</label>
+            <div class="editor-container" style="border-color:#00897b44;">
+                <div class="editor-toolbar">
+                    <select onchange="formatDoc('d-editor', 'fontName', this.value)" class="toolbar-select" title="Font Style">
+                        <option value="Poppins">Default Font</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Courier New">Courier</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Impact">Impact</option>
+                    </select>
+                    <select onchange="formatDoc('d-editor', 'fontSize', this.value)" class="toolbar-select" style="width:70px;">
+                        <option value="3">Normal</option><option value="1">Small</option>
+                        <option value="2">Medium</option><option value="4">Large</option>
+                        <option value="5">X-Large</option><option value="6">Huge</option><option value="7">Giant</option>
+                    </select>
+                    <div style="width:1px; height:25px; background:#ddd; margin:0 5px;"></div>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','bold')"><i class="fas fa-bold"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','italic')"><i class="fas fa-italic"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','underline')"><i class="fas fa-underline"></i></button>
+                    <div class="color-wrapper" title="Text Color">
+                        <i class="fas fa-font" style="font-size:12px; color:#555;"></i>
+                        <input type="color" onchange="formatDoc('d-editor','foreColor', this.value)">
+                    </div>
+                    <div class="color-wrapper" title="Highlight Color">
+                        <i class="fas fa-highlighter" style="font-size:12px; color:#555;"></i>
+                        <input type="color" value="#ffffff" onchange="formatDoc('d-editor','hiliteColor', this.value)">
+                    </div>
+                    <div style="width:1px; height:25px; background:#ddd; margin:0 5px;"></div>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','justifyLeft')"><i class="fas fa-align-left"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','justifyCenter')"><i class="fas fa-align-center"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+                    <button class="toolbar-btn" onclick="formatDoc('d-editor','insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                </div>
+                <div id="d-editor" contenteditable="true" style="min-height:250px; max-height:500px; overflow-y:auto; padding:20px; outline:none; font-size:14px; line-height:1.6; color:#333;">
+                    Type your message here...
+                </div>
+            </div>
+            <small style="color:#666; font-size:11px;">* Use size/color carefully. "Georgia" looks very professional for Director's message.</small>
+        </div>
+
+        <button onclick="saveData('director')" id="dSaveBtn" class="main-btn" style="background:#00897b;"><i class="fas fa-save"></i> Save / Update Director Message</button>
+        <button onclick="deleteData('director')" class="btn-delete" id="dDelBtn" style="display:none;">
+            <i class="fas fa-trash"></i> Delete Director Message
+        </button>
+    </div>
 </div>
 
 <script>
-    // --- CONFIG (Same as before) ---
     const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
+        apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+        authDomain: "sample-school-13ca4.firebaseapp.com",
+        projectId: "sample-school-13ca4",
+        storageBucket: "sample-school-13ca4.firebasestorage.app",
+        messagingSenderId: "198448853287",
+        appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const cloudName = "dngejhffd"; 
+    const auth = firebase.auth();
+    const cloudName = "dngejhffd";
     const uploadPreset = "school_gallery";
 
-    // --- EDITOR LOGIC (Updated) ---
-    function formatDoc(cmd, value = null) {
-        document.execCommand(cmd, false, value);
-        // Editor par wapas focus karein taaki user type kar sake
-        document.getElementById('editor-content').focus();
+    // ── TAB SWITCH ──
+    function switchTab(tab) {
+        const isP = tab === 'principal';
+        document.getElementById('panel-principal').style.display = isP ? 'block' : 'none';
+        document.getElementById('panel-director').style.display = isP ? 'none' : 'block';
+        document.getElementById('tab-p').style.background = isP ? '#1a73e8' : 'transparent';
+        document.getElementById('tab-p').style.color = isP ? 'white' : '#555';
+        document.getElementById('tab-d').style.background = isP ? 'transparent' : '#00897b';
+        document.getElementById('tab-d').style.color = isP ? '#555' : 'white';
     }
 
-    // 1. Load Data
-    function loadData() {
-        db.collection('settings').doc('principal').get().then(doc => {
+    // ── EDITOR ──
+    function formatDoc(editorId, cmd, value = null) {
+        document.getElementById(editorId).focus();
+        document.execCommand(cmd, false, value);
+    }
+
+    // ── LOAD ──
+    function loadData(type) {
+        const isP = type === 'principal';
+        const p = isP ? 'p' : 'd';
+        db.collection('settings').doc(type).get().then(doc => {
             if (doc.exists) {
                 const data = doc.data();
-                document.getElementById('pName').value = data.name || '';
-                document.getElementById('pQual').value = data.qualification || '';
-                
-                // HTML Load karein
-                document.getElementById('editor-content').innerHTML = data.message || '';
-                
-                document.getElementById('pPhotoUrl').value = data.photo || '';
-                if(data.photo) document.getElementById('pPreview').src = data.photo;
-                document.getElementById('delBtn').style.display = 'block';
+                document.getElementById(p + 'Name').value = data.name || '';
+                document.getElementById(p + 'Qual').value = data.qualification || '';
+                document.getElementById(p + '-editor').innerHTML = data.message || '';
+                document.getElementById(p + 'PhotoUrl').value = data.photo || '';
+                if (data.photo) document.getElementById(p + 'Preview').src = data.photo;
+                document.getElementById(p + 'DelBtn').style.display = 'block';
             }
         });
     }
 
-    // 2. Save Function
-    async function saveMessage() {
-        const name = document.getElementById('pName').value;
-        const msgHTML = document.getElementById('editor-content').innerHTML; // HTML format uthayenge
-        const qual = document.getElementById('pQual').value;
-        const fileInput = document.getElementById('pFile');
-        const oldPhoto = document.getElementById('pPhotoUrl').value;
-        const btn = document.getElementById('saveBtn');
+    // ── SAVE ──
+    async function saveData(type) {
+        const isP = type === 'principal';
+        const p = isP ? 'p' : 'd';
+        const label = isP ? 'Principal' : 'Director';
+        const name = document.getElementById(p + 'Name').value;
+        const qual = document.getElementById(p + 'Qual').value;
+        const msgHTML = document.getElementById(p + '-editor').innerHTML;
+        const fileInput = document.getElementById(p + 'File');
+        const oldPhoto = document.getElementById(p + 'PhotoUrl').value;
+        const btn = document.getElementById(p + 'SaveBtn');
 
-        if(!name || document.getElementById('editor-content').innerText.trim() === "") { 
-            alert("Name and Message are required!"); return; 
+        if (!name || document.getElementById(p + '-editor').innerText.trim() === '') {
+            alert('Name and Message are required!'); return;
         }
 
         btn.disabled = true;
         btn.innerHTML = 'Uploading & Saving...';
-
         let finalPhoto = oldPhoto;
 
         try {
-            if(fileInput.files.length > 0) {
+            if (fileInput.files.length > 0) {
                 const fd = new FormData();
                 fd.append('file', fileInput.files[0]);
                 fd.append('upload_preset', uploadPreset);
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method:'POST', body:fd });
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: fd });
                 const json = await res.json();
                 finalPhoto = json.secure_url;
             }
 
-            // Save HTML directly
-            await db.collection('settings').doc('principal').set({
-                name: name,
-                qualification: qual,
-                message: msgHTML, 
-                photo: finalPhoto,
+            await db.collection('settings').doc(type).set({
+                name, qualification: qual, message: msgHTML, photo: finalPhoto,
                 updatedAt: new Date().toISOString()
             });
 
-            alert("Principal Message Updated Successfully!");
+            alert(label + ' Message Updated Successfully!');
             location.reload();
-
-        } catch(e) {
+        } catch (e) {
             console.error(e);
-            alert("Error: " + e.message);
+            alert('Error: ' + e.message);
             btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save / Update ' + label + ' Message';
         }
     }
 
-    function deleteMessage() {
-        if(confirm("Are you sure? This will hide the section.")) {
-            db.collection('settings').doc('principal').delete().then(() => location.reload());
+    // ── DELETE ──
+    function deleteData(type) {
+        const label = type === 'principal' ? 'Principal' : 'Director';
+        if (confirm('Are you sure? This will hide the ' + label + ' section.')) {
+            db.collection('settings').doc(type).delete().then(() => location.reload());
         }
     }
 
-    
-    
-        // admin-fees.html aur baaki data wale pages ke liye
-firebase.auth().onAuthStateChanged((user) => {
-    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
-    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+    // ── SECURITY ──
+    firebase.auth().onAuthStateChanged((user) => {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+        const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
-    if (user && isLoggedIn && userData.role === 'admin') {
-        // Asli test
-        db.collection('admins').doc(user.uid).get().then((doc) => {
-            if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
-                loadData(); // <-- Yahan page ka main function call hoga
-                
-            } else {
-                auth.signOut().then(() => window.location.replace("admin-login.html"));
-            }
-        });
-    } else {
-        window.location.replace("admin-login.html");
-    }
-});
-
-    
-    
-    
-    
-    
+        if (user && isLoggedIn && userData.role === 'admin') {
+            db.collection('admins').doc(user.uid).get().then((doc) => {
+                if (doc.exists && doc.data().role === 'SuperAdmin') {
+                    loadData('principal');
+                    loadData('director');
+                } else {
+                    auth.signOut().then(() => window.location.replace("admin-login.html"));
+                }
+            });
+        } else {
+            window.location.replace("admin-login.html");
+        }
+    });
 </script>
 
 </body>
