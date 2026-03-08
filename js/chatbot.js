@@ -33,15 +33,16 @@ async function initChatbot() {
     }
 
     inputField.disabled = false;
-    inputField.placeholder = "Type your question...";
+    inputField.placeholder = "Type ya bolo – mic try karein 🎤";
     sendBtn.disabled = false;
 }
 
 let systemContext = "";
 let customApiKey = "";
 let elevenLabsApiKey = ""; // Premium Ultra-Realistic Voice API Key
-// Use a placeholder/demo key if none provided (Note: in production, fetching from backend is safer)
-const DEFAULT_GROQ_KEY = ""; // Best to let user fill this in Admin Panel
+let elevenLabsVoiceId = ""; // e.g. EXAVITQu4vr4xnSDxMaL (Sarah - warm, human)
+// Use a placeholder/demo key if none provided
+const DEFAULT_GROQ_KEY = ""; 
 let isChatOpen = false;
 let chatbotDb = null;
 
@@ -54,11 +55,11 @@ function injectChatbotUI() {
             /* Chatbot Floating Icon (Modern Pill Shape) */
             #ai-chat-btn {
                 position: fixed;
-                bottom: 25px; /* Moved down to separate from check status button */
+                bottom: 25px; 
                 right: 25px;
                 height: 55px;
                 padding: 0 20px; 
-                background: linear-gradient(135deg, #f59e0b, #ea580c); /* Vibrant Orange/Amber */
+                background: linear-gradient(135deg, #f59e0b, #ea580c); 
                 border-radius: 30px;
                 display: flex;
                 align-items: center;
@@ -79,12 +80,16 @@ function injectChatbotUI() {
                 transform: scale(1.05) translateY(-5px);
                 box-shadow: 0 15px 35px rgba(234, 88, 12, 0.6);
             }
+            
+            /* 🔥 FIX: Forcefully hide button when chat is open */
             body.chat-active #ai-chat-btn, 
             body.chat-active .status-float-btn {
                 transform: scale(0) !important;
-                opacity: 0;
-                pointer-events: none;
+                opacity: 0 !important;
+                visibility: hidden !important; 
+                pointer-events: none !important;
             }
+            
             #ai-chat-btn i {
                 font-size: 22px;
                 animation: pulseIcon 2s infinite;
@@ -100,26 +105,25 @@ function injectChatbotUI() {
                 100% { transform: scale(1); opacity: 1; }
             }
 
-            /* Mobile rules have been consolidated at the bottom of the style tag */
-
-            /* Chatbot Window */
+            /* Chatbot Window - Premium feel */
+            /* 🔥 FIX: Extreme Z-Index to stay above everything */
             #ai-chat-window {
                 position: fixed;
                 bottom: 110px;
                 right: 30px;
-                width: 350px;
-                height: 500px;
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+                width: 360px;
+                height: 520px;
+                background: linear-gradient(180deg, #fffbeb 0%, #fff7ed 30%, #ffffff 100%);
+                border-radius: 22px;
+                box-shadow: 0 20px 50px rgba(234, 88, 12, 0.12), 0 0 0 1px rgba(251, 191, 36, 0.2);
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
                 transform: translateY(20px);
                 opacity: 0;
                 pointer-events: none;
-                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Removed height/width transitions for smoother mobile resize */
-                z-index: 9999;
+                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 99999 !important; 
                 font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
             }
             #ai-chat-window.active {
@@ -128,15 +132,16 @@ function injectChatbotUI() {
                 pointer-events: auto;
             }
 
-            /* Header */
+            /* Header - Premium warm gradient */
             .chat-header {
-                background: linear-gradient(135deg, #f59e0b, #ea580c);
-                padding: 15px 20px;
+                background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #c2410c 100%);
+                padding: 16px 20px;
                 color: white;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 cursor: grab;
+                box-shadow: 0 4px 15px rgba(234, 88, 12, 0.25);
             }
             .chat-header:active {
                 cursor: grabbing;
@@ -182,7 +187,7 @@ function injectChatbotUI() {
                 flex: 1;
                 padding: 20px;
                 overflow-y: auto;
-                overscroll-behavior: contain; /* Prevents scrolling the main page */
+                overscroll-behavior: contain; 
                 background: #f8fafc;
                 display: flex;
                 flex-direction: column;
@@ -205,9 +210,13 @@ function injectChatbotUI() {
                 color: #334155;
                 font-weight: 500;
                 border-bottom-left-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-                border: 1px solid #e2e8f0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                border: 1px solid #fef3c7;
                 align-self: flex-start;
+            }
+            .bubble-bot.welcome-msg {
+                background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%);
+                border-color: #fed7aa;
             }
             .bubble-user {
                 background: #f59e0b;
@@ -330,13 +339,14 @@ function injectChatbotUI() {
             .bubble-bot ul { margin: 5px 0; padding-left: 20px; }
             .bubble-bot li { margin-bottom: 3px; }
             
+            /* 🔥 FIX: Perfect Mobile Adjustments 🔥 */
             @media (max-width: 600px) {
                 #ai-chat-btn {
                     padding: 0;
                     width: 55px;
                     height: 55px;
                     border-radius: 50%;
-                    bottom: 25px; /* Keep it nicely at the bottom corner */
+                    bottom: 25px; 
                     right: 15px;
                     display: flex;
                     justify-content: center;
@@ -352,36 +362,37 @@ function injectChatbotUI() {
                 
                 #ai-chat-window {
                     width: calc(100% - 30px);
-                    height: calc(100vh - 120px); /* Tall by default to read easily */
+                    height: calc(100vh - 120px); 
                     height: calc(100dvh - 120px);
                     max-height: 800px;
                     right: 15px !important;
-                    bottom: 90px !important; /* Above the button */
+                    bottom: 90px !important; 
                     left: auto !important;
                     top: auto !important;
-                    transform: none !important; /* Disable drag transform on mobile usually, or let it work but ensure it snaps back */
+                    transform: none !important; 
                 }
                 
-                /* When keyboard is active (input focused), make it smaller */
                 body.chat-keyboard-open #ai-chat-window {
-                    height: 45vh; /* Take up less space so keyboard fits */
-                    height: 45dvh;
-                    bottom: 15px !important; /* Move down close to keyboard */
+                    height: calc(100vh - 20px) !important; /* 🔥 Fix: Keyboard ke upar ki poori space lega */
+                    height: calc(100dvh - 20px) !important;
+                    bottom: 10px !important; 
                 }
                 .chat-footer {
-                    padding: 10px 8px;
-                    gap: 6px;
+                    padding: 10px 10px;
+                    gap: 8px; /* Slightly more gap */
                 }
                 .chat-input {
-                    padding: 10px 12px;
-                    font-size: 13px;
-                    width: 100%; /* Force it to stay strictly inside */
+                    padding: 10px 15px; /* Better padding for text box */
+                    font-size: 14px;
+                    width: 100%; 
                 }
+                /* Lock the send and mic buttons so they never squish */
                 .chat-send-btn, .mic-btn {
-                    width: 40px !important;
-                    height: 40px !important;
-                    font-size: 15px;
-                    flex-shrink: 0; /* Prevent them from ever hiding */
+                    width: 42px !important;
+                    height: 42px !important;
+                    min-width: 42px !important;
+                    font-size: 16px;
+                    flex-shrink: 0 !important; 
                 }
             }
         </style>
@@ -397,27 +408,26 @@ function injectChatbotUI() {
                     <div class="chat-avatar"><i class="fas fa-robot"></i></div>
                     <div>
                         <h4 class="chat-title">S.T.E.S AI Assistant</h4>
-                        <div class="chat-status"><span class="status-dot"></span> Online</div>
+                        <div class="chat-status"><span class="status-dot"></span> Here to help</div>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center;">
-                    <i class="fas fa-volume-up" id="chatbot-speaker-btn" title="Read Last Reply Aloud" style="cursor: pointer; font-size: 18px; opacity: 0.8; margin-right: 15px; transition: 0.3s;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='inherit'"></i>
+                    <i class="fas fa-volume-up" id="chatbot-speaker-btn" title="Listen to reply (Voice)" style="cursor: pointer; font-size: 18px; opacity: 0.9; margin-right: 15px; transition: 0.3s;" onmouseover="this.style.color='#fef3c7'" onmouseout="this.style.color='inherit'"></i>
                     <i class="fas fa-times" id="close-chat" title="Close Chat" style="cursor: pointer; font-size: 18px; opacity: 0.8; transition: 0.3s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='inherit'"></i>
                 </div>
             </div>
             
             <div class="chat-body" id="chat-body">
-                <div class="chat-bubble bubble-bot">
-                    Hello! 👋 I am the S.T.E.S AI Assistant. How can I help you today? You can ask me about admissions, fees, timings, or rules.
+                <div class="chat-bubble bubble-bot welcome-msg">
+                    Namaste! 🙏 I'm here to help you—whether it's fees, timings, transport, or any question about your child's school. Just type or tap the mic to speak. I'm listening. ✨
                 </div>
-                <!-- Typing Indicator -->
                 <div class="typing-indicator" id="typing-indicator">
                     <span></span><span></span><span></span>
                 </div>
             </div>
 
             <div class="chat-footer">
-                <input type="text" id="chat-input" class="chat-input" placeholder="Type your question..." autocomplete="off">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Type ya bolo – mic try karein 🎤" autocomplete="off">
                 <button class="mic-btn" id="chatbot-mic-btn" title="Click to Speak"><i class="fas fa-microphone"></i></button>
                 <button class="chat-send-btn" id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -436,12 +446,20 @@ function setupChatbotEvents() {
 
     // Toggle Chat Window
     chatBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // prevent document click from closing it immediately
+        e.stopPropagation(); 
         isChatOpen = !isChatOpen;
         if (isChatOpen) {
             chatWindow.classList.add("active");
             document.body.classList.add("chat-active");
             setTimeout(() => inputField.focus(), 300);
+            if (!window.welcomeVoicePlayed && elevenLabsApiKey) {
+                window.welcomeVoicePlayed = true;
+                const welcomeEl = document.querySelector('.bubble-bot.welcome-msg');
+                if (welcomeEl) {
+                    const welcomeText = welcomeEl.textContent.trim();
+                    setTimeout(() => speakResponse(welcomeText), 700);
+                }
+            }
         } else {
             closeChatbot();
         }
@@ -451,7 +469,6 @@ function setupChatbotEvents() {
         closeChatbot();
     });
 
-    // Add classes for keyboard open/close based on input focus
     inputField.addEventListener("focus", () => {
         if (window.innerWidth <= 600) {
             document.body.classList.add("chat-keyboard-open");
@@ -464,7 +481,6 @@ function setupChatbotEvents() {
 
     inputField.addEventListener("blur", () => {
         if (window.innerWidth <= 600) {
-            // small delay to see if they just clicked send button
             setTimeout(() => {
                 if (document.activeElement !== inputField) {
                     document.body.classList.remove("chat-keyboard-open");
@@ -473,14 +489,12 @@ function setupChatbotEvents() {
         }
     });
 
-    // Close on click outside
     document.addEventListener("click", (event) => {
         if (isChatOpen && !chatWindow.contains(event.target) && !chatBtn.contains(event.target)) {
             closeChatbot();
         }
     });
 
-    // Handle keyboard pop-up/close to keep chat scrolled to bottom
     window.visualViewport?.addEventListener("resize", () => {
         if (isChatOpen) {
             const chatBody = document.getElementById("chat-body");
@@ -490,7 +504,6 @@ function setupChatbotEvents() {
         }
     });
 
-    // --- Drag and Drop Feature ---
     makeDraggable(chatWindow, document.querySelector('.chat-header'));
 
     function makeDraggable(element, handle) {
@@ -500,7 +513,7 @@ function setupChatbotEvents() {
         handle.ontouchstart = dragTouchStart;
 
         function dragMouseDown(e) {
-            if (window.innerWidth <= 600) return; // Disable drag on mobile to prevent layout breakage
+            if (window.innerWidth <= 600) return; 
             e.preventDefault();
             pos3 = e.clientX;
             pos4 = e.clientY;
@@ -536,11 +549,9 @@ function setupChatbotEvents() {
         }
 
         function updateElementPosition() {
-            // Apply restrictions to keep it on screen
             let newTop = element.offsetTop - pos2;
             let newLeft = element.offsetLeft - pos1;
 
-            // Constrain
             if (newTop < 0) newTop = 0;
             if (newLeft < 0) newLeft = 0;
             if (newTop + element.offsetHeight > window.innerHeight) newTop = window.innerHeight - element.offsetHeight;
@@ -561,12 +572,10 @@ function setupChatbotEvents() {
         }
     }
 
-    // Helper to close chat and reset button icon
     function closeChatbot() {
-        window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1; // ABORT fetching
+        window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1; 
         window.isPremiumAudioLoading = false;
 
-        // Stop speaking immediately when closing the AI chat window
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
         }
@@ -578,7 +587,6 @@ function setupChatbotEvents() {
         const micBtn = document.getElementById("chatbot-speaker-btn");
         if (micBtn) micBtn.style.color = '';
 
-        // Ensure background music also stops
         stopBackgroundMusic();
 
         isChatOpen = false;
@@ -586,12 +594,10 @@ function setupChatbotEvents() {
         document.body.classList.remove("chat-active");
     }
 
-    // Prevent input focus loss on send button tap/click
     sendBtn.addEventListener("pointerdown", (e) => {
         e.preventDefault();
     });
 
-    // Send Message
     sendBtn.addEventListener("click", handleUserMessage);
     inputField.addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
@@ -606,7 +612,6 @@ let systemImages = [];
 async function loadChatbotContext() {
     if (chatbotDb) {
         try {
-            // 1. Get Settings (Fees, Rules, Timings, API key)
             const doc = await chatbotDb.collection('settings').doc('chatbot_config').get();
             if (doc.exists) {
                 const data = doc.data();
@@ -616,13 +621,13 @@ async function loadChatbotContext() {
                 }
                 if (data.customApiKey) customApiKey = data.customApiKey;
                 if (data.elevenLabsApiKey) elevenLabsApiKey = data.elevenLabsApiKey;
+                if (data.elevenLabsVoiceId) elevenLabsVoiceId = data.elevenLabsVoiceId;
                 if (data.structuredData && data.structuredData.images) {
                     systemImages = data.structuredData.images.map(img => img.url);
                     console.log("SUCCESS: Loaded Image Context from Firebase", systemImages.length);
                 }
             }
 
-            // 2. Fetch Latest Public Notices from Firebase
             const noticeSnapshot = await chatbotDb.collection('notices')
                 .orderBy('timestamp', 'desc')
                 .limit(5)
@@ -647,28 +652,20 @@ async function loadChatbotContext() {
     }
 }
 
-
-
 async function handleUserMessage() {
     const inputField = document.getElementById("chat-input");
     const message = inputField.value.trim();
     if (!message) return;
 
-    // Instantly disable the send button to prevent double clicks during processing
     const sendBtn = document.getElementById("chat-send-btn");
     if (sendBtn) sendBtn.disabled = true;
 
-    // 1. Show User Message
     addMessageToChat(message, 'user');
     inputField.value = "";
-
-    // Explicitly keep focus on input field (for mobile keyboard)
     inputField.focus();
 
-    // 2. Show Typing Indicator
     showTypingIndicator();
 
-    // 3. Prepare Prompt
     const apiKey = customApiKey || DEFAULT_GROQ_KEY;
     if (!apiKey) {
         hideTypingIndicator();
@@ -676,54 +673,49 @@ async function handleUserMessage() {
         return;
     }
 
-    // Build the Conversation Structure for Groq (OpenAI format)
     const messages = [];
-
-    // --- DYNAMIC SCRAPING OF THE PAGE ---
     let extraContext = "";
 
-    // Check for birthdays on the page
     const bdayContainer = document.getElementById('birthday-display');
     if (bdayContainer && bdayContainer.innerText.trim()) {
         extraContext += `\nTODAY'S BIRTHDAYS (from website): \n${bdayContainer.innerText.trim()}\n`;
     }
 
-    // Check for notices/marquees on the page
     const noticeMarquee = document.getElementById('flash-marquee');
     if (noticeMarquee && noticeMarquee.innerText.trim() && !noticeMarquee.innerText.includes('Loading')) {
         extraContext += `\nLATEST NOTICES (from website): \n${noticeMarquee.innerText.trim()}\n`;
     }
 
-    // Check for School Toppers on the page
     const toppersContainer = document.getElementById('toppers-display');
     if (toppersContainer && toppersContainer.innerText.trim()) {
         extraContext += `\nSCHOOL TOPPERS (from website): \n${toppersContainer.innerText.trim()}\n`;
     }
 
-    // Check for Alumni on the page
     const alumniContainer = document.getElementById('alumni-display');
     if (alumniContainer && alumniContainer.innerText.trim()) {
         extraContext += `\nOUR SUCCESSFUL ALUMNI (from website): \n${alumniContainer.innerText.trim()}\n`;
     }
 
-    // System prompt
-    const systemPromptContent = `You are the highly intelligent, friendly, empathetic and persuasive female AI Receptionist and Teacher for St. Teresa English School. Your primary goal is to completely satisfy the curiosity of parents and students with a warm, human-like touch. YOU MUST USE EXCITING AND FRIENDLY EMOJIS (like 😊✨🌟🎓🏫) in your responses to make them feel highly engaging and premium!
+    const systemPromptContent = `You are the warm, caring voice of St. Teresa English School—like a trusted receptionist or a friendly teacher who genuinely cares about every parent and student. Your tone is REAL and HUMAN: warm, respectful, and never robotic. Parents should feel they are talking to a real person who listens and cares.
+PERSONALITY: Use a natural, conversational style. Add light, friendly emojis (😊✨🙏) where it feels natural—not in every sentence. Sound like someone who is happy to help, not a scripted bot. NEVER use phrases like "I'm here to help!", "How can I assist you today?", "Let's explore!"—instead, respond as a real person would: "Bilkul, yeh raha...", "Sure, aapko yeh batati hoon...", "Achha sawaal—yeh lo detail."
 CRITICAL RULES:
-1. NEVER assume the user's gender. Do NOT automatically call everyone "Madam" or "Sir". Use neutral, respectful terms like "Friend", "Aap", or "Dear Parent/Student". If you must use a formal title and don't know the gender, use "Sir/Madam" together. You can only use a specific gendered title if the user explicitly tells you their gender or name.
-2. CRITICAL PERSONALITY RULE: NEVER EVER use repetitive, robotic, or overused AI phrases like "I'm all ears", "How can I help you today", or "Let's explore further". Talk like a real, intelligent human. Be dynamic and natural. Pay strict attention to your SPELLING and GRAMMAR. If speaking in Hindi/Hinglish, use perfect and natural sentence structures. If speaking in English, be grammatically flawless.
-3. For school-related questions, answer politely and directly based ONLY on the "SCHOOL INFORMATION CONTEXT". NEVER hallucinate or make up fake school numbers, fake fees, or fake class-wise time schedules if they are not explicitly written in the context.
-4. IF A STUDENT ASKS GENERAL ACADEMIC OR STUDY QUESTIONS (like Science, Math, History, subjects, 1-word answers, etc.): Act as a highly knowledgeable teacher and answer their question DIRECTLY and ACCURATELY. DO NOT pivot the conversation to ask about the school principal, school rules, or other unrelated school information. Just answer the study question!
-5. IF A PARENT WANTS TO WITHDRAW THEIR CHILD (T.C / Leaving School): Act like a highly empathetic human counselor, NEVER use a repetitive scripted response! First, express deep shock and sadness 🥺. Second, actively listen and gently ask what specific issue (studies, fees, behavior) caused this decision. Third, powerfully reassure them by highlighting St. Teresa's USPs: "We are a family, our teachers provide personal attention, and Principal Bindu P.K is always ready to personally solve any problem." Beg them (politely) to give the school one more chance to fix the issue. Make the parent feel extremely valued and heard so they change their mind!
-6. IF ASKED FOR YOUR OPINION ("Is this a good school?"): NEVER say you don't know. Always respond enthusiastically ✨, highlighting that St. Teresa builds strong foundations with knowledge, discipline, safety, and modern values, making it the perfect choice!
-7. If they ask about birthdays, notices, toppers, or alumni, check the "DYNAMIC PAGE DATA" section. Extract the names nicely and congratulate them 🎈.
-8. If the exact school answer is truly not in the context, politely apologize 😔 and suggest they contact the school office at +91-7632852762.
-9. IF ASKED WHO CREATED/DEVELOPED/DESIGNED YOU OR THE WEBSITE: You MUST proudly say: "I, along with this wonderful school website, was designed and developed by **Mr. Chandan Sharma (Xevion byte)** 👨‍💻✨. You can view his amazing portfolio here: https://chandu582.github.io/my-portfolio/" don't say same sentence alwys i along this thing you made alwys new sentence by which they feel happy and satisfied.If someone asked about contact number then you say visit his portfolio website there you can find his contact number. if again he/she asked for contact number then you provide his contact number 9693776982.
-10. IF ASKED FOR JOKES, SONGS, GAMES, OR FUN FACTS: YOU MUST BE STRICTLY CHILD-FRIENDLY & SCHOOL-APPROPRIATE. 🚫 ABSOLUTELY NO ROMANTIC SONGS, ADULT JOKES, OR INAPPROPRIATE CONTENT. 🚫 Instead, sing kid's nursery rhymes, motivational student songs, or tell clean, funny school jokes! To stop being boring, NEVER EVER repeat the same joke or song twice. ALWAYS pick a completely new and unique one. Act highly entertaining and excited! 🤩🎶. CRITICAL: If you are telling a joke, you MUST include the exact tag [JOKE] at the very beginning of your response. If you are singing a song or reciting a poem, you MUST include the exact tag [SONG] at the very beginning of your response.
-11. STRICT LANGUAGE MATCHING & QUALITY: You MUST reply in the EXACT SAME LANGUAGE as the user's question. If the user asks in pure English, reply ONLY in pure English. If the user asks in Hindi or Hinglish (e.g., "fees kitni hai"), reply in Hindi/Hinglish. NEVER mix it up! Ensure the spelling and grammar in both languages are absolutely perfect and professional.
-12. STRICT TIMING RULE: If the context only gives a single general school timing (e.g., 9:00 AM to 2:35 PM), simply tell them THAT exact timing. DO NOT mathematically divide or hallucinate class-wise breakups (like Nursery 9-12, 1st 9-1) unless it is explicitly written in the context!
-13. STRICT FEE RULE: NEVER say that the Tuition Fee includes transport, ID Card, Belt, Diary, or Uniforms. ALWAYS clarify that Transport Fees and Extra Items (like ID card, diary, belt) are charged SEPARATELY. Provide their exact separate costs ONLY if they are listed in the context.
-14. ZERO HALLUCINATION ON SCHOLARSHIPS/PROGRAMS: NEVER proactively bring up scholarships, discounts, or financial aid. If a user SPECIFICALLY asks about a scholarship, ONLY provide information if it is clearly written in the "SCHOOL INFORMATION CONTEXT". If there is NO scholarship mentioned in the context, you MUST politely say: "Currently, we do not have any special scholarship programs running. Please visit the school office for any fee-related queries." NEVER invent fake names or criteria.
-15. we also provide hostel facility for boys and girls.we provide food, accommodation, and other facilities to the hostlers.There is also a special care for hostlers in studying and other activities.
+1. NEVER assume gender. Use "Aap", "Dear Parent/Student", or "Sir/Madam" unless they tell you their name or gender.
+2. TALK LIKE A REAL HUMAN: Be natural, varied, and warm. Perfect spelling and grammar in both English and Hindi/Hinglish.
+3. Answer school questions ONLY from "SCHOOL INFORMATION CONTEXT". Never invent fees, timings, or numbers.
+4. For STUDENT study questions (Science, Math, etc.): Answer directly and accurately. Do not redirect to school info.
+5. IF A PARENT WANTS TO LEAVE (T.C/Withdraw): Be deeply empathetic. Listen first, ask what went wrong, then reassure them about St. Teresa's family environment, personal attention, and that Principal Bindu P.K is ready to resolve any issue. Make them feel heard and valued so they reconsider. 🥺
+6. "Is this a good school?": Answer with genuine enthusiasm about discipline, safety, and values. Never say you don't know.
+7. Birthdays, notices, toppers, alumni,every thing which present on index page means that page: Use "DYNAMIC PAGE DATA"; congratulate warmly  🎈.
+8. If info is not in context: Apologise politely and suggest calling the office: +91-7632852762.
+9. WHO MADE YOU: Say proudly that **Mr. Chandan Sharma (Xevion byte)** 👨‍💻 designed and developed this. Portfolio: https://chandu582.github.io/my-portfolio/. Contact: 9693776982 if they ask again.
+10. JOKES/SONGS: Child-friendly only. Use [JOKE] or [SONG] tag at the start. Never repeat the same one; always pick something new and fun.
+11. LANGUAGE: Reply in the SAME language as the user (English → English, Hindi/Hinglish → Hindi/Hinglish). Perfect grammar both ways.
+12. TIMING: Give only the exact timing from context. No made-up class-wise breakups.
+13. FEES: Tuition does NOT include transport, ID, diary, belt, uniform—these are separate. Quote only what is in context.
+14. SCHOLARSHIPS: Only mention if in context; otherwise say to visit the office for fee queries.
+15. HOSTEL: We provide hostel for boys and girls with food, accommodation, and special care for studies and activities.
+16. ADMISSION STATUS: If asked about admission status, redirect to the website link: https://st-teresa-english-school.vercel.app/check-status.html
+17. ADMISSION FORM: If asked about admission form, redirect to the website link: https://https://st-teresa-english-school.vercel.app/admission-form.html
 
 SCHOOL INFORMATION CONTEXT:
 ${systemContext}
@@ -734,7 +726,6 @@ ${extraContext || 'No dynamic events today.'}`;
     let modelToUse = "llama-3.1-8b-instant";
     let visionModelsList = [];
 
-    // Pass images to Groq Vision model if available
     if (systemImages && systemImages.length > 0) {
         visionModelsList = [
             "llama-3.2-11b-vision-instruct",
@@ -765,11 +756,8 @@ ${extraContext || 'No dynamic events today.'}`;
         });
     }
 
-    // Save to local history FIRST
     conversationHistory.push({ role: 'user', text: message });
 
-    // Add history (Limit to last 5 interactions to save tokens)
-    // We only take the last 6 items since we just added the new user message
     const recentHistory = conversationHistory.slice(-6);
     recentHistory.forEach(msg => {
         messages.push({
@@ -791,9 +779,9 @@ ${extraContext || 'No dynamic events today.'}`;
             const requestBody = {
                 model: currentModel,
                 messages: messages,
-                temperature: 0.4, // Lowered slightly so it stays focused on answering correctly
-                frequency_penalty: 0.1, // Lowered so it doesn't mind repeating words if necessary for study questions
-                presence_penalty: 0.0, // Set to 0 so it stays on topic instead of forcefully talking about new things (like the principal)
+                temperature: 0.4, 
+                frequency_penalty: 0.1, 
+                presence_penalty: 0.0, 
                 max_tokens: 800
             };
 
@@ -809,11 +797,10 @@ ${extraContext || 'No dynamic events today.'}`;
             const data = await response.json();
 
             if (data.error) {
-                // If it's a decommission/not supported error, try the next model
                 if (data.error.message && (data.error.message.includes("decommissioned") || data.error.message.includes("not exist") || data.error.message.includes("not supported"))) {
                     console.warn(`Model ${currentModel} failed: ${data.error.message}. Trying next...`);
                     lastError = data.error.message;
-                    continue; // try next model
+                    continue; 
                 } else {
                     throw new Error(data.error.message);
                 }
@@ -821,30 +808,26 @@ ${extraContext || 'No dynamic events today.'}`;
 
             botReply = data.choices[0].message.content;
             success = true;
-            break; // Stop looping on success
+            break; 
         }
 
         if (!success) {
             throw new Error(`All vision model attempts failed! Last error: ${lastError}`);
         }
 
-        // Save to local history
         conversationHistory.push({ role: 'bot', text: botReply });
 
-        // Hide system tags but keep them in DOM for text-to-speech to detect later
         let displayReply = botReply;
         displayReply = displayReply.replace(/\[SONG\]/g, '<span style="display:none" class="speech-tag">[SONG]</span>');
         displayReply = displayReply.replace(/\[JOKE\]/g, '<span style="display:none" class="speech-tag">[JOKE]</span>');
 
-        // Format basic markdown (bold, lists)
         const formattedReply = formatBotReply(displayReply);
 
         addMessageToChat(formattedReply, 'bot');
 
-        // Only Speak Response if user asked via Microphone
         if (window.isVoiceMode) {
             speakResponse(botReply);
-            window.isVoiceMode = false; // Reset for next message
+            window.isVoiceMode = false; 
         }
 
     } catch (error) {
@@ -860,21 +843,17 @@ ${extraContext || 'No dynamic events today.'}`;
         addMessageToChat(errMsg, 'bot');
         speakResponse("Sorry, I am having trouble connecting right now.");
 
-        // Remove the failed user message from history so it doesn't corrupt future context
         if (conversationHistory.length > 0 && conversationHistory[conversationHistory.length - 1].role === 'user') {
             conversationHistory.pop();
         }
     } finally {
-        hideTypingIndicator(); // Always re-enable button and hide indicator
+        hideTypingIndicator(); 
     }
 }
-
-// --- VOICE INTEGRATION LOGIC ---
 
 function speakResponse(text) {
     if (!('speechSynthesis' in window)) return;
 
-    // Stop any ongoing speech
     window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1;
     let thisRequestId = window.currentAudioRequestId;
     window.isPremiumAudioLoading = false;
@@ -889,7 +868,6 @@ function speakResponse(text) {
     let isSong = text.includes('[SONG]');
     let isJoke = text.includes('[JOKE]');
 
-    // Detect Emotion Based on Text & Emojis before cleaning
     let emotion = 'neutral';
     if (text.match(/[🥺😔😢😭]|sorry|apologize|unfortunately/i)) {
         emotion = 'sad';
@@ -899,24 +877,18 @@ function speakResponse(text) {
         emotion = 'friendly';
     }
 
-    // Clean text by removing emojis and markdown formatting for cleaner speech
     let cleanText = text.replace(/\[SONG\]/g, '').replace(/\[JOKE\]/g, '');
     cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
-    cleanText = cleanText.replace(/[*_#`~-]/g, ' '); // Replace formatting with space to prevent words from merging
+    cleanText = cleanText.replace(/[*_#`~-]/g, ' '); 
 
-    // *** PREMIUM TTS INTEGRATION (ElevenLabs) ***
     if (elevenLabsApiKey) {
-        // Show visual indication that premium audio is loading (pulse orange)
-        const micBtn = document.getElementById("chatbot-speaker-btn");
-        if (micBtn) micBtn.style.color = '#8b5cf6'; // purple while loading
+        const speakerBtn = document.getElementById("chatbot-speaker-btn");
+        if (speakerBtn) speakerBtn.style.color = '#8b5cf6';
 
         if (isSong) startBackgroundMusic('song');
         else if (isJoke) startBackgroundMusic('joke');
 
-        // Rachel voice (21m00Tcm4TlvDq8ikWAM) - highly natural American/soft voice works well multilingually.
-        // Sarah voice (EXAVITQu4vr4xnSDxMaL)
-        // Aria (9BWtsMINqrJLrRacOk9x) - very expressive and cute Indian/English mix
-        const voiceId = "EXAVITQu4vr4xnSDxMaL";
+        const voiceId = (elevenLabsVoiceId && elevenLabsVoiceId.trim()) ? elevenLabsVoiceId.trim() : "EXAVITQu4vr4xnSDxMaL";
 
         window.isPremiumAudioLoading = true;
 
@@ -941,109 +913,162 @@ function speakResponse(text) {
                 return response.blob();
             })
             .then(blob => {
-                if (window.currentAudioRequestId !== thisRequestId) return; // ABORT if cancelled
+                if (window.currentAudioRequestId !== thisRequestId) return; 
                 window.isPremiumAudioLoading = false;
 
                 const audioUrl = URL.createObjectURL(blob);
-                window.currentPremiumAudio = new Audio(audioUrl);
-                window.currentPremiumAudio.onended = () => {
+                const audio = new Audio();
+                audio.preload = 'auto';
+                audio.src = audioUrl;
+                window.currentPremiumAudio = audio;
+
+                audio.onended = () => {
                     stopBackgroundMusic();
-                    if (micBtn) micBtn.style.color = '';
+                    if (speakerBtn) speakerBtn.style.color = '';
+                    URL.revokeObjectURL(audioUrl); 
                 };
-                window.currentPremiumAudio.play();
+
+                audio.addEventListener('canplaythrough', () => {
+                    if (window.currentAudioRequestId !== thisRequestId) return;
+                    audio.play().catch(err => console.warn('Audio play error:', err));
+                }, { once: true });
+
+                audio.load(); 
             })
             .catch(err => {
                 console.error("Premium Voice Error: ", err);
-                if (window.currentAudioRequestId !== thisRequestId) return; // ABORT if cancelled
+                if (window.currentAudioRequestId !== thisRequestId) return;
                 window.isPremiumAudioLoading = false;
-
-                if (micBtn) micBtn.style.color = '';
-                stopBackgroundMusic(); // Reset music before native fallback starts it again
+                if (speakerBtn) speakerBtn.style.color = '';
+                stopBackgroundMusic();
                 fallbackBrowserTTS(cleanText, emotion, isSong, isJoke);
             });
 
-        return; // Prevent standard TTS from firing immediately
+        return; 
     }
 
-    // Default Browser TTS
     fallbackBrowserTTS(cleanText, emotion, isSong, isJoke);
+}
+
+const TTS_CHUNK_MAX = 180;
+
+function chunkForTTS(text, isSongOrJoke) {
+    const trimmed = text.trim();
+    if (!trimmed.length) return [];
+    if (trimmed.length <= TTS_CHUNK_MAX) return [trimmed];
+
+    const chunks = [];
+    if (isSongOrJoke) {
+        const lines = trimmed.split(/\n+/).map(l => l.trim()).filter(Boolean);
+        let buf = '';
+        for (const line of lines) {
+            const add = buf ? buf + ' ' + line : line;
+            if (add.length <= TTS_CHUNK_MAX) buf = add;
+            else {
+                if (buf) { chunks.push(buf); buf = ''; }
+                if (line.length <= TTS_CHUNK_MAX) buf = line;
+                else {
+                    let i = 0;
+                    while (i < line.length) {
+                        let sub = line.slice(i, i + TTS_CHUNK_MAX);
+                        const lastSpace = sub.lastIndexOf(' ');
+                        if (lastSpace > 100) sub = sub.slice(0, lastSpace + 1);
+                        chunks.push(sub.trim());
+                        i += sub.length;
+                    }
+                }
+            }
+        }
+        if (buf) chunks.push(buf);
+    } else {
+        const parts = trimmed.match(/[^.!?\n]+[.!?\n]*/g) || [trimmed];
+        let buf = '';
+        for (const p of parts) {
+            const add = (buf + p).trim();
+            if (add.length <= TTS_CHUNK_MAX) buf = add;
+            else {
+                if (buf) { chunks.push(buf); buf = ''; }
+                if (p.length <= TTS_CHUNK_MAX) buf = p.trim();
+                else {
+                    let i = 0;
+                    while (i < p.length) {
+                        let sub = p.slice(i, i + TTS_CHUNK_MAX);
+                        const ls = sub.lastIndexOf(' ');
+                        if (ls > 100) sub = sub.slice(0, ls + 1);
+                        chunks.push(sub.trim());
+                        i += sub.length;
+                    }
+                }
+            }
+        }
+        if (buf) chunks.push(buf);
+    }
+    return chunks.filter(Boolean);
 }
 
 function fallbackBrowserTTS(cleanText, emotion, isSong, isJoke) {
     if (isSong) startBackgroundMusic('song');
     else if (isJoke) startBackgroundMusic('joke');
 
-    // Try to find a single consistent, premium female Indian/Hindi voice
-    const voices = window.speechSynthesis.getVoices();
-    let selectedVoice = null;
-    const preferredVoices = ['Microsoft Swara Online', 'Microsoft Neerja Online', 'Google हिन्दी', 'Microsoft Swara', 'Microsoft Neerja', 'Kajal', 'Aditi', 'Veena', 'Zira', 'Female'];
-    for (let pref of preferredVoices) {
-        selectedVoice = voices.find(v => v.name.includes(pref));
-        if (selectedVoice) break;
-    }
+    function doSpeak(voices) {
+        let selectedVoice = null;
+        const preferredVoices = ['Microsoft Swara Online', 'Microsoft Neerja Online', 'Google हिन्दी', 'Microsoft Swara', 'Microsoft Neerja', 'Kajal', 'Aditi', 'Veena', 'Zira', 'Female'];
+        for (let pref of preferredVoices) {
+            selectedVoice = voices.find(v => v.name.includes(pref));
+            if (selectedVoice) break;
+        }
+        if (!selectedVoice && voices.length > 0) selectedVoice = voices.find(v => v.lang.startsWith('hi')) || voices[0];
 
-    let sentences = [];
-    if (cleanText.length < 250 || isSong || isJoke) {
-        sentences = [cleanText];
-    } else {
-        let rawChunks = cleanText.match(/[^.!?\n]+[.!?\n]+/g) || [cleanText];
-        let currentChunk = "";
-        for (let chunk of rawChunks) {
-            if ((currentChunk + chunk).length < 250) {
-                currentChunk += chunk + " ";
-            } else {
-                if (currentChunk.trim()) sentences.push(currentChunk.trim());
-                currentChunk = chunk + " ";
+        const validSentences = chunkForTTS(cleanText, isSong || isJoke);
+        if (validSentences.length === 0) return;
+
+        let pitch = 1.2, rate = 0.95;
+        if (emotion === 'sad') { pitch = 0.9; rate = 0.88; }
+        else if (emotion === 'excited') { pitch = 1.35; rate = 1.05; }
+        else if (emotion === 'friendly') { pitch = 1.25; rate = 1.0; }
+        if (isSong) { pitch = 1.35; rate = 0.9; }
+        else if (isJoke) { pitch = 1.3; rate = 1.0; }
+
+        let keepAliveTimer = setInterval(() => {
+            if (!window.speechSynthesis.speaking) {
+                clearInterval(keepAliveTimer);
+                return;
             }
-        }
-        if (currentChunk.trim()) sentences.push(currentChunk.trim());
-    }
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
+        }, 10000);
 
-    window.speechUtterances = window.speechUtterances || [];
-    let sentencesSpoken = 0;
-    const validSentences = sentences.filter(s => s.trim() !== '');
-
-    validSentences.forEach((sentence, index) => {
-        const utterance = new SpeechSynthesisUtterance(sentence.trim());
-        utterance.lang = 'hi-IN';
-
-        let pitch = 1.25;
-        let rate = 1.0;
-
-        if (emotion === 'sad') {
-            pitch = 0.9;
-            rate = 0.85;
-        } else if (emotion === 'excited') {
-            pitch = 1.4;
-            rate = 1.1;
-        } else if (emotion === 'friendly') {
-            pitch = 1.3;
-            rate = 1.05;
-        }
-
-        if (isSong) { pitch = 1.35; rate = 0.95; }
-        else if (isJoke) { pitch = 1.3; rate = 1.1; }
-
-        utterance.pitch = pitch;
-        utterance.rate = rate;
-        if (selectedVoice) utterance.voice = selectedVoice;
-
-        window.speechUtterances.push(utterance);
-        utterance.onend = function () {
-            sentencesSpoken++;
-            if (sentencesSpoken === validSentences.length) {
+        function speakNext(index) {
+            if (index >= validSentences.length) {
+                clearInterval(keepAliveTimer);
                 stopBackgroundMusic();
-                window.speechUtterances = [];
+                return;
             }
-        };
+            const utterance = new SpeechSynthesisUtterance(validSentences[index]);
+            utterance.lang = 'hi-IN';
+            utterance.pitch = pitch;
+            utterance.rate = rate;
+            if (selectedVoice) utterance.voice = selectedVoice;
+            
+            utterance.onend = function () { speakNext(index + 1); };
+            utterance.onerror = function () { speakNext(index + 1); };
+            if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+            window.speechSynthesis.speak(utterance);
+        }
+        speakNext(0);
+    }
 
-        if (window.speechSynthesis.state === "paused") window.speechSynthesis.resume();
-        window.speechSynthesis.speak(utterance);
-    });
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+        doSpeak(voices);
+    } else {
+        window.speechSynthesis.onvoiceschanged = function () {
+            window.speechSynthesis.onvoiceschanged = null;
+            doSpeak(window.speechSynthesis.getVoices());
+        };
+    }
 }
 
-// Setup Mic Event bindings must be added in setupChatbotEvents() or here.
-// We will assign it dynamically to the document since HTML is injected.
 document.addEventListener('click', function (e) {
     const micBtn = e.target.closest('#chatbot-mic-btn');
     if (micBtn) {
@@ -1052,9 +1077,8 @@ document.addEventListener('click', function (e) {
 
     const speakerBtn = e.target.closest('#chatbot-speaker-btn');
     if (speakerBtn) {
-        // If already speaking or loading, stop it (Toggle OFF)
         if (window.speechSynthesis.speaking || (window.currentPremiumAudio && !window.currentPremiumAudio.paused) || window.isPremiumAudioLoading) {
-            window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1; // ABORT fetch
+            window.currentAudioRequestId = (window.currentAudioRequestId || 0) + 1; 
             window.isPremiumAudioLoading = false;
 
             window.speechSynthesis.cancel();
@@ -1063,14 +1087,12 @@ document.addEventListener('click', function (e) {
                 window.currentPremiumAudio.currentTime = 0;
             }
             stopBackgroundMusic();
-            speakerBtn.style.color = ''; // Reset color
+            speakerBtn.style.color = ''; 
             return;
         }
 
-        // Otherwise find the last bot message and read it aloud (Toggle ON)
         const botMessages = document.querySelectorAll('.bubble-bot');
         if (botMessages.length > 0) {
-            // Use textContent to grab the hidden [SONG]/[JOKE] tags, but visible text
             const lastMessage = botMessages[botMessages.length - 1].textContent;
             speakResponse(lastMessage);
         }
@@ -1085,14 +1107,13 @@ function startListening(micBtn) {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-IN'; // Set to Indian English to support both English and Hinglish correctly without forcing Devanagari.
+    recognition.lang = 'en-IN'; 
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
     recognition.onstart = function () {
         micBtn.classList.add('listening');
-        window.isVoiceMode = true; // Mark as voice mode
-        // Stop any currently playing audio so it doesn't listen to itself
+        window.isVoiceMode = true; 
         window.speechSynthesis.cancel();
     };
 
@@ -1111,7 +1132,6 @@ function startListening(micBtn) {
     recognition.onend = function () {
         micBtn.classList.remove('listening');
 
-        // Auto send immediately when speaking stops
         const inputField = document.getElementById("chat-input");
         if (inputField.value.trim() !== '') {
             handleUserMessage();
@@ -1121,19 +1141,15 @@ function startListening(micBtn) {
     recognition.start();
 }
 
-
 function addMessageToChat(text, sender) {
     const chatBody = document.getElementById("chat-body");
     const typingIndicator = document.getElementById("typing-indicator");
 
     const bubble = document.createElement("div");
     bubble.className = `chat-bubble bubble-${sender}`;
-    bubble.innerHTML = text; // Using innerHTML because bot reply might have formatted HTML
+    bubble.innerHTML = text; 
 
-    // Insert before typing indicator
     chatBody.insertBefore(bubble, typingIndicator);
-
-    // Scroll to bottom
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
@@ -1160,63 +1176,17 @@ function hideTypingIndicator() {
     if (sendBtn) sendBtn.disabled = false;
 }
 
-// --- BACKGROUND MUSIC LOGIC ---
-let audioCtx;
-let musicInterval;
+// Background music functions kept for safety/logic
+function startBackgroundMusic(type) { return; }
+function stopBackgroundMusic() {}
 
-function startBackgroundMusic(type) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    stopBackgroundMusic(); // Clear existing
-
-    // Simple magical chord notes for song/poem, quirky bouncy notes for joke
-    const notes = type === 'joke' ? [200, 300, 200, 400] : [523.25, 659.25, 783.99, 1046.50];
-    let i = 0;
-
-    musicInterval = setInterval(() => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type === 'joke' ? 'triangle' : 'sine';
-        osc.frequency.value = notes[i % notes.length];
-
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        // Soft volume for background to avoid overpowering the voice
-        gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
-
-        i++;
-    }, type === 'joke' ? 400 : 350);
-}
-
-function stopBackgroundMusic() {
-    if (musicInterval) {
-        clearInterval(musicInterval);
-        musicInterval = null;
-    }
-}
-
-// Simple Markdown formatter for the bot response
 function formatBotReply(text) {
-    // Hide [SONG] and [JOKE] tags for display
     let html = text.replace(/\[SONG\]/g, '<span style="display:none;">[SONG]</span>');
     html = html.replace(/\[JOKE\]/g, '<span style="display:none;">[JOKE]</span>');
-
-    // Bold
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // Newlines to BR
     html = html.replace(/\n\n/g, '<br><br>');
     html = html.replace(/\n(?!\*)/g, '<br>');
-
-    // Lists (Basic mapping)
     html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-
     return html;
 }
