@@ -15,6 +15,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -361,11 +362,19 @@
         body.view-mode-qpa .room-print-container {
             display: none !important;
         }
-        
+
         /* Title Toggle Logic */
-        .title-attendance { display: none; }
-        body.view-mode-summary .title-map { display: none; }
-        body.view-mode-summary .title-attendance { display: inline; }
+        .title-attendance {
+            display: none;
+        }
+
+        body.view-mode-summary .title-map {
+            display: none;
+        }
+
+        body.view-mode-summary .title-attendance {
+            display: inline;
+        }
 
         .qpa-table-container {
             display: none;
@@ -985,10 +994,10 @@
         // ✅ RENDER FUNCTION: SEPARATE SECTIONS FOR MAP & ATTENDANCE
         // =========================================================================
         function renderFinalSeating(totalNeeded, totalSeated) {
-            // --- SAVE PREVIOUS SEARCH STATE ---
-            let savedSearch = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
-            let savedFilterClass = document.getElementById('filterClass') ? document.getElementById('filterClass').value : '';
-            let savedFilterSection = document.getElementById('filterSection') ? document.getElementById('filterSection').value : '';
+            // --- USE GLOBAL SEARCH STATE ---
+            let savedSearch = globalSearchState.text;
+            let savedFilterClass = globalSearchState.cls;
+            let savedFilterSection = globalSearchState.sec;
 
             const container = document.getElementById('finalOutput');
             container.innerHTML = "";
@@ -1239,13 +1248,13 @@
                 let searchEl = document.getElementById('searchInput');
                 let classEl = document.getElementById('filterClass');
                 let sectionEl = document.getElementById('filterSection');
-                
+
                 if (searchEl && savedSearch !== undefined) searchEl.value = savedSearch;
                 if (classEl && savedFilterClass !== undefined) classEl.value = savedFilterClass;
                 if (sectionEl && savedFilterSection !== undefined) sectionEl.value = savedFilterSection;
-                
+
                 if (savedSearch || savedFilterClass || savedFilterSection) {
-                    runInvigilatorSearch();
+                    runInvigilatorSearch(true); // true means skip scrolling to top
                 }
             }, 50);
         }
@@ -1455,32 +1464,48 @@
             });
 
             if (conflict) {
-                // Warning Sound (Optional)
-                // const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'); audio.play();
-
-                const proceed = confirm(`⚠️ WARNING: Conflict Detected!\n\nClass '${sourceStudent.class}' ka ek student already is bench par baitha hai.\n\nKya aap fir bhi swap karna chahte hain?`);
-
-                if (!proceed) return false; // User ne Cancel kar diya
+                Swal.fire({
+                    title: 'Conflict Detected!',
+                    html: `Class <b>${sourceStudent.class}</b> ka ek student already is bench par baitha hai.<br><br>Kya aap fir bhi swap karna chahte hain?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, swap it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performSwap();
+                    } else {
+                        // User cancelled, ensure search highlights are reapplied just in case
+                        runInvigilatorSearch(true);
+                    }
+                });
+                return false;
             }
 
-            // --- SWAP LOGIC (Wahi purana wala) ---
-            // 1. Source seat par Target student ko bithao
-            sBench.allocated[dragSourceIndices.s] = targetStudent;
+            performSwap();
 
-            // 2. Target seat par Source student ko bithao
-            tBench.allocated[targetS] = sourceStudent;
+            function performSwap() {
+                // --- SWAP LOGIC ---
+                // 1. Source seat par Target student ko bithao
+                sBench.allocated[dragSourceIndices.s] = targetStudent;
 
-            // --- RE-RENDER & SAVE ---
-            let totalSeatedNow = 0;
-            rooms.forEach(r => {
-                if (r.benches) r.benches.forEach(b => {
-                    if (b.allocated) b.allocated.forEach(s => { if (s) totalSeatedNow++; });
+                // 2. Target seat par Source student ko bithao
+                tBench.allocated[targetS] = sourceStudent;
+
+                // --- RE-RENDER & SAVE ---
+                let totalSeatedNow = 0;
+                rooms.forEach(r => {
+                    if (r.benches) r.benches.forEach(b => {
+                        if (b.allocated) b.allocated.forEach(s => { if (s) totalSeatedNow++; });
+                    });
                 });
-            });
-            renderFinalSeating(currentTotalNeeded, totalSeatedNow);
+                renderFinalSeating(currentTotalNeeded, totalSeatedNow);
 
-            // 🔥 Auto Save
-            saveAllocationToDB();
+                // 🔥 Auto Save
+                saveAllocationToDB();
+            }
 
             return false;
         }
@@ -1496,6 +1521,7 @@
         // --- INVIGILATOR SEARCH FUNCTION ---
         // --- ✅ 1. DEBOUNCE TIMER (Jhatka roke ga) ---
         let searchTimer;
+        let globalSearchState = { text: '', cls: '', sec: '' }; // Added global state for drag drop retention
 
         function debounceSearch() {
             // Agar user abhi type kar raha hai to purana timer cancel karo
@@ -1508,10 +1534,15 @@
         }
 
         // --- ✅ 2. ADVANCED SEARCH LOGIC (Missing Name Fix) ---
-        function runInvigilatorSearch() {
-            let input = document.getElementById('searchInput').value.toLowerCase().trim();
-            let clsFilter = document.getElementById('filterClass').value;
-            let secFilter = document.getElementById('filterSection').value;
+        function runInvigilatorSearch(skipScroll = false) {
+            let input = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase().trim() : '';
+            let clsFilter = document.getElementById('filterClass') ? document.getElementById('filterClass').value : '';
+            let secFilter = document.getElementById('filterSection') ? document.getElementById('filterSection').value : '';
+
+            // Update global state tracking
+            globalSearchState.text = input;
+            globalSearchState.cls = clsFilter;
+            globalSearchState.sec = secFilter;
 
             let seats = document.querySelectorAll('.seat.filled');
             let found = false;
@@ -1550,9 +1581,11 @@
                     seat.classList.add('highlighted');
 
                     // Sirf pehle match par scroll karo
-                    if (!found) {
+                    if (!found && !skipScroll) {
                         seat.scrollIntoView({ behavior: "smooth", block: "center" });
                         found = true;
+                    } else if (!found) {
+                        found = true; // Still mark as found to avoid logging "No match"
                     }
                 }
             });
