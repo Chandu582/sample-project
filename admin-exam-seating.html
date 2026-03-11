@@ -361,6 +361,11 @@
         body.view-mode-qpa .room-print-container {
             display: none !important;
         }
+        
+        /* Title Toggle Logic */
+        .title-attendance { display: none; }
+        body.view-mode-summary .title-map { display: none; }
+        body.view-mode-summary .title-attendance { display: inline; }
 
         .qpa-table-container {
             display: none;
@@ -980,6 +985,11 @@
         // ✅ RENDER FUNCTION: SEPARATE SECTIONS FOR MAP & ATTENDANCE
         // =========================================================================
         function renderFinalSeating(totalNeeded, totalSeated) {
+            // --- SAVE PREVIOUS SEARCH STATE ---
+            let savedSearch = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
+            let savedFilterClass = document.getElementById('filterClass') ? document.getElementById('filterClass').value : '';
+            let savedFilterSection = document.getElementById('filterSection') ? document.getElementById('filterSection').value : '';
+
             const container = document.getElementById('finalOutput');
             container.innerHTML = "";
 
@@ -1072,7 +1082,10 @@
                         <span>Date: <input type="text" class="print-input sync-date" value="${globalExamDate}" placeholder="Date" style="width:100px; border-bottom: 1px dashed #ccc;"></span>
                     </div>
 
-                    <h3 style="margin:5px 0 0 0; font-size: 18px; color: #444; text-transform: uppercase; letter-spacing: 1px;">Seating Arrangement</h3>
+                    <h3 style="margin:5px 0 0 0; font-size: 18px; color: #444; text-transform: uppercase; letter-spacing: 1px;">
+                        <span class="title-map">Seating Arrangement</span>
+                        <span class="title-attendance">Attendance Sheet</span>
+                    </h3>
                 </div>
 
 
@@ -1220,6 +1233,21 @@
                 </div>`;
                 container.innerHTML += qpaHtml;
             }
+
+            // --- RESTORE PREVIOUS SEARCH STATE ---
+            setTimeout(() => {
+                let searchEl = document.getElementById('searchInput');
+                let classEl = document.getElementById('filterClass');
+                let sectionEl = document.getElementById('filterSection');
+                
+                if (searchEl && savedSearch !== undefined) searchEl.value = savedSearch;
+                if (classEl && savedFilterClass !== undefined) classEl.value = savedFilterClass;
+                if (sectionEl && savedFilterSection !== undefined) sectionEl.value = savedFilterSection;
+                
+                if (savedSearch || savedFilterClass || savedFilterSection) {
+                    runInvigilatorSearch();
+                }
+            }, 50);
         }
 
 
