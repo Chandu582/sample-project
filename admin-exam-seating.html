@@ -344,19 +344,61 @@
 
         /* Ye Code Screen aur Print dono par kaam karega */
         /* Jab Map Mode ho, to Attendance chhupa do */
-        body.view-mode-map .attendance-section {
+        body.view-mode-map .attendance-section, body.view-mode-map .qpa-section {
             display: none !important;
         }
 
         /* Jab Summary Mode ho, to Map chhupa do */
-        body.view-mode-summary .map-section {
+        body.view-mode-summary .map-section, body.view-mode-summary .qpa-section {
             display: none !important;
+        }
+
+        /* Jab QPA Mode ho, to baaki chhupa do */
+        body.view-mode-qpa .map-section, body.view-mode-qpa .attendance-section, body.view-mode-qpa .room-print-container {
+            display: none !important;
+        }
+        
+        .qpa-table-container {
+            display: none; /* hidden by default */
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        body.view-mode-qpa .qpa-table-container {
+            display: block !important;
+        }
+
+        .qpa-table {
+            width: 100%; border-collapse: collapse; border: 2px solid #000; text-align: center;
+        }
+        
+        .qpa-table th, .qpa-table td {
+            border: 1px solid #000; padding: 6px; font-size: 13px;
+        }
+        
+        .qpa-table th {
+            background-color: #f3f4f6; font-weight: bold;
+        }
+        
+        .qpa-table .total-col, .qpa-table .total-row {
+            font-weight: bold; background-color: #e0e7ff;
         }
 
         /* Print specific settings */
         @media print {
             .no-print {
                 display: none !important;
+            }
+
+            @page {
+                size: portrait;
+            }
+                        
+            @page :blank {
+                @top-left { content: ""; }
+                @top-right { content: ""; }
+                @bottom-left { content: ""; }
+                @bottom-right { content: ""; }
             }
 
             /* Input formatting for print */
@@ -975,22 +1017,19 @@
                 <p id="statsText" style="font-size:14px; color:#4b5563; margin-top:5px;">Seated: <b>${totalSeated}</b> | Candidates: <b>${totalNeeded}</b></p>
                 
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-                    <button onclick="saveAllocationToDB()" class="btn" style="background:#2563eb; color:white;"><i class="fas fa-save"></i> Save Changes</button>
-                    <button id="resetBtn" onclick="resetSeatingPlan()" class="btn" style="background:#ef4444; color:white;">
-    <i class="fas fa-trash-alt"></i> Reset Plan
-</button>
-
-                    <button onclick="printMap()" class="btn btn-primary"><i class="fas fa-map"></i> Print Maps</button>
-                    <button onclick="printSummary()" class="btn btn-success"><i class="fas fa-list-alt"></i> Print Attendance</button>
+                    <button onclick="saveAllocationToDB()" class="btn" style="background:#2563eb; color:white;"><i class="fas fa-save"></i> Save</button>
+                    <button id="resetBtn" onclick="resetSeatingPlan()" class="btn" style="background:#ef4444; color:white;"><i class="fas fa-trash-alt"></i> Reset</button>
+                    <button onclick="printMap()" class="btn btn-primary"><i class="fas fa-map"></i> Maps</button>
+                    <button onclick="printSummary()" class="btn btn-success"><i class="fas fa-list-alt"></i> Attendance</button>
+                    <button onclick="printQPA()" class="btn" style="background:#8b5cf6; color:white;"><i class="fas fa-table"></i> Question Papers</button>
                     <button onclick="showStep(1)" class="btn btn-warning"><i class="fas fa-edit"></i> Modify</button>
                 </div>
             `;
             }
 
-
-
-
-
+            // Keep track of QPA data: class -> room -> count
+            let qpaData = {};
+            let uniqueRoomsForQPA = [];
 
             rooms.forEach(room => {
                 let roomStats = {};
@@ -1040,6 +1079,13 @@
                                 if (!roomStats[key]) roomStats[key] = [];
                                 roomStats[key].push(s.roll);
                                 roomTotalStudents++;
+                                
+                                // QPA update
+                                let qpaKey = s.class; // Usually QPA is per class, irrespective of section. Adjust if needed.
+                                if(!qpaData[qpaKey]) qpaData[qpaKey] = {};
+                                if(!qpaData[qpaKey][room.name]) qpaData[qpaKey][room.name] = 0;
+                                qpaData[qpaKey][room.name]++;
+                                if(!uniqueRoomsForQPA.includes(room.name)) uniqueRoomsForQPA.push(room.name);
 
                                 // 🔥 SEARCH DATA ATTRIBUTES ADDED HERE (Name, ID, Class hidden tags)
                                 // Note: s.name aur s.stesId tabhi aayenge agar database me honge.
@@ -1095,6 +1141,60 @@
                 html += `</div>`; // End Card
                 container.innerHTML += html;
             });
+            
+            // Generate QPA Table HTML
+            if(Object.keys(qpaData).length > 0) {
+                let qpaClasses = Object.keys(qpaData).sort();
+                let qpaHtml = `
+                <div class="card qpa-table-container">
+                    <style>@media print { @page { size: landscape; margin: 10mm; } }</style>
+                    <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h2 style="margin:0; font-size: 24px;">Question Paper Arrangement Sheet</h2>
+                        <div style="margin: 5px 0; font-weight: bold;">
+                            Exam: ${globalExamName} | Date: ${globalExamDate}
+                        </div>
+                    </div>
+                    <table class="qpa-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>`;
+                                
+                uniqueRoomsForQPA.forEach(r => {
+                    qpaHtml += `<th>${r}</th>`;
+                });
+                
+                qpaHtml += `<th class="total-col">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                        
+                let grandTotal = 0;
+                let roomTotals = {};
+                uniqueRoomsForQPA.forEach(r => roomTotals[r] = 0);
+                
+                qpaClasses.forEach(c => {
+                    let classTotal = 0;
+                    qpaHtml += `<tr><td style="font-weight:bold;">${c}</td>`;
+                    uniqueRoomsForQPA.forEach(r => {
+                        let count = qpaData[c][r] || 0;
+                        classTotal += count;
+                        roomTotals[r] += count;
+                        qpaHtml += `<td>${count > 0 ? count : ''}</td>`;
+                    });
+                    grandTotal += classTotal;
+                    qpaHtml += `<td class="total-col">${classTotal}</td></tr>`;
+                });
+                
+                qpaHtml += `<tr class="total-row"><td>Total</td>`;
+                uniqueRoomsForQPA.forEach(r => {
+                    qpaHtml += `<td>${roomTotals[r]}</td>`;
+                });
+                qpaHtml += `<td class="total-col">${grandTotal}</td></tr>
+                        </tbody>
+                    </table>
+                </div>`;
+                container.innerHTML += qpaHtml;
+            }
         }
 
 
@@ -1157,7 +1257,7 @@
 
         // 4. PRINT VIEW MODES (Refresh issue fix)
         function setViewMode(mode) {
-            document.body.classList.remove('view-mode-map', 'view-mode-summary');
+            document.body.classList.remove('view-mode-map', 'view-mode-summary', 'view-mode-qpa');
             const btn = document.getElementById('toggleViewBtn');
 
             if (mode === 'map') {
@@ -1166,13 +1266,16 @@
             } else if (mode === 'summary') {
                 document.body.classList.add('view-mode-summary');
                 if (btn) btn.innerHTML = '<i class="fas fa-eye"></i> Show All';
+            } else if (mode === 'qpa') {
+                document.body.classList.add('view-mode-qpa');
+                if (btn) btn.innerHTML = '<i class="fas fa-eye"></i> Show All';
             } else {
                 if (btn) btn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Extra';
             }
         }
 
         function toggleViewMode() {
-            if (document.body.classList.contains('view-mode-map') || document.body.classList.contains('view-mode-summary')) {
+            if (document.body.classList.contains('view-mode-map') || document.body.classList.contains('view-mode-summary') || document.body.classList.contains('view-mode-qpa')) {
                 setViewMode('all');
             } else {
                 setViewMode('map');
@@ -1186,6 +1289,11 @@
 
         function printSummary() {
             setViewMode('summary');
+            setTimeout(() => window.print(), 500);
+        }
+
+        function printQPA() {
+            setViewMode('qpa');
             setTimeout(() => window.print(), 500);
         }
 
@@ -1444,9 +1552,8 @@
                 // Asli test
                 db.collection('admins').doc(user.uid).get().then((doc) => {
                     if (doc.exists && doc.data().role === 'SuperAdmin') {
-
+                        // User is verified SuperAdmin
                         loadData(); // <-- Yahan page ka main function call hoga
-
                     } else {
                         auth.signOut().then(() => window.location.replace("admin-login.html"));
                     }
