@@ -1454,19 +1454,36 @@
             if (!sourceStudent) return false;
 
             // 🔥 SAFETY CHECK: Conflict Warning
-            // Check karo ki Target Bench par same class ka koi aur bacha hai kya?
-            // (Lekin wo khud nahi hona chahiye, aur jis seat par rakh rahe hain wo bhi count mat karo)
+            let conflictMsg = "";
 
-            const conflict = tBench.allocated.some((student, idx) => {
-                return student && // Bacha hona chahiye
-                    idx !== targetS && // Jis seat par drop kar rahe wo check mat karo
-                    student.class === sourceStudent.class; // Class Same hai kya?
-            });
+            // 1. Check if sourceStudent will conflict on the Target bench
+            if (sourceStudent) {
+                const targetConflict = tBench.allocated.some((student, idx) => {
+                    return student &&
+                        idx !== targetS && // Jis seat par drop kar rahe wo check mat karo
+                        student.class === sourceStudent.class;
+                });
+                if (targetConflict) {
+                    conflictMsg += `Class <b>${sourceStudent.class}</b> ka student already Target bench par hai.<br>`;
+                }
+            }
 
-            if (conflict) {
+            // 2. Check if targetStudent (who is being swapped back) will conflict on the Source bench
+            if (targetStudent) {
+                const sourceConflict = sBench.allocated.some((student, idx) => {
+                    return student &&
+                        idx !== dragSourceIndices.s && // Jis seat par wapas bhej rahe wo check mat karo
+                        student.class === targetStudent.class;
+                });
+                if (sourceConflict) {
+                    conflictMsg += `Swap hone par Class <b>${targetStudent.class}</b> ka student Source bench par conflict karega.<br>`;
+                }
+            }
+
+            if (conflictMsg !== "") {
                 Swal.fire({
                     title: 'Conflict Detected!',
-                    html: `Class <b>${sourceStudent.class}</b> ka ek student already is bench par baitha hai.<br><br>Kya aap fir bhi swap karna chahte hain?`,
+                    html: `${conflictMsg}<br>Kya aap fir bhi swap karna chahte hain?`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
