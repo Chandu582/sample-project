@@ -874,7 +874,7 @@
         let currentWalletDeduction = 0; // Global variable for wallet tracking  <-- YAHAN ADD KAREIN
 
         let currentTransportRate = 0;
-        let baseLateFee = 0; // Pre-calculated late fee when modal opens
+        let baseLateFee = 0; // 🟢 Global: pre-calculated late fee from openModal
         const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
         const fullMonths = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
         let selections = { monthly: {}, annual: {}, transport: [] };
@@ -1856,75 +1856,12 @@
                 // G. Update Globals
                 baseCurrDue = totalCurr;
                 basePrevDue = totalPrev;
-                baseLateFee = 0; // Reset on every modal open
+                totalDueForBal = basePrevDue + baseCurrDue;
+                baseLateFee = 0; // 🟢 Reset: late fee adds per selected month only
 
-                // --- AUTO LATE FEE PRE-CALCULATION ---
-                // Uses same logic as recalcAll: past months = always fine, current month = only if today > dueDay
-                let autoPreFillFineDesc = "Late Fee";
-                try {
-                    if (schoolInfo && schoolInfo.lateFeeRule) {
-                        const lRule = schoolInfo.lateFeeRule;
-                        const lDueDay = Number(lRule.dueDay) || 0;
-                        const lFineAmt = Number(lRule.fineAmount) || 0;
-                        if (lDueDay > 0 && lFineAmt > 0) {
-                            const tKey = Object.keys(clsFees).find(k => k.toLowerCase().includes('tuition')) || "Tuition Fee";
-                            const tFeeData = clsFees[tKey];
-                            if (tFeeData) {
-                                let tPaidSoFar = 0;
-                                allFees.forEach(f => {
-                                    const fType = f.type || "";
-                                    const fHead = (f.headName || f.otherHead || "").toLowerCase();
-                                    if (fType === 'TUITION' || fType === 'PAYMENT' || fHead.includes('tuition')) {
-                                        tPaidSoFar += (Number(f.paidAmount) || 0) + (Number(f.discountUsed) || 0);
-                                    }
-                                });
-                                let alreadyPaidLateFee = 0;
-                                allFees.forEach(f => {
-                                    if (f.type === 'LATE' || (f.headName || "").toLowerCase().includes('late')) {
-                                        alreadyPaidLateFee += (Number(f.paidAmount) || 0);
-                                    }
-                                });
-
-                                let rollingTuitionPaid = tPaidSoFar;
-                                let pendingFine = 0;
-                                let fineMonthsList = [];
-                                const currentDayNow = new Date().getDate();
-
-                                months.forEach((m, i) => {
-                                    if (i < startIdx || i > todayIdx) return;
-                                    let mFee = (tFeeData && typeof tFeeData === 'object' && tFeeData['Apr'] !== undefined)
-                                        ? (Number(tFeeData[m]) || 0)
-                                        : (Number(tFeeData?.Amount || tFeeData) || 0);
-                                    if (mFee > 0) {
-                                        if (rollingTuitionPaid >= mFee) {
-                                            rollingTuitionPaid -= mFee;
-                                        } else {
-                                            rollingTuitionPaid = 0;
-                                            // Past month → always fine. Current month → only if today > dueDay
-                                            const isLate = (i < todayIdx) || (i === todayIdx && currentDayNow > lDueDay);
-                                            if (isLate) { pendingFine += lFineAmt; fineMonthsList.push(m); }
-                                        }
-                                    }
-                                });
-
-                                baseLateFee = Math.max(0, pendingFine - alreadyPaidLateFee);
-                                if (fineMonthsList.length > 0) {
-                                    autoPreFillFineDesc = `Late Fee (${fineMonthsList.join(', ')})`;
-                                    window.currentLateFeeDesc = autoPreFillFineDesc;
-                                }
-                            }
-                        }
-                    }
-                } catch (lateErr) { console.error("Late fee pre-calc error:", lateErr); }
-
-                // Pre-fill mLate + set totalDueForBal including late fee
-                document.getElementById('mLate').value = baseLateFee > 0 ? baseLateFee : "";
-                totalDueForBal = basePrevDue + baseCurrDue + baseLateFee;
-
-                // Update all three header cards
+                // Update display
                 document.getElementById('dispPrevTxt').innerText = "₹" + basePrevDue;
                 document.getElementById('dispCurr').innerText = "₹" + baseCurrDue;
-                document.getElementById('dispTotal').innerText = "₹" + totalDueForBal;
 
                 recalcAll();
                 document.getElementById('payModal').style.display = 'flex';
@@ -2147,41 +2084,29 @@
         // --- 🟢 REPLACED RECALC FUNCTION (Robust Logic) 🟢 ---
 
         function recalcAll() {
-            let grossTotal = 0;
+            let grossTotal = 0; // Ye wo amount hai jo Ledger se clear hoga (Fee + Extras)
             let html = "";
 
-            // 1. AUTO FINE LOGIC
-            // FIX: Previously used date comparison (new Date() > dueDate) — this was WRONG.
-            // If dueDay=15 and today=12, March's fine was skipped even though student is clearly
-            // paying late (they're selecting the month right now in arrears).
-            // CORRECT LOGIC: For each selected tuition month that is a past/current month (i <= todayIdx),
-            // ALWAYS charge fine — no date check needed. Student wouldn't be selecting it unless it's overdue.
-            // Exception: future months (i > todayIdx) = advance payment → no fine.
+            // 1. AUTO FINE LOGIC (Same as before)
             let autoFine = 0;
             let fineMonths = [];
             if (activeStu && schoolInfo.lateFeeRule) {
                 const dDay = Number(schoolInfo.lateFeeRule.dueDay) || 0;
                 const fAmt = Number(schoolInfo.lateFeeRule.fineAmount) || 0;
-                const todayIdxNow = (new Date().getMonth() >= 3)
-                    ? new Date().getMonth() - 3
-                    : new Date().getMonth() + 9;
-                const currentDayNow = new Date().getDate();
-
                 if (dDay > 0 && fAmt > 0) {
+                    // 🟢 FIX: Use SIMPLE calendar formula for late fee (same as fee ledger uses)
+                    // Session-aware formula returns -1 for new sessions, breaking all late fee checks
+                    const calendarNow = new Date();
+                    const calendarTodayIdx = (calendarNow.getMonth() >= 3) ? calendarNow.getMonth() - 3 : calendarNow.getMonth() + 9;
+                    const modalCurrentDay = calendarNow.getDate();
+
                     for (let h in selections.monthly) {
                         if (h.toLowerCase().includes('tuition') || h.toLowerCase().includes('tution')) {
                             selections.monthly[h].forEach(item => {
                                 const mIdx = months.indexOf(item.m);
                                 let isLate = false;
-                                if (mIdx < todayIdxNow) {
-                                    // Past month → always late
-                                    isLate = true;
-                                } else if (mIdx === todayIdxNow) {
-                                    // Current month → late only if today is past due day
-                                    isLate = (currentDayNow > dDay);
-                                }
-                                // Future month (mIdx > todayIdxNow) → never late (advance payment)
-
+                                if (mIdx < calendarTodayIdx) isLate = true;
+                                else if (mIdx === calendarTodayIdx && modalCurrentDay > dDay) isLate = true;
                                 if (isLate) {
                                     autoFine += fAmt;
                                     if (!fineMonths.includes(item.m)) fineMonths.push(item.m);
@@ -2190,9 +2115,14 @@
                         }
                     }
 
-                    // Update mLate field
-                    document.getElementById('mLate').value = autoFine > 0 ? autoFine : "";
-                    window.currentLateFeeDesc = autoFine > 0 ? `Late Fee (${fineMonths.join(', ')})` : "Late Fee";
+                    // Per-month late fee: auto fill based on selected months only
+                    if (autoFine > 0) {
+                        document.getElementById('mLate').value = autoFine;
+                        window.currentLateFeeDesc = `Late Fee (${fineMonths.join(', ')})`;
+                    } else {
+                        document.getElementById('mLate').value = "";
+                        window.currentLateFeeDesc = "Late Fee";
+                    }
                 }
             }
 
@@ -2260,8 +2190,15 @@
             document.getElementById('sumDetails').innerHTML += footerHtml;
             document.getElementById('sumTotalDisp').innerText = `₹${netPayable}`;
 
-            // 5. UPDATE HEADER DISPLAY — totalDueForBal already includes baseLateFee
-            document.getElementById('dispTotal').innerText = `₹${totalDueForBal}`;
+            // 5. UPDATE HEADER DISPLAY
+            // baseCurrDue: Jo modal khulte waqt due tha
+            // grossTotal: Jo fees abhi select ki hain (Ye dues me add hongi agar pehle nahi thi, par mostly ye dues clear kar rahi hain)
+            // Simple View: Prev + Current
+            if (typeof baseCurrDue !== 'undefined') {
+                // Late fee is extra charge, so add to display
+                const displayTotalDue = basePrevDue + baseCurrDue + late;
+                document.getElementById('dispTotal').innerText = `₹${displayTotalDue}`;
+            }
 
             // 6. AUTO-FILL PAYING INPUT
 
@@ -2578,7 +2515,7 @@
                 if (discVal > 0) {
                     // receiptBillTotal was already calculated as netPayable (grossTotal - disc) in recalcAll, so NO NEED to subtract again here.
                     // Removed pushing discount to itemsToPrint because generateReceipt already adds a footer for it.
-                    
+
                     const ref = db.collection('fees').doc();
                     docsToPrepare.push({
                         ref: ref,
@@ -2854,10 +2791,10 @@
                     const stuData = stuSnap.exists ? stuSnap.data() : {};
 
                     const netChange = walletToRefund - advanceToRemove;
-                    
+
                     let updates = {};
                     if (netChange !== 0) updates.walletBalance = firebase.firestore.FieldValue.increment(netChange);
-                    
+
                     if (prevDueToRestore > 0) {
                         const targetSession = sessionOfPayment || currentSession;
                         const duesKey = `dues_${targetSession}`;
