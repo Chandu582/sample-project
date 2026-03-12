@@ -2590,7 +2590,8 @@
 
                 // --- SNAPSHOT UPDATE ---
                 const totalReceived = payingAmount + walletDeducted;
-                const currentDue = Math.max(0, receiptBillTotal - totalReceived);
+                // FIX: Include discount in currentDue so it shows 0 when discount covers the gap
+                const currentDue = Math.max(0, receiptBillTotal - totalReceived - discVal);
 
                 // --- 🔴 FIX: Exact Pending Snapshot Math ---
                 // totalDueForBal represents Total Liability before this transaction.
@@ -2857,6 +2858,9 @@
             const sReg = s.regId ? `Reg No: ${s.regId}` : "";
             const sPhone = s.schoolPhone ? `Ph: ${s.schoolPhone}` : "";
 
+            // ✅ FIX: Always recalculate currentDue live so old reprints also show correctly
+            currentDue = Math.max(0, billAmount - (paidCash + walletUsed + discountGiven));
+
             // Ab: discountGiven bhi jodna hai taaki asli purana due (750) dikhe
             const sessionDuesBefore = totalPending + paidCash + walletUsed + discountGiven;
 
@@ -3026,7 +3030,7 @@
             <div style="border-bottom:1px solid #000; margin-bottom:10px;">
                 <table style="width: 100%; font-size: 11px; border-collapse:collapse;">
                     <thead><tr style="background: #e5e7eb;"><th style="text-align: left; padding: 5px; width:70%;">Description</th><th style="text-align: right; padding: 5px; width:30%;">Amount</th></tr></thead>
-                    <tbody>${rowsHtml}</tbody>
+                    <tbody>${rowsHtml}${discountGiven > 0 ? `<tr style="border-bottom: 1px solid #eee;"><td style="padding:4px 5px; color:#166534; font-weight:bold;"><b style="color:#166534;">Discount Given</b></td><td style="text-align:right; padding:4px 5px; font-weight:bold; color:#166534;">-&#x20b9;${discountGiven}</td></tr>` : ''}</tbody>
                 </table>
             </div>
 
