@@ -3134,7 +3134,7 @@ _${wAddr}_
 --------------------------------
 📝 *Payment Details:*
 ${itemListStr}--------------------------------
-📉 *Total Bill: ₹${billAmount}*
+📉 *Total Bill: ₹${billAmount}*${discountGiven > 0 ? `\n🎁 *Discount Given: -₹${discountGiven}*` : ''}
 💰 *Paid Amount: ₹${totalPayment}* (${wMode})
 --------------------------------
 📊 *Dues Summary:*
