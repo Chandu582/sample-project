@@ -438,8 +438,8 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
 
@@ -1001,15 +1001,15 @@
 
 
     <script>
-        // Your web app's Firebase configuration
+        // FIREBASE CONFIGURATION
         const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
+  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
+  authDomain: "sample-school-13ca4.firebaseapp.com",
+  projectId: "sample-school-13ca4",
+  storageBucket: "sample-school-13ca4.firebasestorage.app",
+  messagingSenderId: "198448853287",
+  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
+};
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -1223,6 +1223,7 @@
                             if ((fType === 'HEAD' || fType === 'HEADONLY') && fHead.includes(hNameLower)) match = true;
 
                             if (match) {
+                                // FIXED: Add BOTH to satisfy the individual Head's due clearance internally
                                 paid += (Number(f.paidAmount) || 0) + (Number(f.discountUsed) || 0);
                             }
                         });
@@ -1230,27 +1231,66 @@
                         let due = Math.max(0, exp - paid);
                         headsData[h.name] = { exp, paid, due, isApplicable };
                         currentDues += due;
-                        totalPaid += paid;
                     });
 
                     let extraPaid = 0; let itemHistory = [];
                     let totalLatePaid = 0; let lateHistory = [];
                     let totalDisc = 0; let discHistory = [];
+                    let actualCashPaid = 0;
 
+                    let rhMap = {};
                     myFees.forEach(f => {
-                        if (f.type === 'ITEM') { extraPaid += (Number(f.paidAmount) || 0); itemHistory.push(f); }
-                        if (f.type === 'LATE' || f.headName === 'Late Fee') {
+                        let rNo = f.receiptNo || ("N/A-" + Math.random());
+                        if(!rhMap[rNo]) rhMap[rNo] = { cash: 0, itemDisc: 0, explicitDisc: 0 };
+                        
+                        let fHead = (f.headName || f.otherHead || "").toLowerCase();
+
+                        if (f.type === 'ITEM') { 
+                            extraPaid += (Number(f.paidAmount) || 0); 
+                            itemHistory.push(f); 
+                            rhMap[rNo].cash += (Number(f.paidAmount) || 0);
+                        }
+                        else if (f.type === 'LATE' || fHead === 'late fee') {
                             totalLatePaid += (Number(f.paidAmount) || 0);
                             lateHistory.push(f);
+                            rhMap[rNo].cash += (Number(f.paidAmount) || 0);
                         }
-                        if (f.type === 'DISCOUNT' || f.headName === 'Discount') {
-                            totalDisc += (Number(f.paidAmount) || 0);
-                            discHistory.push(f);
-                        } else if (f.discount && Number(f.discount) > 0) {
-                            totalDisc += Number(f.discount);
-                            discHistory.push({ ...f, headName: 'Concession', paidAmount: Number(f.discount) });
+                        else if (f.type === 'DISCOUNT' || fHead === 'discount' || fHead === 'concession') {
+                            rhMap[rNo].explicitDisc += (Number(f.paidAmount) || 0);
+                            
+                            // To avoid double-pushing into discHistory if a document already exists for this receipt
+                            if (Number(f.paidAmount) > 0) {
+                                const existIdx = discHistory.findIndex(x => x.receiptNo === rNo);
+                                if(existIdx === -1) {
+                                    discHistory.push(f);
+                                } else {
+                                    discHistory[existIdx].paidAmount = Number(discHistory[existIdx].paidAmount) + Number(f.paidAmount);
+                                }
+                            }
+                        } 
+                        else {
+                            let cashVal = Number(f.paidAmount) || 0;
+                            // Discount logic updated to not double-count if explicit DISCOUNT doc exists
+                            let discVal = (Number(f.discountUsed) || 0) + (Number(f.discount) || 0);
+                            rhMap[rNo].cash += cashVal;
+                            rhMap[rNo].itemDisc += discVal;
+
+                            if (discVal > 0 && f.discount && Number(f.discount) > 0) {
+                                // Push legacy discount if we haven't already captured an explicit one
+                                const existIdx = discHistory.findIndex(x => x.receiptNo === rNo);
+                                if(existIdx === -1) {
+                                    discHistory.push({ ...f, headName: 'Concession', paidAmount: Number(f.discount) });
+                                }
+                            }
                         }
                     });
+
+                    Object.values(rhMap).forEach(g => {
+                        actualCashPaid += g.cash;
+                        totalDisc += Math.max(g.itemDisc, g.explicitDisc);
+                    });
+
+                    totalPaid = actualCashPaid;
 
                     // Auto Late Fee Calc (FIXED: Ledger Logic)
                     // Auto Late Fee Calc (FIXED: Ledger 650 Issue)
@@ -1738,6 +1778,10 @@
 
             // --- 5. HISTORY TABLE ---
             let historyHtml = '';
+            let modalTotalAmount = 0;
+            let modalTotalDiscount = 0;
+            let modalTotalPaid = 0;
+
             if (!s.history || s.history.length === 0) {
                 historyHtml = `<div style="padding:15px; color:#94a3b8; font-size:12px; text-align:center;">No payments found.</div>`;
             } else {
@@ -1747,30 +1791,87 @@
                             <tr>
                                 <th style="padding:8px; border-bottom:1px solid #e2e8f0;">Date / Receipt</th>
                                 <th style="padding:8px; border-bottom:1px solid #e2e8f0;">Description</th>
-                                <th style="padding:8px; text-align:right; border-bottom:1px solid #e2e8f0;">Amt</th>
+                                <th style="padding:8px; text-align:right; border-bottom:1px solid #e2e8f0;">Total</th>
+                                <th style="padding:8px; text-align:right; border-bottom:1px solid #e2e8f0;">Dis.</th>
+                                <th style="padding:8px; text-align:right; border-bottom:1px solid #e2e8f0;">Paid</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
-                [...s.history].reverse().forEach(h => {
-                    let dateStr = h.date;
-                    if (h.date && h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString();
+                // Group by Receipt logic identical to export
+                const groupedModalHistory = {};
+                let modalGroupOrder = [];
 
-                    let desc = h.description || h.headName || h.otherHead || "-";
-                    if (h.months && h.months.length) desc += ` (${h.months.join(',')})`;
+                [...s.history].reverse().forEach(h => {
+                    let rNo = h.receiptNo || ("N/A-" + Math.random());
+                    
+                    if (!groupedModalHistory[rNo]) {
+                        let dateStr = "-";
+                        try {
+                            if (h.date) {
+                                if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString();
+                                else if (typeof h.date === "string") dateStr = new Date(h.date).toLocaleDateString();
+                            }
+                        } catch (e) { dateStr = "Error"; }
+                        
+                        groupedModalHistory[rNo] = {
+                            dateStr: dateStr,
+                            receiptNo: h.receiptNo || "-",
+                            descriptions: [],
+                            itemDisc: 0,
+                            explicitDisc: 0,
+                            cashAmount: 0
+                        };
+                        modalGroupOrder.push(rNo);
+                    }
+
+                    let desc = h.headName || h.otherHead || h.description || "Fee Payment";
+                    let extras = [];
+                    if (h.months && h.months.length > 0) {
+                        let mStr = h.months.join(', ');
+                        if(!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
+                    }
+                    if (h.transportMonths && h.transportMonths.length > 0) extras.push(`Trans: ${h.transportMonths.join(', ')}`);
+
+                    if (extras.length > 0) desc += ` [${extras.join(' | ')}]`;
+                    groupedModalHistory[rNo].descriptions.push(desc);
+
+                    const headLower = (h.headName || '').toLowerCase();
+                    if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
+                        groupedModalHistory[rNo].explicitDisc = (groupedModalHistory[rNo].explicitDisc || 0) + (Number(h.paidAmount) || 0);
+                    } else {
+                        const amt = Number(h.paidAmount) || 0;
+                        const disc = (Number(h.discountUsed) || 0) + (Number(h.discount) || 0);
+                        groupedModalHistory[rNo].itemDisc = (groupedModalHistory[rNo].itemDisc || 0) + disc;
+                        groupedModalHistory[rNo].cashAmount = (groupedModalHistory[rNo].cashAmount || 0) + amt;
+                    }
+                });
+
+                modalGroupOrder.forEach((rNo) => {
+                    const g = groupedModalHistory[rNo];
+                    const descStr = g.descriptions.join('<br><span style="color:#cbd5e1;">+</span> ');
+                    let cashPaid = g.cashAmount || 0;
+                    let trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
+                    let grossAmount = cashPaid + trueDisc;
+
+                    modalTotalPaid += cashPaid;
+                    modalTotalDiscount += trueDisc;
+                    modalTotalAmount += grossAmount;
 
                     historyHtml += `
                         <tr style="border-bottom:1px solid #f8fafc;">
                             <td style="padding:6px;">
-                                <div style="font-weight:700; color:#334155;">${dateStr}</div>
+                                <div style="font-weight:700; color:#334155;">${g.dateStr}</div>
                                 <div style="font-size:9px; color:#64748b; display:flex; align-items:center;">
-    #${h.receiptNo || '-'}
-    ${h.receiptNo ? `<i class="fas fa-copy" onclick="copyText('${h.receiptNo}')" style="margin-left:6px; cursor:pointer; color:#6366f1;" title="Copy Receipt No"></i>` : ''}
+    #${g.receiptNo}
+    ${g.receiptNo !== '-' ? '<i class="fas fa-copy" onclick="copyText(\'' + g.receiptNo + '\')" style="margin-left:6px; cursor:pointer; color:#6366f1;" title="Copy Receipt No"></i>' : ''}
 </div>
 
                             </td>
-                            <td style="padding:6px; color:#475569;">${desc}</td>
-                            <td style="padding:6px; text-align:right; font-weight:800; color:#1e293b;">₹${h.paidAmount}</td>
+                            <td style="padding:6px; color:#475569;">${descStr}</td>
+                            <td style="padding:6px; text-align:right; font-weight:700; color:#0f172a;">₹${grossAmount.toFixed(2)}</td>
+                            <td style="padding:6px; text-align:right; font-weight:700; color:#ef4444;">₹${trueDisc.toFixed(2)}</td>
+                            <td style="padding:6px; text-align:right; font-weight:800; color:#16a34a;">₹${cashPaid.toFixed(2)}</td>
                         </tr>`;
                 });
                 historyHtml += `</tbody></table></div>`;
@@ -1787,8 +1888,23 @@
                     <div style="font-size:11px; font-weight:800; color:#334155; margin:15px 0 5px 0;">RECENT HISTORY</div>
                     ${historyHtml}
                     
-                    <div style="background:#ecfccb; color:#166534; padding:10px; border-radius:10px; font-weight:800; font-size:14px; margin-bottom:10px; border:1px solid #bef264; text-align:center;">
-                        TOTAL PAID: ₹${s.totalPaid}
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                        <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:10px; color:#64748b; font-weight:700;">TOTAL BILLED AMOUNT</div>
+                            <div style="font-size:14px; font-weight:800; color:#0f172a;">₹${(s.totalPaid + s.totalDisc + Math.max(0, s.grandTotalDue)).toFixed(2)}</div>
+                        </div>
+                        <div style="background:#fee2e2; border:1px solid #fca5a5; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:10px; color:#991b1b; font-weight:700;">TOTAL DISCOUNT</div>
+                            <div style="font-size:14px; font-weight:800; color:#ef4444;">₹${s.totalDisc.toFixed(2)}</div>
+                        </div>
+                        <div style="background:#dcfce7; border:1px solid #86efac; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:10px; color:#166534; font-weight:700;">TOTAL PAID (CASH)</div>
+                            <div style="font-size:14px; font-weight:800; color:#22c55e;">₹${s.totalPaid.toFixed(2)}</div>
+                        </div>
+                        <div style="background:#fff1f2; border:1px solid #fecdd3; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:10px; color:#be123c; font-weight:700;">UNPAID DUE AMOUNT</div>
+                            <div style="font-size:14px; font-weight:800; color:#e11d48;">₹${Math.max(0, s.grandTotalDue).toFixed(2)}</div>
+                        </div>
                     </div>
                     
                     <div class="dash-actions">
@@ -1805,7 +1921,7 @@
 
             mBody.innerHTML = html;
             document.querySelector('#stuModal .m-head').style.display = 'none';
-            document.querySelector('#stuModal .modal-card').style.maxWidth = "450px";
+            document.querySelector('#stuModal .modal-card').style.maxWidth = "550px";
             document.getElementById('stuModal').style.display = 'flex';
         }
 
@@ -1901,7 +2017,8 @@
 
                     // Check for Monthly Fee Data
                     if (item.months && Array.isArray(item.months) && item.months.length > 0) {
-                        details = `<br><span style="font-size:10px; color:#059669; font-weight:bold;">(${item.months.join(', ')})</span>`;
+                        let mStr = item.months.join(', ');
+                        if(!desc.includes(mStr)) details = `<br><span style="font-size:10px; color:#059669; font-weight:bold;">(${mStr})</span>`;
                     }
                     // Check for Transport Fee Data
                     if (item.transportMonths && Array.isArray(item.transportMonths) && item.transportMonths.length > 0) {
@@ -2202,7 +2319,8 @@
 
                 for (const student of rawData) {
                     const studentRef = db.collection('students').doc(student.id);
-                    const amountToCarry = student.grandTotalDue || 0;
+                    // Use base dues without dynamically generated late fine
+                    const amountToCarry = (student.currentDues + student.prevDue) || 0;
 
                     // Nayi field banayenge: dues_2026-2027
                     // Isse purane session (2025-2026) ka data kharab nahi hoga
@@ -2299,36 +2417,77 @@
 
             // --- PREPARE DATA ---
             let tableBody = [];
-            let grandTotal = 0;
+            let totalStatementAmount = 0;
+            let totalStatementDiscount = 0;
+            let totalStatementPaid = 0;
 
             if (s.history && s.history.length > 0) {
                 // Reverse array to show oldest first (Standard for statement)
                 const sortedHistory = [...s.history].reverse();
+                
+                const groupedHistory = {};
+                let groupOrder = [];
 
-                sortedHistory.forEach((h, index) => {
-                    // ✅ DATE FIX
-                    let dateStr = "-";
-                    if (h.date) {
-                        if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
-                        else if (typeof h.date === "string") dateStr = new Date(h.date).toLocaleDateString('en-GB');
-                        if (dateStr === "Invalid Date") dateStr = h.date;
+                sortedHistory.forEach((h) => {
+                    let rNo = h.receiptNo || ("N/A-" + Math.random());
+                    
+                    if (!groupedHistory[rNo]) {
+                        // ✅ DATE FIX
+                        let dateStr = "-";
+                        if (h.date) {
+                            if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
+                            else if (typeof h.date === "string") dateStr = new Date(h.date).toLocaleDateString('en-GB');
+                            if (dateStr === "Invalid Date") dateStr = h.date;
+                        }
+                        groupedHistory[rNo] = {
+                            dateStr: dateStr,
+                            receiptNo: h.receiptNo || "-",
+                            descriptions: [],
+                            itemDisc: 0,
+                            explicitDisc: 0,
+                            cashAmount: 0
+                        };
+                        groupOrder.push(rNo);
                     }
 
                     // Clean Description
                     let desc = h.headName || h.otherHead || h.description || "Fee";
                     if (desc.length > 40) desc = desc.substring(0, 40) + "...";
-                    if (h.months && h.months.length > 0) desc += ` (${h.months.join(', ')})`;
+                    if (h.months && h.months.length > 0) {
+                        let mStr = h.months.join(', ');
+                        if(!desc.includes(mStr)) desc += ` (${mStr})`;
+                    }
+                    groupedHistory[rNo].descriptions.push(desc);
 
-                    const amt = Number(h.paidAmount) || 0;
-                    grandTotal += amt;
+                    const headLower = (h.headName || '').toLowerCase();
+                    if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
+                        groupedHistory[rNo].explicitDisc = (groupedHistory[rNo].explicitDisc || 0) + (Number(h.paidAmount) || 0);
+                    } else {
+                        const amt = Number(h.paidAmount) || 0;
+                        const disc = (Number(h.discountUsed) || 0) + (Number(h.discount) || 0);
+                        groupedHistory[rNo].itemDisc = (groupedHistory[rNo].itemDisc || 0) + disc;
+                        groupedHistory[rNo].cashAmount = (groupedHistory[rNo].cashAmount || 0) + amt;
+                    }
+                });
+
+                groupOrder.forEach((rNo, index) => {
+                    const g = groupedHistory[rNo];
+                    const descStr = g.descriptions.join(' + ');
+                    let cashPaid = g.cashAmount || 0;
+                    let trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
+                    let grossAmount = cashPaid + trueDisc;
+
+                    totalStatementPaid += cashPaid;
+                    totalStatementDiscount += trueDisc;
+                    totalStatementAmount += grossAmount;
 
                     tableBody.push([
                         index + 1,
-                        dateStr,
-                        h.receiptNo || "-",
-                        desc,
+                        g.dateStr,
+                        g.receiptNo,
+                        descStr,
                         "Cash/Online",
-                        amt.toFixed(2)
+                        cashPaid.toFixed(2)
                     ]);
                 });
             }
@@ -2349,7 +2508,12 @@
                     4: { cellWidth: 25, halign: 'center' },
                     5: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }
                 },
-                foot: [['', '', '', 'Total Paid Amount', '', `Rs. ${grandTotal.toFixed(2)}`]],
+                foot: [
+                    ['', '', '', 'Total Expected Billed Amount', '', `Rs. ${(s.totalPaid + s.totalDisc + Math.max(0, s.grandTotalDue)).toFixed(2)}`],
+                    ['', '', '', 'Total Discount Given', '', `Rs. ${s.totalDisc.toFixed(2)}`],
+                    ['', '', '', 'Total Paid (Cash)', '', `Rs. ${s.totalPaid.toFixed(2)}`],
+                    ['', '', '', { content: 'Unpaid Due Amount', styles: { textColor: [220, 38, 38] } }, '', { content: `Rs. ${Math.max(0, s.grandTotalDue).toFixed(2)}`, styles: { textColor: [220, 38, 38] } }]
+                ],
                 footStyles: { fillColor: [240, 253, 244], textColor: [22, 101, 52], fontStyle: 'bold', halign: 'right' }
             });
 
@@ -2403,43 +2567,81 @@
                 // Reverse: Oldest First for statement logic
                 const sortedHistory = [...s.history].reverse();
 
-                sortedHistory.forEach((h, index) => {
-                    // ✅ ROBUST DATE FIX
-                    let dateStr = "-";
-                    try {
-                        if (h.date) {
-                            if (h.date.seconds) {
-                                // Firebase Timestamp
-                                dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
-                            } else if (typeof h.date === "string") {
-                                // String Date
-                                const parsed = new Date(h.date);
-                                if (!isNaN(parsed)) dateStr = parsed.toLocaleDateString('en-GB');
-                                else dateStr = h.date;
+                const groupedHistory = {};
+                let groupOrder = [];
+
+                sortedHistory.forEach((h) => {
+                    let rNo = h.receiptNo || ("N/A-" + Math.random());
+                    
+                    if (!groupedHistory[rNo]) {
+                        // ✅ ROBUST DATE FIX
+                        let dateStr = "-";
+                        try {
+                            if (h.date) {
+                                if (h.date.seconds) {
+                                    // Firebase Timestamp
+                                    dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
+                                } else if (typeof h.date === "string") {
+                                    // String Date
+                                    const parsed = new Date(h.date);
+                                    if (!isNaN(parsed)) dateStr = parsed.toLocaleDateString('en-GB');
+                                    else dateStr = h.date;
+                                }
                             }
-                        }
-                    } catch (e) { dateStr = "Error"; }
+                        } catch (e) { dateStr = "Error"; }
+                        
+                        groupedHistory[rNo] = {
+                            dateStr: dateStr,
+                            receiptNo: h.receiptNo || "-",
+                            descriptions: [],
+                            grossAmount: 0,
+                            discountAmount: 0,
+                            mode: h.mode || "Cash"
+                        };
+                        groupOrder.push(rNo);
+                    }
 
                     // Clean Description
                     let desc = h.headName || h.otherHead || h.description || "Fee Payment";
-
-                    // Add Extra Info in Description
                     let extras = [];
-                    if (h.months && h.months.length > 0) extras.push(`Months: ${h.months.join(', ')}`);
+                    if (h.months && h.months.length > 0) {
+                        let mStr = h.months.join(', ');
+                        if(!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
+                    }
                     if (h.transportMonths && h.transportMonths.length > 0) extras.push(`Trans: ${h.transportMonths.join(', ')}`);
 
                     if (extras.length > 0) desc += ` [${extras.join(' | ')}]`;
+                    groupedHistory[rNo].descriptions.push(desc);
 
-                    const amt = Number(h.paidAmount) || 0;
-                    grandTotal += amt;
+                    const headLower = (h.headName || '').toLowerCase();
+                    if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
+                        groupedHistory[rNo].explicitDisc = (groupedHistory[rNo].explicitDisc || 0) + (Number(h.paidAmount) || 0);
+                    } else {
+                        const amt = Number(h.paidAmount) || 0;
+                        const disc = (Number(h.discountUsed) || 0) + (Number(h.discount) || 0);
+                        groupedHistory[rNo].itemDisc = (groupedHistory[rNo].itemDisc || 0) + disc;
+                        groupedHistory[rNo].cashAmount = (groupedHistory[rNo].cashAmount || 0) + amt;
+                    }
+                });
+
+                groupOrder.forEach((rNo, index) => {
+                    const g = groupedHistory[rNo];
+                    const descStr = g.descriptions.join(' + ');
+                    let cashPaid = g.cashAmount || 0;
+                    let trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
+                    let grossAmount = cashPaid + trueDisc;
+
+                    totalStatementPaid += cashPaid;
+                    totalStatementDiscount += trueDisc;
+                    totalStatementAmount += grossAmount;
 
                     data.push([
                         index + 1,
-                        dateStr,          // ✅ Fixed Date
-                        h.receiptNo || "-",
-                        desc,             // Full Description
-                        h.mode || "Cash",
-                        amt               // Number format (not string) for calculation
+                        g.dateStr,
+                        g.receiptNo,
+                        descStr,
+                        g.mode,
+                        cashPaid
                     ]);
                 });
             } else {
@@ -2448,7 +2650,10 @@
 
             // --- D. FOOTER (Total) ---
             data.push([]); // Empty Row
-            data.push(["", "", "", "TOTAL PAID AMOUNT", "", grandTotal]);
+            data.push(["", "", "", "TOTAL EXPECTED BILLED AMOUNT", "", s.totalPaid + s.totalDisc + Math.max(0, s.grandTotalDue)]);
+            data.push(["", "", "", "TOTAL DISCOUNT GIVEN", "", s.totalDisc]);
+            data.push(["", "", "", "TOTAL PAID (CASH)", "", s.totalPaid]);
+            data.push(["", "", "", "UNPAID DUE AMOUNT", "", Math.max(0, s.grandTotalDue)]);
 
 
             // 2. WORKBOOK CREATION
