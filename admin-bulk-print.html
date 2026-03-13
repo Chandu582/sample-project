@@ -62,6 +62,17 @@
         .s-name { font-size: 12px; font-weight: 600; color: #333; }
         .s-roll { font-size: 10px; color: #666; }
 
+        /* --- SKIP BADGES --- */
+        .skip-reason {
+            font-size: 9px; font-weight: 700; padding: 2px 6px;
+            border-radius: 4px; margin-top: 3px; display: inline-block;
+        }
+        .skip-inactive { background: #dc2626; color: #fff; border: 1px solid #b91c1c; }
+        .skip-absent   { background: #d97706; color: #fff; border: 1px solid #b45309; }
+        .card-skip-inactive { background: #fecaca !important; border: 2px solid #ef4444 !important; }
+        .card-skip-absent   { background: #fde68a !important; border: 2px solid #f59e0b !important; }
+        .name-strike { text-decoration: line-through; color: #dc2626 !important; font-weight: 700 !important; }
+
         /* --- REPORT CARD --- */
         .report-card {
             background: white;
@@ -165,8 +176,8 @@
         .grading-container { margin-bottom: 15px; }
         .grading-title { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 3px; }
         .grading-info { width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #ccc; }
-        .grading-info th { background: #f1f5f9; border: 1px solid #ccc; padding: 3px; font-weight: 700; text-align: center; color: #333; }
-        .grading-info td { border: 1px solid #ccc; padding: 2px; text-align: center; color: #555; }
+        .grading-info th { background: var(--primary); border: 1px solid #000; padding: 3px; font-weight: 700; text-align: center; color: #fff; }
+        .grading-info td { border: 1px solid #ccc; padding: 2px; text-align: center; color: #555; font-weight: 600; }
 
         /* --- QUOTE BOX --- */
         .quote-box { margin-top: 30px; padding: 15px 20px; border: 2px solid #000; border-radius: 12px; text-align: center; position: relative; background: transparent; }
@@ -217,6 +228,7 @@
                 position: relative !important;
                 z-index: 10 !important;
                 -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             /* --- 2. GRADING BODY (BOLD FIX) --- */
@@ -233,16 +245,19 @@
                 background-color: #fee2e2 !important; 
                 color: #b91c1c !important;
                 -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .res-pass, .status-val.res-pass { 
                 color: #15803d !important; 
                 -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             
             .res-fail, .status-val.res-fail { 
                 color: #b91c1c !important; 
                 -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .school-name { color: var(--primary) !important; }
@@ -272,6 +287,12 @@
     </div>
 
     <div class="control-row">
+        <div class="input-group">
+            <label>📅 Session</label>
+            <select id="selSession" class="inp" onchange="currentSession = this.value" style="font-weight:700; border-color:#3F72AF; background:#eff6ff; color:#1e40af;">
+                <option>Loading...</option>
+            </select>
+        </div>
         <div class="input-group">
             <label>Select Exam</label>
             <select id="selExam" class="inp"><option>Loading Exams...</option></select>
@@ -329,6 +350,7 @@
         let fetchedStudents = [];
     let globalLogo = "1000084138-removebg-preview.png";
     let globalReg = "Reg No: STES/2026/BIH";
+    let currentSession = "";  // ✅ Global session variable
 
     // 🟢 SECURE INITIALIZATION 🟢
     // admin-fees.html aur baaki data wale pages ke liye
@@ -353,14 +375,30 @@ firebase.auth().onAuthStateChanged((user) => {
 });
 
 
-    function initBulkPrintPage() {
-        // 1. Fetch Global Settings (Logo & Reg ID)
+    async function initBulkPrintPage() {
+        // ✅ Load Sessions
+        try {
+            const [sessDoc, genDoc] = await Promise.all([
+                db.collection('masterSettings').doc('sessions').get(),
+                db.collection('masterSettings').doc('general').get()
+            ]);
+            let list = ['2025-2026'];
+            if (sessDoc.exists && sessDoc.data().list) list = sessDoc.data().list.sort().reverse();
+            const selSess = document.getElementById('selSession');
+            selSess.innerHTML = list.map(s => `<option value="${s}">${s}</option>`).join('');
+            let def = list[0];
+            if (genDoc.exists && genDoc.data().currentSession && list.includes(genDoc.data().currentSession))
+                def = genDoc.data().currentSession;
+            currentSession = def;
+            selSess.value = def;
+        } catch(e) { currentSession = '2025-2026'; }
+
+        // Load Settings
         db.collection('settings').doc('admitCardConfig').get().then(doc => {
             if(doc.exists) {
                 const data = doc.data();
                 if(data.logo) globalLogo = data.logo;
                 if(data.schoolReg) globalReg = data.schoolReg;
-                console.log("Settings Loaded:", globalReg);
             }
         }).catch(err => console.log("Settings Error:", err));
 
@@ -372,27 +410,39 @@ firebase.auth().onAuthStateChanged((user) => {
         });
     }
 
-    // --- STEP 1: FETCH STUDENTS & SHOW CHECKBOXES ---
+    // --- STEP 1: FETCH STUDENTS from RESULTS (not live students) ---
+    // ✅ This ensures historical sessions show CORRECT students for that year
     async function fetchStudentsList() {
+        const examId = document.getElementById('selExam').value;
         const cls = document.getElementById('selClass').value;
         const sec = document.getElementById('selSec').value;
         const grid = document.getElementById('studentGrid');
         const selector = document.getElementById('studentSelector');
 
+        if(!examId) return alert("Please select Exam first!");
         if(!cls) return alert("Please select Class!");
         
         document.querySelector('.btn-load').innerText = "Loading...";
         
         try {
-            const stuSnap = await db.collection('students').where('class', '==', cls).get();
-            fetchedStudents = stuSnap.docs.map(d => ({id: d.id, ...d.data()}));
-            
+            // ✅ Fetch students from RESULTS (session-specific, not live students)
+            const resSnap = await db.collection('results')
+                .where('examId', '==', examId)
+                .where('class', '==', cls)
+                .where('session', '==', currentSession)
+                .get();
+
+            // Build student list from result snapshots
+            fetchedStudents = resSnap.docs.map(d => ({id: d.data().studentId, ...d.data()}));
+
             // Filter by Section
-            fetchedStudents = fetchedStudents.filter(s => String(s.section||"").trim().toUpperCase() === String(sec).trim().toUpperCase());
+            fetchedStudents = fetchedStudents.filter(s =>
+                String(s.section || '').trim().toUpperCase() === String(sec).trim().toUpperCase()
+            );
             fetchedStudents.sort((a,b) => (parseInt(a.roll)||999) - (parseInt(b.roll)||999));
 
             if(fetchedStudents.length === 0) {
-                alert("No students found in this section.");
+                alert(`No results found for Session: ${currentSession}\nClass: ${cls} - ${sec}\nExam: ${examId}\n\nCheck if results were saved for this session.`);
                 selector.style.display = 'none';
                 document.querySelector('.btn-load').innerHTML = '<i class="fas fa-users"></i> Fetch Students';
                 return;
@@ -401,12 +451,42 @@ firebase.auth().onAuthStateChanged((user) => {
             // Render Checkboxes
             let html = "";
             fetchedStudents.forEach(stu => {
+                const isInactive = stu.status === 'Inactive';
+
+                // Fully absent check: saare non-drawing marks "AB" ya empty hain?
+                let isFullyAbsent = false;
+                if (!isInactive && stu.marks) {
+                    const nonDrawing = Object.entries(stu.marks)
+                        .filter(([k]) => !/drawing/i.test(k))
+                        .map(([, v]) => String(v).trim().toUpperCase());
+                    isFullyAbsent = nonDrawing.length > 0 &&
+                        nonDrawing.every(v => v === 'AB' || v === '');
+                }
+
+                const willSkip = isInactive || isFullyAbsent;
+
+                let cardClass = '';
+                let skipBadge = '';
+                let nameClass = '';
+                if (isInactive) {
+                    cardClass = 'card-skip-inactive';
+                    skipBadge = `<span class="skip-reason skip-inactive">❌ Inactive — Card nahi banega</span>`;
+                    nameClass = 'name-strike';
+                } else if (isFullyAbsent) {
+                    cardClass = 'card-skip-absent';
+                    skipBadge = `<span class="skip-reason skip-absent">⚠️ All Absent — Card nahi banega</span>`;
+                    nameClass = 'name-strike';
+                }
+
                 html += `
-                <label class="stu-check-card">
-                    <input type="checkbox" class="stu-chk" value="${stu.id}" checked>
+                <label class="stu-check-card ${cardClass}" style="${willSkip ? 'opacity:0.85;' : ''}">
+                    <input type="checkbox" class="stu-chk" value="${stu.id}"
+                           ${willSkip ? 'disabled checked' : 'checked'}
+                           title="${isInactive ? 'Inactive Student' : isFullyAbsent ? 'Fully Absent Student' : ''}">
                     <div class="stu-info">
-                        <span class="s-name">${stu.name}</span>
+                        <span class="s-name ${nameClass}">${stu.name}</span>
                         <span class="s-roll">Roll: ${stu.roll}</span>
+                        ${skipBadge}
                     </div>
                 </label>`;
             });
@@ -456,14 +536,10 @@ firebase.auth().onAuthStateChanged((user) => {
             const subDoc = await db.collection('subjects').doc(cls).get();
             const subjectsConfig = subDoc.exists ? subDoc.data().list : [];
 
-            // Fast Query
-            const resSnap = await db.collection('results')
-                .where('examId', '==', examId)
-                .where('class', '==', cls)
-                .get();
-
+            // Results already in fetchedStudents (they came from results collection)
+            // Build resultsMap for easy lookup
             const resultsMap = {};
-            resSnap.docs.forEach(doc => resultsMap[doc.data().studentId] = doc.data());
+            fetchedStudents.forEach(stu => { resultsMap[stu.id] = stu; });
 
             // 3. Prepare List of Students to Process
             const studentsToProcess = fetchedStudents.filter(s => selectedIds.includes(s.id));
@@ -477,26 +553,46 @@ firebase.auth().onAuthStateChanged((user) => {
             
             // 4. BATCH PROCESSING FUNCTION
             let index = 0;
-            const batchSize = 5; // Ek baar me 5 Card banenge (Fast & Smooth)
+            const batchSize = 5;
             
             function processBatch() {
-                if (index >= studentsToProcess.length) {
-                    // Done!
-                    return;
-                }
+                if (index >= studentsToProcess.length) return;
 
-                // Agle 5 students uthao
                 const batch = studentsToProcess.slice(index, index + batchSize);
                 
                 batch.forEach(stu => {
+                    // ✅ Inactive student ka result card generate nahi karna
+                    if (stu.status === 'Inactive') return;
+
                     const res = resultsMap[stu.id];
+
+                    // ✅ Fully Absent student skip karo (saare non-drawing marks "AB" hain)
+                    if (res && res.marks) {
+                        const nonDrawingMarks = Object.entries(res.marks)
+                            .filter(([subName]) => !/drawing/i.test(subName))
+                            .map(([, val]) => String(val).trim().toUpperCase());
+                        
+                        const allAbsent = nonDrawingMarks.length > 0 &&
+                            nonDrawingMarks.every(v => v === 'AB' || v === '');
+                        
+                        if (allAbsent) return; // Card nahi banega
+                    }
                     if(res) {
-                        // A. HTML Generate karo
+                        // ✅ Build a card object that uses snapshot fields from res
+                        const cardStu = {
+                            id: stu.id,
+                            name: res.name || stu.name,
+                            fatherName: res.fatherName || stu.fatherName || '-',
+                            stesID: res.stesID || stu.stesID || '-',
+                            photo: res.photo || stu.photo || '',
+                            roll: res.roll || stu.roll,
+                            section: res.section || stu.section
+                        };
                         const cardDiv = document.createElement('div');
-                        cardDiv.innerHTML = generateCardHTML(stu, res, examMax, subjectsConfig);
+                        cardDiv.innerHTML = generateCardHTML(cardStu, res, examMax, subjectsConfig);
                         container.appendChild(cardDiv);
 
-                        // B. QR Code Turant Generate karo
+                        // QR Code
                         const qrBox = document.getElementById(`qr-${stu.id}`);
                         if(qrBox) {
                             let totalStr = res.total || "0/0";
@@ -506,11 +602,11 @@ firebase.auth().onAuthStateChanged((user) => {
                             let perc = max > 0 ? ((obt / max) * 100).toFixed(2) : "0.00";
 
                             const qrText = 
-`ID: ${stu.stesID || '-'}
-Name: ${stu.name}
-Class: ${res.class} - ${stu.section}
-Roll: ${stu.roll}
-Father: ${stu.fatherName}
+`ID: ${cardStu.stesID || '-'}
+Name: ${cardStu.name}
+Class: ${res.class} - ${res.section}
+Roll: ${res.roll}
+Father: ${cardStu.fatherName}
 ------------------
 Marks: ${totalStr}
 %: ${perc}%
@@ -527,13 +623,8 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                     }
                 });
 
-                // Update Progress
                 index += batchSize;
-                const percent = Math.min((index / studentsToProcess.length) * 100, 100);
-                
-                // Agar abhi bhi bache hain, to agla batch run karo
                 if(index < studentsToProcess.length) {
-                   // Small Delay to let browser breathe
                    requestAnimationFrame(processBatch);
                 }
             }
@@ -556,27 +647,33 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         // REPLACE THIS FUNCTION in admin-bulk-print.html
 
     function generateCardHTML(stu, res, examMax, subjectsConfig) {
-        const d = new Date();
-        const dateStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+        // ✅ Use examMonth from saved result, not today's date
+        function formatExamDate(ym) {
+            if(!ym) return new Date().toLocaleDateString('en-IN');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const parts = ym.split('-');
+            const m = parseInt(parts[1]) - 1;
+            return months[m] + ' ' + parts[0];
+        }
+        const dateStr = formatExamDate(res.examMonth);
 
-        // --- STEP 1: Calculate Correct Max Total (On the Fly Fix) ---
-        // Ye logic ensure karega ki chahe 'AB' ho, Max Marks count ho.
+        // ✅ FIX: Apply is50 auto-detection (same logic as marks-entry)
+        // Agar Firestore me is50 save nahi tha tab bhi GK/Sanskrit sahi count hogi
+        const subjectList = (subjectsConfig.length ? subjectsConfig : Object.keys(res.marks).map(m => ({name: m, is50: false})))
+            .map(s => ({
+                ...s,
+                is50: s.is50 || /^(gk|g\.k|g\.k\.|sanskrit)$/i.test(s.name)
+            }));
+
+        // --- STEP 1: Calculate Correct Max Total ---
         let calculatedMaxTotal = 0;
-        
-        // Agar subjectsConfig khali hai to marks keys se bana lo (Fallback)
-        const subjectList = subjectsConfig.length ? subjectsConfig : Object.keys(res.marks).map(m => ({name: m, is50: false}));
-
         subjectList.forEach(sub => {
-            // Drawing ko Total me count nahi karna
-            if(/drawing/i.test(sub.name)) return;
-
+            if(/drawing/i.test(sub.name)) return; // Drawing excluded
+            if(res.marks[sub.name] === undefined) return;
             let sMax = examMax;
-            // Agar exam 100 marks ka hai aur subject GK/Sanskrit hai (is50 true), to 50 marks lo
             if(examMax === 100 && sub.is50) sMax = 50;
-            
             calculatedMaxTotal += sMax;
         });
-        // -------------------------------------------------------------
 
         let rowsHtml = "";
         
@@ -631,7 +728,8 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         
         let finalStatus = parseFloat(perc) < 32.5 ? "N.I" : "PASS";
         let statusClass = finalStatus === "PASS" ? "res-pass" : "res-fail";
-        let finalGrade = parseFloat(perc) < 32.5 ? "N.I" : (res.overallGrade || "-");
+        // ✅ FIX: Grade bhi recalculated perc se nikalo, purana stale overallGrade nahi
+        let finalGrade = parseFloat(perc) < 32.5 ? "N.I" : getGradeDetails(parseFloat(perc)).grade;
         // --- NAYA LOGIC ---
         let displayPromoted = finalStatus === "PASS" ? (res.promotedTo || "------") : "------";
 
@@ -660,15 +758,15 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                 <div class="info-col">
                     <div class="info-row"><span class="lbl">Reg. ID:</span> <span class="val">${stu.stesID || "-"}</span></div>
                     <div class="info-row"><span class="lbl">Student Name:</span> <span class="val">${stu.name}</span></div>
-                    <div class="info-row"><span class="lbl">Class & Sec:</span> <span class="val">${res.class} - ${stu.section}</span></div>
-                    <div class="info-row"><span class="lbl">Roll No:</span> <span class="val">${stu.roll}</span></div>
+                    <div class="info-row"><span class="lbl">Class & Sec:</span> <span class="val">${res.class} - ${res.section || stu.section}</span></div>
+                    <div class="info-row"><span class="lbl">Roll No:</span> <span class="val">${res.roll || stu.roll}</span></div>
                 </div>
                 
                 <div class="info-col">
                     <div class="info-row"><span class="lbl">Father Name:</span> <span class="val">${stu.fatherName || "-"}</span></div>
                     <div class="info-row"><span class="lbl">Exam Name:</span> <span class="val">${res.examId}</span></div>
-                    <div class="info-row"><span class="lbl">Session:</span> <span class="val">2025-2026</span></div>
-                    <div class="info-row"><span class="lbl">Date:</span> <span class="val">${dateStr}</span></div>
+                    <div class="info-row"><span class="lbl">Session:</span> <span class="val">${res.session || currentSession}</span></div>
+                    <div class="info-row"><span class="lbl">Exam Month:</span> <span class="val">${dateStr}</span></div>
                 </div>
 
                 ${photoHtml}
