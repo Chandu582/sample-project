@@ -105,8 +105,8 @@
         .grading-container { margin-bottom: 15px; }
         .grading-title { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 3px; }
         .grading-info { width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #ccc; }
-        .grading-info th { background: #f1f5f9; border: 1px solid #ccc; padding: 3px; font-weight: 700; text-align: center; color: #333; }
-        .grading-info td { border: 1px solid #ccc; padding: 2px; text-align: center; color: #555; }
+        .grading-info th { background: var(--primary); border: 1px solid #000; padding: 3px; font-weight: 700; text-align: center; color: #fff; }
+        .grading-info td { border: 1px solid #ccc; padding: 2px; text-align: center; color: #555; font-weight: 600; }
 
         /* Quote Box */
         .quote-box { margin-top: 30px; padding: 15px 20px; border: 2px solid #000; border-radius: 12px; text-align: center; position: relative; background: transparent; }
@@ -115,10 +115,10 @@
         
         .footer-note { text-align:center; font-size:10px; color:#272B30; margin-top: 5px; font-style: italic; }
 
-        /* PRINT SETTINGS (MATCHED EXACTLY TO ADMIN BULK) */
+        /* PRINT SETTINGS - MATCHED TO ADMIN BULK PRINT */
         @media print {
             @page { size: A4; margin: 0; }
-            body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; color: #000 !important; }
+            body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .controls { display: none !important; }
             #noData { display: none !important; }
 
@@ -126,7 +126,7 @@
                 border: none; 
                 box-shadow: none; 
                 width: 210mm; height: 297mm; 
-                margin: 2; padding: 10mm 12mm; 
+                margin: 0; padding: 10mm 12mm; 
                 page-break-after: always; 
                 page-break-inside: avoid; 
                 overflow: hidden; 
@@ -136,38 +136,42 @@
             }
             .report-card:last-child { page-break-after: auto; margin-bottom: 0; }
 
-            /* Solid Black Changes */
+            /* ✅ Blue/Navy Headers (same as admin-bulk-print) */
             .marks-table th, .grading-info th, .sum-head { 
-                background-color: #000 !important;  
+                background-color: #112D4E !important;
                 color: #fff !important;             
                 border: 1px solid #000 !important;
                 position: relative !important;      
                 z-index: 10 !important;             
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
-            .school-name, .card-badge, .sum-val, .res-pass, .res-fail, .frac-num, .den-num, .school-reg-id, .status-val { color: #000 !important; }
-            .card-badge { background: #000 !important; color: #fff !important; }
-            
-            .status-strip, .info-box, .quote-box { background-color: #fff !important; border-color: #000 !important; color: #000 !important; }
-            .marks-table, .marks-table td, .summary-table, .summary-table td, .status-item, .status-strip, .info-box, .grading-info, .grading-info td { border-color: #000 !important; }
-
-            /* Fail Row Light Grey Fix */
-            .row-fail, .row-fail td { 
-                background-color: #D3D3D3 !important; 
-                color: #000 !important; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-            }
-
-            .grading-info td { color: #000 !important; font-weight: 600 !important; background-color: #fff !important; }
+            .grading-info td { color: #000 !important; font-weight: bold !important; border: 1px solid #000 !important; }
             .grading-title { color: #000 !important; font-weight: bold !important; }
-            .student-photo { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; }
-            
-            img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            
-             .qr-code img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            /* Fail Row - light red */
+            .row-fail { 
+                background-color: #fee2e2 !important; 
+                color: #b91c1c !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .res-pass, .status-val.res-pass { color: #15803d !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .res-fail, .status-val.res-fail { color: #b91c1c !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            .school-name { color: #112D4E !important; }
+            .sum-val { color: #112D4E !important; }
+            .card-badge { background: #112D4E !important; color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .status-strip { border: 2px solid #112D4E !important; }
+            .status-val { color: #112D4E !important; }
+
+            .marks-table, .marks-table td, .summary-table, .summary-table td,
+            .status-item, .status-strip, .info-box, .grading-info, .grading-info td { border-color: #000 !important; }
+
+            .student-photo { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            img, .qr-code canvas, .qr-code img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -220,17 +224,50 @@
             window.location.href = "admin-login.html"; 
         }
 
-        // --- LOAD EXAMS ---
+        // --- CURRENT SESSION (loaded from Firebase) ---
+        let currentSession = "";
+
+        // --- LOAD EXAMS (session-filtered) ---
+        async function initAndLoad() {
+            // 1. Get current session
+            try {
+                const genDoc = await db.collection('masterSettings').doc('general').get();
+                const sessDoc = await db.collection('masterSettings').doc('sessions').get();
+                let list = [];
+                if (sessDoc.exists && sessDoc.data().list) list = sessDoc.data().list.sort().reverse();
+                if (genDoc.exists && genDoc.data().currentSession)
+                    currentSession = genDoc.data().currentSession;
+                else
+                    currentSession = list[0] || '2025-2026';
+            } catch(e) { currentSession = '2025-2026'; }
+
+            loadExamList();
+        }
+
         async function loadExamList() {
-            const sel = document.getElementById('examSelect'); 
+            const sel = document.getElementById('examSelect');
             sel.innerHTML = "<option>Loading exams...</option>";
             try {
-                const resSnap = await db.collection('results').where('studentId', '==', user.id).get();
-                if(resSnap.empty) { sel.innerHTML = "<option>No Results Found</option>"; return; }
-                
+                // Only show results for current session
+                const resSnap = await db.collection('results')
+                    .where('studentId', '==', user.id)
+                    .where('session', '==', currentSession)
+                    .get();
+
+                if(resSnap.empty) {
+                    // Fallback: try old format (no session field) for backward compat
+                    const oldSnap = await db.collection('results').where('studentId', '==', user.id).get();
+                    if(oldSnap.empty) { sel.innerHTML = "<option>No Results Found</option>"; return; }
+                    let options = '<option value="">-- Select Exam --</option>';
+                    oldSnap.forEach(doc => { options += `<option value="${doc.id}">${doc.data().examId} (${doc.data().session || 'Old'})</option>`; });
+                    sel.innerHTML = options;
+                    document.getElementById('noData').style.display = 'block';
+                    return;
+                }
+
                 let options = '<option value="">-- Select Exam --</option>';
                 resSnap.forEach(doc => { options += `<option value="${doc.id}">${doc.data().examId}</option>`; });
-                sel.innerHTML = options; 
+                sel.innerHTML = options;
                 document.getElementById('noData').style.display = 'block';
             } catch(e) { console.error(e); }
         }
@@ -272,9 +309,20 @@
 
                 // Agar published hai, to hi aage ka code chalega:
                 let examMax = 100; try { const eDoc = await db.collection('exam_types').doc(res.examId).get(); if(eDoc.exists) examMax = eDoc.data().maxMarks; } catch(e){}
+                // ✅ Use res.class (snapshot) for subjects, not live class
                 let subjectsConfig = []; try { const sDoc = await db.collection('subjects').doc(res.class).get(); if(sDoc.exists) subjectsConfig = sDoc.data().list; } catch(e){}
 
-                container.innerHTML = generateCardHTML(user, res, examMax, subjectsConfig);
+                // ✅ Build a merged student+snapshot object so report card uses frozen data
+                const stuForCard = {
+                    ...user,
+                    // Snapshot fields override live fields
+                    section: res.section || user.section,
+                    roll: res.roll || user.roll,
+                    class: res.class,
+                    photo: user.photo
+                };
+
+                container.innerHTML = generateCardHTML(stuForCard, res, examMax, subjectsConfig);
                 document.getElementById('noData').style.display = 'none';
 
                 // QR Code Logic (Existing code same rahega)
@@ -289,11 +337,11 @@
                         let perc = max > 0 ? ((obt / max) * 100).toFixed(2) : "0.00";
 
                         const qrText = 
-`ID: ${user.stesID || '-'}
-Name: ${user.name}
-Class: ${res.class} - ${user.section}
-Roll: ${user.roll}
-Father: ${user.fatherName}
+`ID: ${stu.stesID || '-'}
+Name: ${stu.name}
+Class: ${res.class} - ${stu.section}
+Roll: ${stu.roll}
+Father: ${stu.fatherName || '-'}
 ------------------
 Marks: ${totalStr}
 %: ${perc}%
@@ -320,8 +368,15 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         // REPLACE THIS FUNCTION in admin-bulk-print.html
 
     function generateCardHTML(stu, res, examMax, subjectsConfig) {
-        const d = new Date();
-        const dateStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+        // ✅ Show exam month/year from saved result, not today's date
+        function formatExamDate(ym) {
+            if(!ym) return new Date().toLocaleDateString('en-IN');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const parts = ym.split('-');
+            const m = parseInt(parts[1]) - 1;
+            return months[m] + ' ' + parts[0];
+        }
+        const dateStr = formatExamDate(res.examMonth);
 
         // --- STEP 1: Calculate Correct Max Total (On the Fly Fix) ---
         // Ye logic ensure karega ki chahe 'AB' ho, Max Marks count ho.
@@ -333,6 +388,9 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         subjectList.forEach(sub => {
             // Drawing ko Total me count nahi karna
             if(/drawing/i.test(sub.name)) return;
+
+            // FIX: Only count subject in total max if it has marks in res.marks
+            if(res.marks[sub.name] === undefined) return;
 
             let sMax = examMax;
             // Agar exam 100 marks ka hai aur subject GK/Sanskrit hai (is50 true), to 50 marks lo
@@ -437,7 +495,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                 <div class="info-col">
                     <div class="info-row"><span class="lbl">Father Name:</span> <span class="val">${stu.fatherName || "-"}</span></div>
                     <div class="info-row"><span class="lbl">Exam Name:</span> <span class="val">${res.examId}</span></div>
-                    <div class="info-row"><span class="lbl">Session:</span> <span class="val">2025-2026</span></div>
+                    <div class="info-row"><span class="lbl">Session:</span> <span class="val">${res.session || currentSession}</span></div>
                     <div class="info-row"><span class="lbl">Date:</span> <span class="val">${dateStr}</span></div>
                 </div>
 
@@ -527,12 +585,8 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
         if (user && isLoggedIn && userData.role === 'parent') {
-            
-            // File ke hisaab se sahi function call karega
-            if(typeof loadExamList === 'function') {
-                loadExamList();
-            } else if (typeof fetchResult === 'function') {
-                fetchResult();
+            if(typeof initAndLoad === 'function') {
+                initAndLoad(); // ✅ Session-aware init
             }
 
         } else {

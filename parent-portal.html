@@ -668,6 +668,15 @@
 
         <div id="attendance" class="section-card show">
             <div class="sec-title"><i class="fas fa-calendar-alt"></i> Attendance Register</div>
+
+            <!-- Session Selector -->
+            <div style="margin-bottom:12px;">
+                <label style="font-size:11px; font-weight:bold; color:#64748b; display:block; margin-bottom:4px;">📅 SESSION</label>
+                <select id="attSessionSelect" class="inp" onchange="onAttSessionChange()" style="font-weight:700; border-color:#6366f1; background:#eef2ff; color:#4338ca;">
+                    <option>Loading...</option>
+                </select>
+            </div>
+
             <div class="input-row">
                 <div style="flex:1"><label style="font-size:11px; font-weight:bold;">From Date</label><input type="date"
                         id="attStart" class="inp"></div>
@@ -936,7 +945,12 @@
                 const sessDoc = await db.collection('masterSettings').doc('sessions').get();
                 if (sessDoc.exists && sessDoc.data().list) {
                     const list = sessDoc.data().list.sort().reverse();
-                    currentSession = list[0]; // Latest session
+                    currentSession = list[0]; // Latest session by default
+
+                    // ✅ Populate attendance session dropdown
+                    const attSel = document.getElementById('attSessionSelect');
+                    attSel.innerHTML = list.map(s => `<option value="${s}">${s}</option>`).join('');
+                    attSel.value = currentSession; // Default: latest
                 }
                 document.getElementById('sessDisplay').innerText = `Session: ${currentSession}`;
 
@@ -1031,11 +1045,10 @@
                 // F. Load History & Set Dates
                 loadMyHistory();
 
-                const today = new Date();
-                const curYear = today.getFullYear();
-                const acYear = today.getMonth() < 3 ? curYear - 1 : curYear;
-                document.getElementById('attStart').value = `${acYear}-04-01`;
-                document.getElementById('attEnd').value = today.toISOString().split('T')[0];
+                // Set date range for current session
+                const sessParts = currentSession.split('-');
+                document.getElementById('attStart').value = `${sessParts[0]}-04-01`;
+                document.getElementById('attEnd').value = new Date().toISOString().split('T')[0];
 
             } catch (e) {
                 console.error("Init Error:", e);
@@ -1373,11 +1386,21 @@
             document.getElementById('paymentOptionsModal').style.display = 'flex';
         }
 
-        // --- 6. ATTENDANCE LOGIC ---
-        // --- 6. ATTENDANCE LOGIC (FIXED) ---
+        // ✅ Session change handler for attendance section
+        function onAttSessionChange() {
+            const sel = document.getElementById('attSessionSelect').value;
+            const parts = sel.split('-');
+            document.getElementById('attStart').value = `${parts[0]}-04-01`;
+            document.getElementById('attEnd').value = `${parts[1]}-03-31`;
+            // Reset stats
+            document.getElementById('attStats').style.display = 'none';
+        }
+
+        // --- 6. ATTENDANCE LOGIC (SESSION-AWARE) ---
         async function checkAttendance() {
             const startStr = document.getElementById('attStart').value;
             const endStr = document.getElementById('attEnd').value;
+            const selSession = document.getElementById('attSessionSelect').value;
 
             if (!startStr || !endStr) return showToast("Select date range");
 
@@ -1385,7 +1408,8 @@
                 // UI Update: Loading state dikhayenge
                 document.getElementById('attList').innerHTML = '<div style="text-align:center; padding:20px; color:gray;">Loading...</div>';
 
-                // 1. Fetch ALL attendance data first
+                // 1. Fetch attendance filtered by student id (date range filters in JS below)
+                // We query all docs for this student and filter by date range in JS for backward compat
                 const snap = await db.collection('attendance').where('sid', '==', user.id).get();
 
                 // 2. Map creation (Sirf selected range ka data hi map me dalenge)

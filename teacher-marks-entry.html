@@ -144,6 +144,24 @@
         .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .pill-pass { background: #dcfce7; color: #166534; }
         .pill-fail { background: #fee2e2; color: #991b1b; }
+
+        /* --- INACTIVE ROW STYLES --- */
+        .row-inactive { background: #fff1f2 !important; }
+        .row-inactive td { opacity: 0.65; }
+        .inactive-badge {
+            display: inline-block; background: #fee2e2; color: #991b1b;
+            font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
+            border: 1px solid #fca5a5; margin-left: 4px; vertical-align: middle;
+        }
+        /* --- ABSENT ALL BUTTON --- */
+        .btn-absent-all {
+            display: block; margin-top: 4px; font-size: 10px; font-weight: 700;
+            padding: 3px 8px; border: none; border-radius: 6px; cursor: pointer;
+            background: #f59e0b; color: white; transition: 0.2s;
+        }
+        .btn-absent-all.active { background: #dc2626; }
+        /* --- ABSENT ALL ROW --- */
+        .row-absent-all { background: #fffbeb !important; }
         
         
         
@@ -306,6 +324,7 @@
     const db = firebase.firestore();
 
     let teacherProfile = null;
+    let currentSession = ""; // ✅ Global session — same as admin
 
     // --- Toast System ---
     function showToast(msg, type = 'success') {
@@ -350,8 +369,24 @@
         loadExams();
     }
 
-    // --- 2. Load Exams ---
+    // --- 2. Load Exams + Session ---
     async function loadExams() {
+        // ✅ Session load karo (same as admin)
+        try {
+            const [sessDoc, genDoc] = await Promise.all([
+                db.collection('masterSettings').doc('sessions').get(),
+                db.collection('masterSettings').doc('general').get()
+            ]);
+            let list = ['2025-2026'];
+            if (sessDoc.exists && sessDoc.data().list) list = sessDoc.data().list.sort().reverse();
+            let def = list[0];
+            if (genDoc.exists && genDoc.data().currentSession && list.includes(genDoc.data().currentSession))
+                def = genDoc.data().currentSession;
+            currentSession = def;
+        } catch(e) {
+            currentSession = '2025-2026';
+        }
+
         const snap = await db.collection('exam_types').get();
         let html = "<option value=''>-- Select Exam --</option>";
         snap.forEach(doc => {
@@ -409,8 +444,13 @@
                 btn.innerHTML = originalText; btn.disabled = false; return;
             }
 
-            // C. Fetch Existing Results
-            const resSnap = await db.collection('results').where('examId', '==', examId).get();
+            // C. Fetch Existing Results — session + section filter
+            const resSnap = await db.collection('results')
+                .where('examId', '==', examId)
+                .where('class', '==', teacherProfile.assignedClass)
+                .where('section', '==', teacherProfile.assignedSection)
+                .where('session', '==', currentSession)
+                .get();
 
             savedResultsMap = {};
             let commonData = null;
@@ -422,6 +462,27 @@
                     if(!commonData) commonData = d;
                 }
             });
+
+            // ✅ FALLBACK: Agar naye format me koi data nahi mila, purane docs (examId_studentId) check karo
+            if(Object.keys(savedResultsMap).length === 0) {
+                showToast("Purana data dhundh raha hoon...", "success");
+                const oldFetches = currentStudents.map(stu =>
+                    db.collection('results').doc(`${examId}_${stu.id}`).get()
+                );
+                const oldDocs = await Promise.all(oldFetches);
+                let oldDataFound = 0;
+                oldDocs.forEach(doc => {
+                    if(doc.exists) {
+                        const d = doc.data();
+                        savedResultsMap[d.studentId] = d;
+                        if(!commonData) commonData = d;
+                        oldDataFound++;
+                    }
+                });
+                if(oldDataFound > 0) {
+                    showToast(`✅ ${oldDataFound} students ka purana data mila! Save karoge to naye format me migrate ho jayega.`, "success");
+                }
+            }
 
             // D. Fill Fields
             if(commonData) {
@@ -446,53 +507,98 @@
     }
 
         function renderSheet() {
-    // CHANGE: Removed inline min-width:150px from Student Name th. It is now handled by CSS.
     let head = `<tr><th style="width:50px;">Roll</th><th>Student Name</th>`;
     currentSubjects.forEach(s => head += `<th>${s.name} ${s.is50?'<br><small style="font-size:9px; color:#888;">(50M)</small>':''}</th>`);
+    head += `<th style="width:80px;">Attendance</th><th>Total</th><th>%</th><th>Grade</th><th>Result</th><th>Rank</th></tr>`;
+    document.querySelector('#marksTable thead').innerHTML = head;
 
-        head += `<th style="width:80px;">Attendance</th><th>Total</th><th>%</th><th>Grade</th><th>Result</th><th>Rank</th></tr>`;
-        
-        document.querySelector('#marksTable thead').innerHTML = head;
+    let body = "";
+    currentStudents.forEach(stu => {
+        const saved = savedResultsMap[stu.id] || {};
+        const marks = saved.marks || {};
+        const att = saved.attendance || "";
+        const isInactive = stu.status === 'Inactive';
 
-        let body = "";
-        currentStudents.forEach(stu => {
-            const saved = savedResultsMap[stu.id] || {};
-            const marks = saved.marks || {};
-            const att = saved.attendance || "";
+        let nameCellHtml = `${stu.name}`;
+        if (isInactive) {
+            nameCellHtml += ` <i class="fas fa-times-circle" style="color:#ef4444;" title="Inactive"></i>
+                              <span class="inactive-badge">INACTIVE</span>`;
+        } else {
+            nameCellHtml += `<br><button class="btn-absent-all" 
+                onclick="toggleAbsentAll('${stu.id}', this)" 
+                title="Sabhi subjects me Absent mark karo">
+                <i class="fas fa-ban"></i> Mark All AB
+            </button>`;
+        }
 
-            body += `<tr>
-                <td style="font-weight:700; color:var(--text-light);">${stu.roll}</td>
-                <td style="text-align:left; font-weight:600;">${stu.name}</td>`;
-            
-            currentSubjects.forEach(sub => {
-                const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
-                const val = marks[sub.name] || "";
-                
-                // IMPORTANT: enterkeyhint aur onkeydown add kiya gaya hai
-                body += `<td>
-                    <input type="text" 
-                           id="${inputId}" 
-                           class="mark-input" 
-                           value="${val}" 
-                           enterkeyhint="next"
-                           onkeyup="calc('${stu.id}')"
-                           onkeydown="focusNextRow(event, this)">
-                    <span id="g_${inputId}" class="badge-grade">-</span>
-                </td>`;
-            });
+        body += `<tr id="row_${stu.id}" ${isInactive ? 'class="row-inactive"' : ''}>
+            <td style="font-weight:700; color:var(--text-light);">${stu.roll}</td>
+            <td style="text-align:left; font-weight:600;">${nameCellHtml}</td>`;
 
-            // Attendance input par bhi logic lagaya hai
-            body += `<td><input type="text" id="att_${stu.id}" class="mark-input" value="${att}" placeholder="Days" style="width:100%;" enterkeyhint="next" onkeydown="focusNextRow(event, this)"></td>
-                     <td style="font-weight:800; color:var(--primary);" id="tot_${stu.id}">0</td>
-                     <td style="font-weight:700;" id="perc_${stu.id}">0%</td>
-                     <td><span id="grd_${stu.id}" class="status-pill">-</span></td>
-                     <td><span id="res_${stu.id}" class="status-pill">-</span></td>
-                     <td style="font-weight:800; color:#e11d48;" id="rank_${stu.id}">-</td>
-                     </tr>`;
+        currentSubjects.forEach(sub => {
+            const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
+            const val = marks[sub.name] || "";
+            body += `<td>
+                <input type="text" 
+                       id="${inputId}" 
+                       class="mark-input" 
+                       value="${val}" 
+                       enterkeyhint="next"
+                       onkeyup="calc('${stu.id}')"
+                       onkeydown="focusNextRow(event, this)"
+                       ${isInactive ? 'disabled style="background:#fee2e2; cursor:not-allowed;"' : ''}>
+                <span id="g_${inputId}" class="badge-grade">-</span>
+            </td>`;
         });
-        document.querySelector('#marksTable tbody').innerHTML = body;
-    }
 
+        body += `<td><input type="text" id="att_${stu.id}" class="mark-input" value="${att}" placeholder="Days" style="width:100%;" enterkeyhint="next" onkeydown="focusNextRow(event, this)" ${isInactive ? 'disabled style="background:#fee2e2; cursor:not-allowed;"' : ''}></td>
+                 <td style="font-weight:800; color:var(--primary);" id="tot_${stu.id}">0</td>
+                 <td style="font-weight:700;" id="perc_${stu.id}">0%</td>
+                 <td><span id="grd_${stu.id}" class="status-pill">-</span></td>
+                 <td><span id="res_${stu.id}" class="status-pill">-</span></td>
+                 <td style="font-weight:800; color:#e11d48;" id="rank_${stu.id}">-</td>
+                 </tr>`;
+    });
+    document.querySelector('#marksTable tbody').innerHTML = body;
+}
+
+
+    // --- Absent-All Tracking ---
+    const absentAllSet = new Set();
+
+    function toggleAbsentAll(stuId, btn) {
+        const isNowAbsent = !absentAllSet.has(stuId);
+        const row = document.getElementById(`row_${stuId}`);
+
+        if (isNowAbsent) {
+            absentAllSet.add(stuId);
+            btn.innerHTML = '<i class="fas fa-undo"></i> Re-enable';
+            btn.classList.add('active');
+            row.classList.add('row-absent-all');
+
+            currentSubjects.forEach(sub => {
+                const el = document.getElementById(`${stuId}_${sub.name.replace(/\s/g,'')}`);
+                if (el) { el.value = 'AB'; el.disabled = true; el.style.background = '#fef9c3'; }
+            });
+            const attEl = document.getElementById(`att_${stuId}`);
+            if (attEl) attEl.disabled = true;
+            showToast("Student marked as Fully Absent", "error");
+        } else {
+            absentAllSet.delete(stuId);
+            btn.innerHTML = '<i class="fas fa-ban"></i> Mark All AB';
+            btn.classList.remove('active');
+            row.classList.remove('row-absent-all');
+
+            currentSubjects.forEach(sub => {
+                const el = document.getElementById(`${stuId}_${sub.name.replace(/\s/g,'')}`);
+                if (el) { el.disabled = false; el.style.background = ''; }
+            });
+            const attEl = document.getElementById(`att_${stuId}`);
+            if (attEl) attEl.disabled = false;
+            showToast("Student re-enabled", "success");
+        }
+        calc(stuId);
+    }
 
     // --- Calculation Logic ---
     // REPLACE THIS FUNCTION in teacher-marks-entry.html
@@ -618,6 +724,9 @@
         const batch = db.batch();
         
         currentStudents.forEach(stu => {
+            // ✅ Inactive students ka result NAHI save karna
+            if (stu.status === 'Inactive') return;
+
             let marksObj = {};
             currentSubjects.forEach(sub => {
                 const el = document.getElementById(`${stu.id}_${sub.name.replace(/\s/g,'')}`);
@@ -636,14 +745,20 @@
             let finalPromoted = resStatus === "PASS" ? promo : "------";
 
 
-            const ref = db.collection('results').doc(`${examId}_${stu.id}`);
+            // ✅ SAME DOC ID as admin: session_examId_studentId
+            const ref = db.collection('results').doc(`${currentSession}_${examId}_${stu.id}`);
             batch.set(ref, {
                 examId: examId,
                 studentId: stu.id,
+                // ✅ Full snapshot (same as admin)
                 name: stu.name,
+                fatherName: stu.fatherName || '',
+                stesID: stu.stesID || '',
+                photo: stu.photo || '',
                 roll: stu.roll,
-                class: teacherProfile.assignedClass, 
-                section: teacherProfile.assignedSection, 
+                section: teacherProfile.assignedSection,
+                class: teacherProfile.assignedClass,
+                session: currentSession,   // ✅ Session field
                 classTeacher: teacherProfile.name,
                 
                 marks: marksObj,
@@ -658,7 +773,7 @@
                 totalWorkingDays: wDays,
                 schoolReopens: reopen,
                 promotedTo: finalPromoted,
-            
+                status: stu.status || 'Active',
                 examMonth: month,
                 updatedAt: new Date()
             }, { merge: true });

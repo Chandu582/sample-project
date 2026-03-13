@@ -133,9 +133,17 @@
     </div>
 
     <div class="controls-row">
+        <div class="input-group" style="min-width:130px;">
+            <label>📅 SESSION</label>
+            <select id="sessionDropdown" class="input-box" onchange="onSessionChange()"
+                style="font-weight:700; border-color:#6366f1; background:#eef2ff; color:#4338ca;">
+                <option>Loading...</option>
+            </select>
+        </div>
         <div class="input-group">
             <label>DATE / FROM</label>
             <input type="date" id="markDate" class="input-box" onchange="handleDateChange()">
+        </div>
         </div>
         <div class="input-group" id="endDateDiv" style="display:none;">
             <label>TO DATE</label>
@@ -260,32 +268,67 @@
     // --- 1. UPDATED INIT FUNCTION (Active Session Logic) ---
     async function init() {
         try {
-            // A. Active Session Fetch Karo
+            // A. Fetch ALL available sessions from Firebase
+            const sessListDoc = await db.collection('masterSettings').doc('sessions').get();
+            const sessDropdown = document.getElementById('sessionDropdown');
+
+            let sessionList = [];
+            if (sessListDoc.exists && sessListDoc.data().list) {
+                sessionList = sessListDoc.data().list.sort().reverse();
+            }
+
+            // B. Get Active Session to set as default
             const genDoc = await db.collection('masterSettings').doc('general').get();
-            if(genDoc.exists && genDoc.data().currentSession) {
-                currentSessionName = genDoc.data().currentSession; // e.g. "2025-2026"
+            if (genDoc.exists && genDoc.data().currentSession) {
+                currentSessionName = genDoc.data().currentSession;
             } else {
                 const d = new Date();
                 const y = d.getMonth() < 3 ? d.getFullYear()-1 : d.getFullYear();
                 currentSessionName = `${y}-${y+1}`;
             }
 
-            // B. Calculate Dates (April 1 to March 31)
-            const parts = currentSessionName.split('-'); 
-            sessionStartDate = `${parts[0]}-04-01`; 
+            // C. Populate dropdown, default = latest/active
+            if (sessionList.length > 0) {
+                sessDropdown.innerHTML = sessionList.map(s => `<option value="${s}">${s}</option>`).join('');
+                // If active session is in list, use it; else use first (latest)
+                if (sessionList.includes(currentSessionName)) {
+                    sessDropdown.value = currentSessionName;
+                } else {
+                    currentSessionName = sessionList[0];
+                    sessDropdown.value = currentSessionName;
+                }
+            } else {
+                sessDropdown.innerHTML = `<option value="${currentSessionName}">${currentSessionName}</option>`;
+            }
+
+            // D. Calculate Dates (April 1 to March 31)
+            const parts = currentSessionName.split('-');
+            sessionStartDate = `${parts[0]}-04-01`;
             sessionEndDate = `${parts[1]}-03-31`;
 
             // UI Update with Session Name
             document.getElementById('tMeta').innerText = `${userData.name} | ${userData.class} (${currentSessionName})`;
 
-            // C. Load Rest Data
+            // E. Load Rest Data
             await checkPunchIn();
             await loadStudents();
-            await loadAllData(); 
+            await loadAllData();
             initDay();
             renderDaily();
 
         } catch(e) { console.error("Init Error:", e); }
+    }
+
+    // ✅ When teacher switches session from dropdown
+    async function onSessionChange() {
+        currentSessionName = document.getElementById('sessionDropdown').value;
+        const parts = currentSessionName.split('-');
+        sessionStartDate = `${parts[0]}-04-01`;
+        sessionEndDate = `${parts[1]}-03-31`;
+        document.getElementById('tMeta').innerText = `${userData.name} | ${userData.class} (${currentSessionName})`;
+        await loadAllData();
+        initDay();
+        renderDaily();
     }
 
     async function checkPunchIn() {
@@ -586,6 +629,7 @@
                 batch.set(ref, {
                     sid: s.id, name: s.name, class: assignedClass, role: 'student', date: date,
                     status: currentStatus[s.id], remark: currentRemarks[s.id] || "",
+                    session: currentSessionName,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 }, {merge: true});
                 changed = true;
@@ -654,7 +698,8 @@
         const img = canvas.toDataURL('image/jpeg', 0.5);
         
         await db.collection('attendance').add({
-            sid: userData.id, name: userData.name, role: 'teacher', status: 'P', date: todayStr, selfie: img, captureTime: punchTime
+            sid: userData.id, name: userData.name, role: 'teacher', status: 'P', date: todayStr,
+            selfie: img, captureTime: punchTime, session: currentSessionName
         });
         
         showToast("Punch In Success!", "success");
