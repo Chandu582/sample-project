@@ -1013,6 +1013,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
         let currentSession = "2025-2026";
         let rawData = [];
@@ -1024,6 +1025,27 @@
 
         // Ledger Standard Months (Short Names)
         const monthsArr = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+
+
+        function parseDate(raw, locale) {
+            locale = locale || 'en-IN';
+            if (!raw) return "-";
+            try {
+                if (raw && raw.seconds) return new Date(raw.seconds * 1000).toLocaleDateString(locale);
+                if (typeof raw === "string") {
+                    // DD/MM/YYYY — format stored by toLocaleDateString('en-IN')
+                    var m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                    if (m) {
+                        var d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+                        if (!isNaN(d.getTime())) return d.toLocaleDateString(locale);
+                    }
+                    var d2 = new Date(raw);
+                    if (!isNaN(d2.getTime())) return d2.toLocaleDateString(locale);
+                    return raw;
+                }
+            } catch(e) {}
+            return "-";
+        }
 
         async function init() {
             await loadSessions();
@@ -1490,89 +1512,6 @@
             }, 300);
         }
 
-        // --- RENDER TABLE FUNCTION (Niche apka purana code rahega) ---
-        // ... (baaki code same rahega)
-
-
-
-        function renderTable() {
-            const fName = document.getElementById('fName').value.toLowerCase();
-            const fClass = document.getElementById('fClass').value;
-            const fStatus = document.getElementById('fStatus').value;
-            const tbody = document.getElementById('tableBody');
-
-            tbody.innerHTML = "";
-
-            const filtered = rawData.filter(s => {
-                const matchName = s.name.toLowerCase().includes(fName) || String(s.stesID).toLowerCase().includes(fName);
-                const matchClass = fClass === "" || s.class === fClass;
-                const matchStatus = fStatus === "All" || (fStatus === "Pending" && s.grandTotalDue > 0) || (fStatus === "Clear" && s.grandTotalDue <= 0);
-                return matchName && matchClass && matchStatus;
-            });
-
-            if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="50" style="text-align:center; padding:20px;">No records found</td></tr>`; return; }
-
-            const html = filtered.map(s => {
-                // Category Badge Logic
-                const cat = s.admissionCategory || 'Regular';
-                let badgeStyle = "background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;";
-                if (cat === 'Hostler') badgeStyle = "background:#f3e8ff; color:#6b21a8; border:1px solid #d8b4fe;";
-                else if (cat === 'RTE') badgeStyle = "background:#fff7ed; color:#c2410c; border:1px solid #fed7aa;";
-                else if (cat === 'Freeship') badgeStyle = "background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;";
-
-                let cells = "";
-                dynamicHeads.forEach(h => {
-                    const d = s.headsData[h.name] || { exp: 0, paid: 0, due: 0 };
-                    let bgStyle = "";
-                    if (h.name.toLowerCase().includes('transport')) bgStyle = "background:#f0fdf4;";
-                    if (h.name.toLowerCase().includes('tuition')) bgStyle = "background:#eff6ff;";
-
-                    cells += `
-                        <td onclick="event.stopPropagation(); openHistoryModal('${s.id}', 'HEAD', '${h.name}')" style="${bgStyle} border-left:2px solid #e2e8f0; cursor:pointer;">₹${d.exp}</td>
-                        <td onclick="event.stopPropagation(); openHistoryModal('${s.id}', 'HEAD', '${h.name}')" style="${bgStyle} color:#059669; cursor:pointer;">₹${d.paid}</td>
-                        <td onclick="event.stopPropagation(); openHistoryModal('${s.id}', 'HEAD', '${h.name}')" style="${bgStyle} font-weight:700; color:${d.due > 0 ? '#dc2626' : '#cbd5e1'}; cursor:pointer;">₹${d.due}</td>
-                    `;
-                });
-
-                // Other Columns + NEW WALLET & CREDIT CELLS
-                let otherCells = `
-                    <td onclick="event.stopPropagation(); openHistoryModal('${s.id}', 'DISCOUNT')" style="background:#ecfccb; color:#3f6212; font-weight:700; cursor:pointer; text-decoration:underline;">- ₹${s.totalDisc}</td>
-                    <td style="background:#fee2e2; color:#7f1d1d;">₹${s.lateFeeExp}</td>
-                    <td onclick="event.stopPropagation(); openHistoryModal('${s.id}', 'LATE')" style="background:#fee2e2; color:#166534; font-weight:700; cursor:pointer; text-decoration:underline;">₹${s.totalLate}</td>
-                    <td style="background:#fee2e2; color:#b91c1c; font-weight:800;">₹${s.lateFeeDue}</td>
-                    <td onclick="event.stopPropagation(); openHistoryModal('${s.id}', 'ITEM')" style="background:#f3e8ff; color:#6b21a8; font-weight:700; cursor:pointer; text-decoration:underline;">₹${s.extraPaid}</td>
-                    
-                    <td onclick="event.stopPropagation(); viewWalletHistory('${s.id}')" 
-                        style="background:#e0f2fe; color:#0369a1; font-weight:800; cursor:pointer; text-decoration:underline;" title="Click for Wallet History">
-                        ₹${s.walletBalance}
-                    </td>
-
-                    <td onclick="event.stopPropagation(); viewCreditHistory('${s.id}')" 
-                        style="background:#ffedd5; color:${s.creditDue > 0 ? '#c2410c' : '#94a3b8'}; font-weight:800; cursor:pointer; text-decoration:underline;" title="Click for Credit History">
-                        ₹${s.creditDue}
-                    </td>
-                `;
-
-                return `
-                <tr onclick="openModal('${s.id}')">
-                    <td class="stu-cell">
-                        <div style="font-weight:700; color:var(--side); display:flex; flex-direction:column; gap:2px;">
-                            <span>${s.name}</span>
-                            <span style="${badgeStyle} padding:2px 6px; border-radius:6px; font-size:9px; font-weight:800; text-transform:uppercase; width:fit-content;">${cat}</span>
-                        </div>
-                        <div style="font-size:11px; color:#64748b; margin-top:2px;">${s.stesID} | ${s.class}</div>
-                    </td>
-                    ${cells}
-                    ${otherCells}
-                    <td style="font-weight:700;">₹${s.currentDues}</td>
-                    <td>₹${s.prevDue}</td>
-                    <td style="background:#fef2f2; font-size:14px; font-weight:800; color:${s.grandTotalDue > 0 ? '#dc2626' : '#16a34a'};">₹${s.grandTotalDue}</td>
-                    <td><span class="badge ${s.grandTotalDue > 0 ? 'bg-red' : 'bg-green'}">${s.grandTotalDue > 0 ? 'DUE' : 'CLEAR'}</span></td>
-                </tr>`;
-            }).join('');
-
-            tbody.innerHTML = html;
-        }
 
 
 
@@ -1810,7 +1749,7 @@
                         try {
                             if (h.date) {
                                 if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString();
-                                else if (typeof h.date === "string") dateStr = new Date(h.date).toLocaleDateString();
+                                else if (typeof h.date === "string") dateStr = parseDate(h.date);
                             }
                         } catch (e) { dateStr = "Error"; }
                         
@@ -2436,8 +2375,7 @@
                         let dateStr = "-";
                         if (h.date) {
                             if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
-                            else if (typeof h.date === "string") dateStr = new Date(h.date).toLocaleDateString('en-GB');
-                            if (dateStr === "Invalid Date") dateStr = h.date;
+                            else if (typeof h.date === "string") dateStr = parseDate(h.date, 'en-GB');
                         }
                         groupedHistory[rNo] = {
                             dateStr: dateStr,
@@ -2582,10 +2520,7 @@
                                     // Firebase Timestamp
                                     dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
                                 } else if (typeof h.date === "string") {
-                                    // String Date
-                                    const parsed = new Date(h.date);
-                                    if (!isNaN(parsed)) dateStr = parsed.toLocaleDateString('en-GB');
-                                    else dateStr = h.date;
+                                    dateStr = parseDate(h.date, 'en-GB');
                                 }
                             }
                         } catch (e) { dateStr = "Error"; }
@@ -2774,9 +2709,7 @@
                 // Show list
                 items.forEach(item => {
                     // Date formatting
-                    let dStr = item.date || "-";
-                    // Try to format if it looks like a date string
-                    try { if (dStr.includes('-')) dStr = new Date(dStr).toLocaleDateString(); } catch (e) { }
+                    let dStr = parseDate(item.date);
 
                     html += `
                     <tr style="border-bottom:1px solid #fff7ed;">
@@ -2863,16 +2796,22 @@
             const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
             if (user && isLoggedIn && userData.role === 'admin') {
-                // Asli test
-                db.collection('admins').doc(user.uid).get().then((doc) => {
-                    if (doc.exists && doc.data().role === 'SuperAdmin') {
-
-                        init(); // <-- Yahan page ka main function call hoga
-
-                    } else {
-                        auth.signOut().then(() => window.location.replace("admin-login.html"));
-                    }
-                });
+                db.collection('admins').doc(user.uid).get()
+                    .then((doc) => {
+                        if (doc.exists && doc.data().role === 'SuperAdmin') {
+                            init();
+                        } else {
+                            auth.signOut().then(() => window.location.replace("admin-login.html"));
+                        }
+                    })
+                    .catch((err) => {
+                        console.error("Auth check error:", err);
+                        document.getElementById('tableBody').innerHTML =
+                            `<tr><td colspan="50" style="text-align:center;padding:40px;color:red;">
+                             ⚠️ Load failed: ${err.message}<br>
+                             <button onclick="location.reload()" style="margin-top:10px;padding:8px 20px;background:#6366f1;color:white;border:none;border-radius:8px;cursor:pointer;">
+                             Retry</button></td></tr>`;
+                    });
             } else {
                 window.location.replace("admin-login.html");
             }
