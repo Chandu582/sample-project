@@ -624,6 +624,7 @@
                                 <th>Punch Time</th>
                                 <th>Status</th>
                                 <th>Verification</th>
+                                <th>Location (Map)</th>
                             </tr>
                         </thead>
                         <tbody id="teacherTable">
@@ -802,16 +803,39 @@
 
             document.getElementById('dateDisplay').innerText = new Date(date).toDateString() + ` | Session: ${currentSessionName}`;
 
+
             // 1. TEACHERS
             // Date range is already session-specific (Apr-Mar never overlaps between sessions)
             // Old docs have no session field, so we use date filter only for backward compat
             const tSnap = await db.collection('attendance').where('date', '==', date).where('role', '==', 'teacher').get();
             let tHtml = "", tCount = 0;
-            if (tSnap.empty) tHtml = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No staff marked present.</td></tr>`;
-            else {
+
+            // Colspan ko 4 se 5 kar diya hai kyunki humne Location column add kiya hai
+            if (tSnap.empty) {
+                tHtml = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No staff marked present.</td></tr>`;
+            } else {
                 tSnap.forEach(d => {
-                    const data = d.data(); tCount++;
-                    tHtml += `<tr><td><b>${data.name}</b></td><td>${data.captureTime}</td><td><span class="badge badge-p">Present</span></td><td><button class="btn-icon" onclick="openPhoto('${data.selfie}','${data.name}')"><i class="fas fa-eye"></i> View</button></td></tr>`;
+                    const data = d.data();
+                    tCount++;
+
+                    // --- NAYA LOCATION BUTTON LOGIC ---
+                    let locationBtn = `<span style="font-size:11px; color:#94a3b8;">Not Available</span>`;
+
+                    if (data.location && data.location.lat && data.location.lng) {
+                        const mapUrl = `https://www.google.com/maps?q=${data.location.lat},${data.location.lng}`;
+                        locationBtn = `<a href="${mapUrl}" target="_blank" class="btn-icon" style="color:#2563eb; border-color:#bfdbfe; background:#eff6ff; text-decoration:none;">
+                            <i class="fas fa-map-marker-alt" style="color:#ef4444;"></i> View Map
+                        </a>`;
+                    }
+                    // ----------------------------------
+
+                    tHtml += `<tr>
+                        <td><b>${data.name}</b></td>
+                        <td>${data.captureTime}</td>
+                        <td><span class="badge badge-p">Present</span></td>
+                        <td><button class="btn-icon" onclick="openPhoto('${data.selfie}','${data.name}')"><i class="fas fa-eye"></i> View</button></td>
+                        <td>${locationBtn}</td>
+                    </tr>`;
                 });
             }
             document.getElementById('teacherTable').innerHTML = tHtml;

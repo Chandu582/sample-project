@@ -246,8 +246,8 @@
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if(!userData) location.href='admin-login.html';
 
-    let assignedClass = userData.class.split("-")[0];
-    let assignedSection = userData.class.split("-")[1] || "";
+    let assignedClass = userData.class ? userData.class.split("-")[0] : "";
+let assignedSection = (userData.class && userData.class.includes("-")) ? userData.class.split("-")[1] : "";
     
     // Default Date Today
     const todayStr = new Date().toISOString().split('T')[0];
@@ -258,78 +258,113 @@
     let sessionStartDate = "";
     let sessionEndDate = "";
 
-    let students = [], allAttendance = [];
+    let teacherLat = null;
+let teacherLng = null;
     let currentStatus = {}, currentRemarks = {};
     let isLocked = true, isRegisterView = false;
     let currentFilter = 'ALL';
+    // --- GEO-FENCING VARIABLES ---
+    const SCHOOL_LAT = 25.331202222768184; // Tumhare school ka Latitude
+    const SCHOOL_LNG = 85.40030067856279;  // Tumhare school ka Longitude
+    const ALLOWED_RADIUS = 50; // 50 meters
+    let teacherLat = null;
+    let teacherLng = null;
+
+    function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return Math.round(R * c);
+    }
 
     function safeSetText(id, val) { const el = document.getElementById(id); if(el) el.innerText = val; }
 
     // --- 1. UPDATED INIT FUNCTION (Active Session Logic) ---
     async function init() {
-        try {
-            // A. Fetch ALL available sessions from Firebase
-            const sessListDoc = await db.collection('masterSettings').doc('sessions').get();
-            const sessDropdown = document.getElementById('sessionDropdown');
+    try {
+        // A. Fetch ALL available sessions from Firebase
+        const sessListDoc = await db.collection('masterSettings').doc('sessions').get();
+        const sessDropdown = document.getElementById('sessionDropdown');
 
-            let sessionList = [];
-            if (sessListDoc.exists && sessListDoc.data().list) {
-                sessionList = sessListDoc.data().list.sort().reverse();
-            }
+        let sessionList = [];
+        if (sessListDoc.exists && sessListDoc.data().list) {
+            sessionList = sessListDoc.data().list.sort().reverse();
+        }
 
-            // B. Get Active Session to set as default
-            const genDoc = await db.collection('masterSettings').doc('general').get();
-            if (genDoc.exists && genDoc.data().currentSession) {
-                currentSessionName = genDoc.data().currentSession;
+        // B. Get Active Session to set as default
+        const genDoc = await db.collection('masterSettings').doc('general').get();
+        if (genDoc.exists && genDoc.data().currentSession) {
+            currentSessionName = genDoc.data().currentSession;
+        } else {
+            const d = new Date();
+            const y = d.getMonth() < 3 ? d.getFullYear()-1 : d.getFullYear();
+            currentSessionName = `${y}-${y+1}`;
+        }
+
+        // C. Populate dropdown, default = latest/active
+        if (sessionList.length > 0) {
+            sessDropdown.innerHTML = sessionList.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (sessionList.includes(currentSessionName)) {
+                sessDropdown.value = currentSessionName;
             } else {
-                const d = new Date();
-                const y = d.getMonth() < 3 ? d.getFullYear()-1 : d.getFullYear();
-                currentSessionName = `${y}-${y+1}`;
+                currentSessionName = sessionList[0];
+                sessDropdown.value = currentSessionName;
             }
+        } else {
+            sessDropdown.innerHTML = `<option value="${currentSessionName}">${currentSessionName}</option>`;
+        }
 
-            // C. Populate dropdown, default = latest/active
-            if (sessionList.length > 0) {
-                sessDropdown.innerHTML = sessionList.map(s => `<option value="${s}">${s}</option>`).join('');
-                // If active session is in list, use it; else use first (latest)
-                if (sessionList.includes(currentSessionName)) {
-                    sessDropdown.value = currentSessionName;
-                } else {
-                    currentSessionName = sessionList[0];
-                    sessDropdown.value = currentSessionName;
-                }
-            } else {
-                sessDropdown.innerHTML = `<option value="${currentSessionName}">${currentSessionName}</option>`;
-            }
+        // D. Calculate Dates (April 1 to March 31)
+        const parts = currentSessionName.split('-');
+        sessionStartDate = `${parts[0]}-04-01`;
+        sessionEndDate = `${parts[1]}-03-31`;
 
-            // D. Calculate Dates (April 1 to March 31)
-            const parts = currentSessionName.split('-');
-            sessionStartDate = `${parts[0]}-04-01`;
-            sessionEndDate = `${parts[1]}-03-31`;
+        // UI Update with Session Name - Handled empty class
+        let displayClass = assignedClass ? userData.class : "No Class Assigned";
+        document.getElementById('tMeta').innerText = `${userData.name} | ${displayClass} (${currentSessionName})`;
 
-            // UI Update with Session Name
-            document.getElementById('tMeta').innerText = `${userData.name} | ${userData.class} (${currentSessionName})`;
-
-            // E. Load Rest Data
-            await checkPunchIn();
+        // E. Load Rest Data
+        await checkPunchIn();
+        
+        // F. Sirf tabhi student data load karein jab class assigned ho
+        if (assignedClass) {
             await loadStudents();
             await loadAllData();
             initDay();
             renderDaily();
+        } else {
+            // Agar class nahi hai to Register, Filters, Live Bar aur Result Button hide kar dein
+            document.getElementById('mainCard').style.display = 'none';
+            document.getElementById('filterTabs').style.display = 'none';
+            document.getElementById('liveBar').style.display = 'none';
+            
+            // Niche wali line result button ko hide karegi
+            document.getElementById('makeResultBtn').style.display = 'none'; 
+        }
 
-        } catch(e) { console.error("Init Error:", e); }
-    }
+    } catch(e) { console.error("Init Error:", e); }
+}
 
     // ✅ When teacher switches session from dropdown
     async function onSessionChange() {
-        currentSessionName = document.getElementById('sessionDropdown').value;
-        const parts = currentSessionName.split('-');
-        sessionStartDate = `${parts[0]}-04-01`;
-        sessionEndDate = `${parts[1]}-03-31`;
-        document.getElementById('tMeta').innerText = `${userData.name} | ${userData.class} (${currentSessionName})`;
+    currentSessionName = document.getElementById('sessionDropdown').value;
+    const parts = currentSessionName.split('-');
+    sessionStartDate = `${parts[0]}-04-01`;
+    sessionEndDate = `${parts[1]}-03-31`;
+    
+    let displayClass = assignedClass ? userData.class : "No Class Assigned";
+    document.getElementById('tMeta').innerText = `${userData.name} | ${displayClass} (${currentSessionName})`;
+    
+    if (assignedClass) {
         await loadAllData();
         initDay();
         renderDaily();
     }
+}
 
     async function checkPunchIn() {
         try {
@@ -663,7 +698,39 @@
 
     // --- TEACHER PUNCH IN ---
     function initCamera() {
-        if(!navigator.geolocation) return showToast("Location Required", "error");
+        if (!navigator.geolocation) return showToast("Location Not Supported", "error");
+
+        const btn = document.getElementById('camBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Location...';
+        btn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                teacherLat = position.coords.latitude;
+                teacherLng = position.coords.longitude;
+                
+                const distance = getDistanceInMeters(SCHOOL_LAT, SCHOOL_LNG, teacherLat, teacherLng);
+                
+                if (distance <= ALLOWED_RADIUS) {
+                    showToast(`Location verified (${distance}m). Opening camera...`, "success");
+                    startVideoFeed(); // Location sahi hui tabhi camera khulega
+                } else {
+                    showToast(`Too far! You are ${distance}m away. Must be within 50m.`, "error");
+                    btn.innerHTML = '<i class="fas fa-camera"></i> Teacher Check-In';
+                    btn.disabled = false;
+                }
+            },
+            (error) => {
+                showToast("Please allow location access to punch in!", "error");
+                btn.innerHTML = '<i class="fas fa-camera"></i> Teacher Check-In';
+                btn.disabled = false;
+            },
+            { enableHighAccuracy: true }
+        );
+    }
+
+    // Camera open karne ka alag helper function
+    function startVideoFeed() {
         document.getElementById('camBtn').style.display = 'none';
         document.getElementById('camera-box').style.display = 'block';
         
@@ -678,12 +745,19 @@
         setInterval(() => document.getElementById('camTime').innerText = new Date().toLocaleTimeString(), 1000);
     }
 
+
+
     async function capturePunch() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         canvas.width = 320; canvas.height = 240;
         const ctx = canvas.getContext('2d');
+        
+        // Image seedha (un-mirror) karne ke liye
+        ctx.translate(320, 0);
+        ctx.scale(-1, 1);
         ctx.drawImage(video, 0, 0, 320, 240);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         
         const now = new Date();
         const punchTime = now.toLocaleTimeString();
@@ -697,9 +771,20 @@
 
         const img = canvas.toDataURL('image/jpeg', 0.5);
         
+        // Firebase mein location aur data save kar rahe hain
         await db.collection('attendance').add({
-            sid: userData.id, name: userData.name, role: 'teacher', status: 'P', date: todayStr,
-            selfie: img, captureTime: punchTime, session: currentSessionName
+            sid: userData.id, 
+            name: userData.name, 
+            role: 'teacher', 
+            status: 'P', 
+            date: todayStr,
+            selfie: img, 
+            captureTime: punchTime, 
+            session: currentSessionName,
+            location: {
+                lat: teacherLat,
+                lng: teacherLng
+            }
         });
         
         showToast("Punch In Success!", "success");
@@ -757,7 +842,7 @@
         }
     });
 </script>
-<button onclick="location.href='teacher-marks-entry.html'" style="background:#7c3aed; color:white; padding:10px 20px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">
+<button id="makeResultBtn" onclick="location.href='teacher-marks-entry.html'" style="background:#7c3aed; color:white; padding:10px 20px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">
     <i class="fas fa-poll"></i> Make Result (My Class)
 </button>
 
