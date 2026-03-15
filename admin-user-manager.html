@@ -457,68 +457,77 @@
 
         async function addTeacher() {
             const selectedStaffId = document.getElementById('existingStaff').value;
-            const name = document.getElementById('tName').value;
-            const mob = document.getElementById('tID').value;
+            // NAYA: .trim() lagaya hai taaki extra spaces account kharab na karein
+            const name = document.getElementById('tName').value.trim();
+            const mob = document.getElementById('tID').value.trim();
             const pass = document.getElementById('tPass').value;
             const cls = document.getElementById('tClass').value;
             const sec = document.getElementById('tSection').value;
 
-            // Validation se 'cls' hata diya gaya hai taaki bina class ke bhi save ho sake
             if (!name || !mob || !pass) return alert("Fill Name, Mobile, and Password!");
 
-            // Agar class select nahi ki hai, to blank string save hogi
+            // NAYA: Firebase mein minimum 6 characters zaruri hain
+            if (pass.length < 6) return alert("Password must be at least 6 characters long!");
+
             const fullClassAssigned = cls ? `${cls}-${sec}` : "";
 
-            if (selectedStaffId) {
-                // Update Existing Staff to Teacher
-                await db.collection('staff').doc(selectedStaffId).update({
-                    name: name, mobile: mob, customPassword: pass,
-                    class: fullClassAssigned,
-                    role: 'teacher'
-                });
-                alert("Existing Staff Promoted to Teacher!");
-            } else {
-                // Create New Teacher
-                // 🟢 NAYA LOGIC: Create New Teacher + Auto Secure Account
-                const btn = document.activeElement; // Button ko temporary disable karne ke liye
-                const originalText = btn.innerText;
-                btn.innerText = "Creating Secure Account...";
-                btn.disabled = true;
+            const btn = window.event ? window.event.currentTarget : document.activeElement;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing Auth...";
+            btn.disabled = true;
 
+            try {
+                // NAYA LOGIC: Hamesha naya unique naam use karo taaki "App Already Exists" ka error na aaye
+                const appName = "Secondary_" + Date.now();
+                const secondaryApp = firebase.initializeApp(firebaseConfig, appName);
+                const secAuth = secondaryApp.auth();
+                const dummyEmail = mob + "@stes.com";
+
+                // Step 1: Securely Auth Account Banayein ya Update Karein
                 try {
-                    // 1. Firebase Auth me account banayein (Bina admin ko logout kiye)
-                    const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
-                    const secAuth = secondaryApp.auth();
-                    const dummyEmail = mob + "@stes.com";
-
                     await secAuth.createUserWithEmailAndPassword(dummyEmail, pass);
                     await secAuth.signOut();
-                    secondaryApp.delete(); // Kaam khatam, secondary app delete
+                } catch (authErr) {
+                    // Agar email pehle se hai, toh hum usko ignore karke aage database update karenge
+                    if (authErr.code !== 'auth/email-already-in-use') {
+                        throw authErr;
+                    }
+                } finally {
+                    secondaryApp.delete(); // Kaam hone ke baad app hamesha delete hoga, crash nahi karega
+                }
 
-                    // 2. Database me data save karein
+                // Step 2: Firestore Database me save karein
+                if (selectedStaffId) {
+                    // Existing staff update hoga (Ab unka login bhi upar ban chuka hai!)
+                    await db.collection('staff').doc(selectedStaffId).update({
+                        name: name, mobile: mob, customPassword: pass,
+                        class: fullClassAssigned,
+                        role: 'teacher'
+                    });
+                    alert("✅ Existing Staff Promoted to Teacher & Login Enabled!");
+                } else {
+                    // Ekdum naya teacher create hoga
                     await db.collection('staff').add({
                         name: name,
                         mobile: mob,
                         dob: pass,
-                        customPassword: pass, // Backup ke liye yahan bhi save kar diya
+                        customPassword: pass,
                         class: fullClassAssigned,
                         role: 'teacher',
-                        authCreated: true,    // Ye mark zaroori hai
+                        authCreated: true,
                         createdAt: new Date()
                     });
-
                     alert("✅ New Teacher Account & Secure Login Created!");
-                    location.reload();
-
-                } catch (e) {
-                    console.error(e);
-                    alert("❌ Error: " + e.message);
-                } finally {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
                 }
-            }
 
+                location.reload();
+
+            } catch (e) {
+                console.error(e);
+                alert("❌ Error: " + e.message);
+            } finally {
+                if (btn) { btn.innerText = originalText; btn.disabled = false; }
+            }
         }
 
         async function updateUser(type, id) {
