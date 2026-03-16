@@ -1626,7 +1626,7 @@
 
                 stuSnap.forEach(doc => {
                     let s = doc.data();
-                    if (s.status === 'Trash' || s.status === 'trash') return; // Must be active/pending somewhat
+                    if (s.status !== 'Active' && s.status !== 'active') return; // Only active students
 
                     let stuId = doc.id;
                     let cls = s.class;
