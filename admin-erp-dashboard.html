@@ -1083,6 +1083,14 @@
         let activeSession = "";
         let incomeData = [];
         let expenseData = [];
+        
+        // --- OPTIMIZATION VARIABLES ---
+        let feesCache = [], othersCache = [];
+        let unsubscribeFees = null, unsubscribeOthers = null, unsubscribeExpenses = null;
+        let defaulterDebounceTimer = null;
+        let globalDefaultersList = []; 
+        // ------------------------------
+
         let currentMode = 'income';
         let renderLimit = 50; // 🟢 Naya Variable: Starting me sirf 50 dikhayenge
 
@@ -1167,9 +1175,15 @@
         // 3. LOAD DATA
         function loadDashboardData() {
             activeSession = document.getElementById('sessionSelect').value;
+
+            // Clear old listeners if they exist
+            if (unsubscribeFees) unsubscribeFees();
+            if (unsubscribeOthers) unsubscribeOthers();
+            if (unsubscribeExpenses) unsubscribeExpenses();
+
             loadExpenseCategories();
 
-            // --- INJECT SKELETONS DURING FETCH ---
+            // --- INJECT SKELETONS ---
             const skeletonTitle = '<div class="skeleton sk-title" style="width: 80%; margin: 8px 0;"></div>';
             document.getElementById('valIncome').innerHTML = skeletonTitle;
             document.getElementById('valExpense').innerHTML = skeletonTitle;
@@ -1184,103 +1198,68 @@
                 <td style="text-align:right;"><div class="skeleton sk-text" style="width: 80px; margin-left: auto;"></div></td>
             </tr>`.repeat(5);
             document.getElementById('tableBody').innerHTML = skeletonRows;
-            // ------------------------------------
 
-            // A. Income (Fees)
-            db.collection('fees').where('session', '==', activeSession).onSnapshot(snap => {
-                const feesList = [];
+            // A. Income (Fees) - Independent Listener
+            unsubscribeFees = db.collection('fees').where('session', '==', activeSession).onSnapshot(snap => {
+                feesCache = [];
                 snap.forEach(d => {
                     const data = d.data();
-
-                    let isDisc = false;
+                    let isDisc = data.type === 'DISCOUNT' || data.headName === 'Discount';
                     let amt = Number(data.paidAmount) || 0;
 
-                    if (data.type === 'DISCOUNT' || data.headName === 'Discount') {
-                        isDisc = true;
-                    }
-
-                    // --- FIXED: FIELD NAME MATCHING (Based on your admin-students.html) ---
-                    // Aapke database me 'class' aur 'roll' use ho raha hai
                     const rawClass = data.class || data.className || data.std || data.standard || "";
                     const rawSec = data.section || data.sec || "";
-                    const rawRoll = data.roll || data.rollNo || ""; // Yahan 'roll' check karna zaroori tha
+                    const rawRoll = data.roll || data.rollNo || "";
 
-                    // Format banayenge: "Class: 5-A | Roll: 12"
                     let detailsParts = [];
-                    if (rawClass) {
-                        // Section tabhi dikhaye agar available ho
-                        detailsParts.push(`${rawClass}${rawSec ? '-' + rawSec : ''}`);
-                    }
-                    if (rawRoll) {
-                        detailsParts.push(`Roll: ${rawRoll}`);
-                    }
+                    if (rawClass) detailsParts.push(`${rawClass}${rawSec ? '-' + rawSec : ''}`);
+                    if (rawRoll) detailsParts.push(`Roll: ${rawRoll}`);
 
-                    const fullStudentInfo = detailsParts.length > 0 ? detailsParts.join(' | ') : '';
-                    // -----------------------------------------------------------------------
-
-                    feesList.push({
-                        id: d.id,
-                        sid: data.sid,
-                        dateStr: data.date,
-                        name: data.name || 'Unknown',
-                        studentDetails: fullStudentInfo, // Ye ab sahi data pass karega
-                        receiptNo: data.receiptNo || '',
+                    feesCache.push({
+                        id: d.id, sid: data.sid, dateStr: data.date, name: data.name || 'Unknown',
+                        studentDetails: detailsParts.join(' | '), receiptNo: data.receiptNo || '',
                         desc: isDisc ? 'Discount Given' : (data.type === 'PAYMENT' ? 'Fee Payment' : (data.otherHead || data.type)),
-                        mode: data.mode,
-                        amount: amt,
-                        isFee: true,
-                        isDiscount: isDisc,
-                        timestamp: data.timestamp
+                        mode: data.mode, amount: amt, isFee: true, isDiscount: isDisc, timestamp: data.timestamp
                     });
                 });
-
-                // B. Other Income
-                db.collection('otherIncome').where('session', '==', activeSession).onSnapshot(snap2 => {
-                    const others = [];
-                    snap2.forEach(d => {
-                        const data = d.data();
-                        others.push({
-                            id: d.id,
-                            dateStr: data.date,
-                            name: data.source,
-                            desc: data.note,
-                            mode: 'Cash',
-                            amount: Number(data.amount) || 0,
-                            isFee: false,
-                            isDiscount: false,
-                            timestamp: data.timestamp,
-                            receiptNo: '',
-                            studentDetails: ''
-                        });
-                    });
-
-                    incomeData = [...feesList, ...others];
-                    incomeData.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-
-                    updateDashboard();
-                    if (currentMode === 'income') renderTable();
-                });
+                mergeAndRefreshIncome();
             });
 
-            // C. Expenses 
-            db.collection('expenses').where('session', '==', activeSession).onSnapshot(snap => {
+            // B. Other Income - Independent Listener
+            unsubscribeOthers = db.collection('otherIncome').where('session', '==', activeSession).onSnapshot(snap2 => {
+                othersCache = [];
+                snap2.forEach(d => {
+                    const data = d.data();
+                    othersCache.push({
+                        id: d.id, dateStr: data.date, name: data.source, desc: data.note,
+                        mode: 'Cash', amount: Number(data.amount) || 0, isFee: false,
+                        isDiscount: false, timestamp: data.timestamp, receiptNo: '', studentDetails: ''
+                    });
+                });
+                mergeAndRefreshIncome();
+            });
+
+            // C. Expenses - Independent Listener
+            unsubscribeExpenses = db.collection('expenses').where('session', '==', activeSession).onSnapshot(snap => {
                 expenseData = [];
                 snap.forEach(d => {
                     const data = d.data();
                     expenseData.push({
-                        id: d.id,
-                        dateStr: data.date,
-                        note: data.note,
-                        givenTo: data.givenTo,
-                        amount: Number(data.amount) || 0,
-                        mode: data.mode,
-                        timestamp: data.timestamp
+                        id: d.id, dateStr: data.date, note: data.note, givenTo: data.givenTo,
+                        amount: Number(data.amount) || 0, mode: data.mode, timestamp: data.timestamp
                     });
                 });
                 expenseData.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 updateDashboard();
                 if (currentMode === 'expense') renderTable();
             });
+        }
+
+        function mergeAndRefreshIncome() {
+            incomeData = [...feesCache, ...othersCache];
+            incomeData.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+            updateDashboard();
+            if (currentMode === 'income') renderTable();
         }
 
 
@@ -1553,7 +1532,12 @@
 
             // C. TOP DEFAULTERS (Fetching from fees & students logic is complex without students collection available directly here.)
             // Alternative: We will calculate defaulters by fetching students collection.
-            fetchAndRenderDefaulters();
+            
+            // --- DEBOUNCED AUTOMATIC REFRESH ---
+            if (defaulterDebounceTimer) clearTimeout(defaulterDebounceTimer);
+            defaulterDebounceTimer = setTimeout(() => {
+                fetchAndRenderDefaulters();
+            }, 5000); // 5 Seconds Gap to save thousands of reads
         }
 
         async function fetchAndRenderDefaulters() {
@@ -1804,7 +1788,6 @@
         }
 
         // --- CHART PAGINATION LOGIC ---
-        let globalDefaultersList = [];
         let currentDefaulterPage = 0;
         const defaultersPerPage = 5;
 
