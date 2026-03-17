@@ -671,7 +671,7 @@
 
             try {
                 const [studentsSnap, feesSnap, structSnap, transSnap, configSnap, generalSnap] = await Promise.all([
-                    db.collection('students').where('class', '==', fromClass).where('status', '!=', 'Trash').get(),
+                    db.collection('students').where('class', '==', fromClass).where('status', '==', 'Active').get(),
                     db.collection('fees').where('session', '==', closeSession).get(),
                     db.collection('feeStructure').where('session', '==', closeSession).where('className', '==', fromClass).get(),
                     db.collection('transportStructure').where('session', '==', closeSession).get(),
@@ -800,14 +800,14 @@
 
                         myFees.forEach(f => {
                             let fHead = (f.headName || f.otherHead || "").toLowerCase();
-                            let fType = f.type || "";
+                            let fType = f.type;
                             let match = false;
 
                             if (fHead === hNameLower) match = true;
                             if (fType === 'TUITION' && hNameLower.includes('tuition')) match = true;
                             if (fType === 'PAYMENT' && hNameLower.includes('tuition')) match = true;
                             if (fType === 'TRANSPORT' && hNameLower.includes('transport')) match = true;
-                            if ((fType === 'HEAD' || fType === 'HEADONLY') && (fHead === hNameLower || fHead.startsWith(hNameLower + " ("))) match = true;
+                            if ((fType === 'HEAD' || fType === 'HEADONLY') && fHead.includes(hNameLower)) match = true;
 
                             if (match) {
                                 paid += (Number(f.paidAmount) || 0) + (Number(f.discountUsed) || 0);
@@ -819,12 +819,12 @@
                         currentDues += due;
                     });
 
-                    let totalDisc = 0;
                     let totalLatePaid = 0;
                     myFees.forEach(f => {
-                        if (f.type === 'LATE' || f.headName === 'Late Fee') totalLatePaid += ((Number(f.paidAmount) || 0) + (Number(f.discountUsed) || 0));
-                        if (f.type === 'DISCOUNT' || f.headName === 'Discount') totalDisc += (Number(f.paidAmount) || 0);
-                        else if (f.discount && Number(f.discount) > 0) totalDisc += Number(f.discount);
+                        let fHead = (f.headName || f.otherHead || "").toLowerCase();
+                        if (f.type === 'LATE' || fHead === 'late fee') {
+                            totalLatePaid += (Number(f.paidAmount) || 0);
+                        }
                     });
 
                     let totalFineGenerated = 0;
@@ -860,6 +860,7 @@
                         }
                     }
 
+                    // 🟢 FIXED: Ledger se exact match karne ke liye logic
                     let lateFeeDue = Math.max(0, totalFineGenerated - totalLatePaid);
 
                     let prevDue = 0;
@@ -869,6 +870,7 @@
 
                     let lockAmt = (currentDues + prevDue + lateFeeDue);
                     if (lockAmt < 0) lockAmt = 0;
+                    
 
                     return { ...s, finalLockAmount: lockAmt, selectedAction: 'PROMOTE' };
                 });

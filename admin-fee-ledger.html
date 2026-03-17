@@ -1094,7 +1094,7 @@
 
             try {
                 const [stds, fees, structs, config, trans, generalSettings] = await Promise.all([
-                    db.collection('students').where('status', '!=', 'Trash').get(),
+                    db.collection('students').where('status', '==', 'Active').get(),
                     db.collection('fees').where('session', '==', currentSession).get(),
                     db.collection('feeStructure').where('session', '==', currentSession).get(),
                     db.collection('masterSettings').doc(`feeConfig_${currentSession}`).get(),
