@@ -857,7 +857,7 @@
         };
 
 
-        firebase.initializeApp(firebaseConfig);
+
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -2561,7 +2561,7 @@
                             date, payer, mode, receiptNo, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                         }
                     });
-                    itemsToPrint.push({ head: "Advance Added", fullAmt: advanceAmt, paid: advanceAmt, isPartial: false });
+
                     batch.set(db.collection('students').doc(activeStu.id), { walletBalance: firebase.firestore.FieldValue.increment(advanceAmt) }, { merge: true });
                 }
 
@@ -2599,7 +2599,7 @@
                 // True Liability = base dues + late fees + extra items.
                 // What did we clear? Cash + Wallet + Discount.
                 const totalLiability = totalDueForBal + lateVal + extraItemsVal;
-                const totalPendingSnapshot = Math.max(0, totalLiability - totalReceived - discVal);
+                const totalPendingSnapshot = totalLiability - totalReceived - discVal;
 
                 docsToPrepare.forEach(item => {
                     item.data.snap_bill = receiptBillTotal;
@@ -2690,6 +2690,8 @@
                 }
                 // --- 🔴 FIX END 🔴 ---
 
+                let advanceRecovered = 0;
+
                 // Loop Logic
                 snap.forEach(d => {
                     const f = d.data();
@@ -2699,6 +2701,10 @@
                     if (f.type === 'DISCOUNT' || f.headName === 'Discount') {
                         discountRecovered += pAmt;
                         // Omitted pushing to discountItems. generateReceipt handles it at the footer.
+                    } else if (f.type === 'ADVANCE' || f.headName === 'Advance Built' || f.headName === 'Advance') {
+                        // Do not push ADVANCE to regular items, but include its paid amount in total cash paid
+                        paidTotal += pAmt;
+                        advanceRecovered += pAmt;
                     } else {
                         const totalEffectivePaid = pAmt + dUsed;
                         const fAmt = f.fullHeadAmount ? Number(f.fullHeadAmount) : totalEffectivePaid;
@@ -2723,8 +2729,13 @@
                 // Historical Data Recovery
                 const histBill = meta.snap_bill !== undefined ? Number(meta.snap_bill) : paidTotal;
                 const histCurrentDue = meta.snap_current_due !== undefined ? Number(meta.snap_current_due) : 0;
-                const histTotalPending = meta.snap_total_pending !== undefined ? Number(meta.snap_total_pending) : 0;
+                let histTotalPending = meta.snap_total_pending !== undefined ? Number(meta.snap_total_pending) : 0;
                 const histWalletUsed = meta.snap_wallet_deducted !== undefined ? Number(meta.snap_wallet_deducted) : 0;
+
+                // FIX FOR REPRINTS OF OLD RECEIPTS WHERE MATH.MAX CAPPED PENDING TO 0
+                if (histTotalPending === 0 && advanceRecovered > 0) {
+                    histTotalPending = -advanceRecovered;
+                }
 
                 const cashPaidOnly = paidTotal - histWalletUsed;
 
@@ -2984,7 +2995,7 @@
 
             // Agar value minus me hai (matlab advance)
             if (totalPending < 0) {
-                pendingLabel = "ADVANCE / CREDIT";
+                pendingLabel = "Advance / Clear";
                 pendingDisplayAmt = Math.abs(totalPending);
                 pendingStyle = "background:#000; color:#fff;"; // ✅ Ab ye BLACK rahega
             }
@@ -3216,14 +3227,6 @@ ${itemListStr}--------------------------------
 
 
 
-
-
-
-        // Helper: Amount to Words
-        function convertNumberToWords(amount) {
-            // Simple placeholder. Aap chaho to library use kar sakte ho.
-            return amount + "";
-        }
 
 
 
