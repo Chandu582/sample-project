@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,9 +7,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         /* --- PREMIUM THEME CONFIG --- */
         :root {
@@ -45,7 +46,7 @@
         .blob-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: var(--primary-glow); animation-delay: 0s; }
         .blob-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: var(--secondary-glow); animation-delay: -5s; }
         .blob-3 { top: 30%; left: 50%; width: 350px; height: 350px; background: var(--accent-glow); animation-delay: -10s; }
-        
+
         @keyframes blobMovement {
             0% { transform: translate3d(0, 0, 0) scale(1); }
             50% { transform: translate3d(60px, 30px, 0) scale(1.1); }
@@ -95,7 +96,7 @@
 
         /* --- ULTRA PREMIUM GLASS CARD WITH GLARE EFFECT --- */
         .login-container { position: relative; z-index: 10; width: 90%; max-width: 420px; }
-        
+
         .login-card { 
             position: relative; overflow: hidden; /* For Glare Effect */
             background: var(--glass-bg);
@@ -119,7 +120,7 @@
             pointer-events: none; z-index: 20;
         }
         @keyframes glassGlare { 0%, 50% { left: -150%; } 100% { left: 200%; } }
-        
+
         @keyframes cardEntrance { to { transform: translateY(0); opacity: 1; } }
 
         /* --- DYNAMIC ICON --- */
@@ -163,11 +164,7 @@
         .input-group { position: relative; margin: 18px 0; }
         .input-group i {
             position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
-            
-            
-            
-            
-        
+
             color: var(--text-secondary); font-size: 18px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2;
         }
         input { 
@@ -185,9 +182,7 @@
         }
         /* ✨ NEW: Icon Pulse on Focus ✨ */
         input:focus + i { color: var(--primary-glow); transform: translateY(-50%) scale(1.15); filter: drop-shadow(0 0 5px var(--primary-glow)); }
-        
-        
-        
+
         /* --- BROWSER AUTOFILL FIX FOR GLASSMORPHISM --- */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
@@ -197,10 +192,6 @@ input:-webkit-autofill:active {
     -webkit-text-fill-color: var(--text-primary) !important;
     caret-color: var(--text-primary) !important;
 }
-
-        
-        
-        
 
         /* --- LIQUID BUTTON --- */
         .btn-login { 
@@ -227,7 +218,7 @@ input:-webkit-autofill:active {
         .rec-card h3 { color: var(--text-primary); } .rec-card p { color: var(--text-secondary); }
         .teacher-alert { display:none; color: #fca5a5; background: rgba(239, 68, 68, 0.1); padding: 18px; border-radius: 15px; font-size: 13px; font-weight: 600; line-height: 1.6; margin: 20px 0; border: 1px solid rgba(239, 68, 68, 0.2); }
         #recUser { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white; }
-        
+
         .toast-box {
             visibility: hidden; min-width: 250px; background-color: rgba(220, 38, 38, 0.95); color: #fff;
             text-align: center; border-radius: 14px; padding: 16px; position: fixed;
@@ -259,7 +250,7 @@ input:-webkit-autofill:active {
 
 <div class="login-container">
     <div class="login-card">
-        
+
         <div class="icon-box-wrapper">
             <div class="icon-box-glow"></div>
             <div class="icon-box" id="dynamic-icon">
@@ -268,7 +259,7 @@ input:-webkit-autofill:active {
         </div>
 
         <h2>STES Secure Portal</h2>
-        
+
         <div class="tabs">
             <div class="tab active" onclick="setRole('admin', this)">Admin</div>
             <div class="tab" onclick="setRole('teacher', this)">Teacher</div>
@@ -284,14 +275,14 @@ input:-webkit-autofill:active {
                 <input type="text" id="username" placeholder="Admin Email">
                 <i class="fas fa-envelope"></i>
             </div>
-            
+
             <div class="input-group">
                 <input type="password" id="password" placeholder="Password">
                 <i class="fas fa-lock"></i>
             </div>
 
             <button class="btn-login" onclick="handleLogin()">Access Portal</button>
-            
+
             <div style="margin-top: 30px; position: relative; z-index: 2;">
                 <a href="javascript:void(0)" onclick="openRecovery()" style="color:var(--text-secondary); text-decoration:none; font-size:14px; font-weight:700; transition:0.3s;">
                     Forgot Password?
@@ -308,7 +299,7 @@ input:-webkit-autofill:active {
             <h3 id="recTitle">Security Verification</h3>
             <p id="recSub">Identity Check</p>
         </div>
-        
+
         <div id="teacherBlock" class="teacher-alert"></div>
 
         <div id="inputSection">
@@ -321,7 +312,7 @@ input:-webkit-autofill:active {
                 <button class="btn-login" onclick="checkIdentity()" style="margin-top:25px;">Send Reset Link</button>
             </div>
         </div>
-        
+
         <button onclick="closeRecovery()" style="margin-top:20px; border:none; background:none; color:var(--text-secondary); cursor:pointer; font-weight:700; font-size:14px;">Cancel Request</button>
     </div>
 </div>
@@ -330,18 +321,7 @@ input:-webkit-autofill:active {
     // ---------------------------------------------------------
     // FIREBASE INITIALIZATION & LOGIC (100% UNTOUCHED)
     // ---------------------------------------------------------
-    const firebaseConfig = {
-      apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-      authDomain: "sample-school-13ca4.firebaseapp.com",
-      projectId: "sample-school-13ca4",
-      storageBucket: "sample-school-13ca4.firebasestorage.app",
-      messagingSenderId: "198448853287",
-      appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    
     firebase.auth().onAuthStateChanged((user) => {
         if (user && sessionStorage.getItem("isLoggedIn") === "true") {
             const role = JSON.parse(sessionStorage.getItem("userData"))?.role || sessionStorage.getItem("userRole");
@@ -356,22 +336,22 @@ input:-webkit-autofill:active {
     function setRole(role, el) {
         if (currentTab === role) return;
         currentTab = role;
-        
+
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
-        
+
         const formContent = document.getElementById('anim-wrapper');
         const iconBox = document.getElementById('dynamic-icon');
         const userInp = document.getElementById('username');
         const userIcon = userInp.nextElementSibling;
-        
+
         formContent.style.opacity = '0';
         formContent.style.transform = 'translateY(20px) scale(0.95)';
         iconBox.style.transform = 'rotateY(180deg) scale(0.5)';
         iconBox.style.opacity = '0';
-        
+
         document.body.className = `theme-${role}`;
-        
+
         // Reset Particle Animations smoothly when theme changes
         const particles = document.querySelectorAll('.particle');
         particles.forEach(p => {
@@ -383,7 +363,7 @@ input:-webkit-autofill:active {
         setTimeout(() => {
             const desc = document.getElementById('roleDescription');
             const icon = document.getElementById('role-icon');
-            
+
             if(role === 'admin') { 
                 desc.innerText = "Admin: System Configuration Access 🛂"; 
                 userInp.placeholder = "Admin Email"; 
@@ -402,12 +382,12 @@ input:-webkit-autofill:active {
                 icon.className = "fas fa-hands-holding-child";
                 userIcon.className = "fas fa-fingerprint";
             }
-            
+
             formContent.style.opacity = '1';
             formContent.style.transform = 'translateY(0) scale(1)';
             iconBox.style.transform = 'rotateY(0deg) scale(1)';
             iconBox.style.opacity = '1';
-            
+
             userInp.value = ""; document.getElementById('password').value = "";
         }, 300);
     }

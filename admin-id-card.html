@@ -1,19 +1,20 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
+
     <script>
     if (sessionStorage.getItem("isLoggedIn") !== "true") {
         window.location.href = "admin-login.html";
     }
     </script>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ID Card Generator | STES</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,7 +31,7 @@
         }
         .filter-group { display: flex; gap: 10px; flex: 1; min-width: 300px; }
         input, select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
-        
+
         .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .btn-primary { background: #4f46e5; color: white; }
         .btn-success { background: #16a34a; color: white; }
@@ -48,7 +49,7 @@
         /* --- ID CARD DESIGN (Standard Size) --- */
         .id-card-wrapper { position: relative; cursor: pointer; transition: 0.2s; }
         .id-card-wrapper:hover { transform: translateY(-3px); }
-        
+
         /* Selection Checkbox Overlay */
         .select-overlay {
             position: absolute; top: -10px; right: -10px; z-index: 10;
@@ -63,7 +64,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             position: relative; user-select: none;
         }
-        
+
         /* Card Internals */
         .header { background: linear-gradient(135deg, #1e3a8a, #3b82f6); height: 42px; display: flex; align-items: center; padding: 0 10px; color: white; }
         .logo { width: 28px; height: 28px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1e3a8a; font-size: 14px; margin-right: 8px; }
@@ -90,14 +91,14 @@
         @media print {
             .control-panel, .select-overlay { display: none !important; }
             body { background: white; margin: 0; padding: 0; }
-            
+
             .card-grid {
                 display: block; padding: 0;
             }
-            
+
             /* Hide Unselected Cards */
             .id-card-wrapper:not(.selected) { display: none; }
-            
+
             .id-card-wrapper {
                 display: inline-block;
                 margin: 5mm; /* Space between cards */
@@ -105,7 +106,7 @@
                 transform: none !important;
                 box-shadow: none;
             }
-            
+
             .id-card { border: 1px solid #ccc; }
         }
     </style>
@@ -149,17 +150,6 @@
 
     <script>
         // 1. FIREBASE CONFIG
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let allStudents = [];
 
@@ -168,7 +158,7 @@
             allStudents = [];
             snap.forEach(doc => allStudents.push({ id: doc.id, ...doc.data() }));
             filterCards(); // Initial Render
-            
+
             // Auto Search from URL (If coming from Admin Panel)
             const urlParams = new URLSearchParams(window.location.search);
             const searchId = urlParams.get('search');
@@ -280,7 +270,7 @@
 
             const wrapper = document.getElementById(`card-${id}`);
             const checkbox = wrapper.querySelector('input');
-            
+
             if(wrapper.classList.contains('selected')) {
                 wrapper.classList.remove('selected');
                 checkbox.checked = false;

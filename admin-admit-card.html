@@ -1,18 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    
-    
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admit Card Generator | STES</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -28,7 +26,7 @@
         .input-group { margin-bottom: 10px; }
         .input-group label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 3px; text-transform: uppercase; font-weight: 700; }
         input, select, textarea { width: 100%; padding: 6px; background: #334155; border: 1px solid #475569; color: white; border-radius: 4px; outline: none; font-size: 12px; box-sizing: border-box; }
-        
+
         .routine-row { display: flex; gap: 5px; margin-bottom: 5px; }
         .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
         .btn-logo { background: #0ea5e9; padding: 8px; font-size: 12px; cursor: pointer; text-align: center; display: block; border-radius: 4px; }
@@ -54,7 +52,7 @@
             page-break-inside: avoid;
             transition: all 0.2s;
         }
-        
+
         .inner-border { 
             border: 1px solid #000; width: 100%; padding: 6px; 
             box-sizing: border-box; display: flex; flex-direction: column;
@@ -94,11 +92,6 @@
         .r-table td { border-bottom: 1px solid #000; border-right: 1px solid #000; font-size: 18px; padding: 1px 3px; text-align: center; font-weight: 600; height: 20px; }
         .r-table tr:last-child td { border-bottom: none; }
         .r-table th:last-child, .r-table td:last-child { border-right: none; }
-        
-        
-        
-        
-    
 
         /* Dynamic Watermark */
         .watermark-box { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; opacity:0.20; z-index:0; pointer-events:none; }
@@ -114,7 +107,7 @@
             .settings-panel, .card-select { display: none !important; }
             .preview-area { margin: 0; padding: 0; background: white; display: block; }
             body { background: white; margin: 0; }
-            
+
             body.print-selected .admit-card:not(.selected) { display: none !important; }
 
             .admit-card { 
@@ -126,8 +119,7 @@
             }
             @page { size: A4 portrait; margin: 2mm; }
         }
-        
-        
+
             /* Black & White Mode Styles */
 body.print-bw-mode .admit-card {
     color: #000 !important;
@@ -176,11 +168,6 @@ body.print-bw-mode .watermark {
         background: transparent !important;
     }
 
-        
-        
-        
-        
-        
     </style>
 </head>
 <body>
@@ -216,7 +203,7 @@ body.print-bw-mode .watermark {
         </div>
 
         <div style="border-top:1px dashed #475569; margin:10px 0;"></div>
-        
+
         <div class="input-group">
             <label>Select Class</label>
             <select id="filterClass" onchange="loadStudents()">
@@ -236,7 +223,7 @@ body.print-bw-mode .watermark {
                 <option value="10">Class 10</option>
             </select>
         </div>
-        
+
         <div class="input-group">
             <label>Section</label>
             <select id="filterSection" onchange="loadStudents()">
@@ -251,27 +238,18 @@ body.print-bw-mode .watermark {
             <label>Search Student</label>
             <input type="text" id="searchBox" placeholder="Enter Name or Roll No..." onkeyup="renderCards()" style="border:1px solid #fbbf24; background:#0f172a;">
         </div>
-        
-        
-        
+
         <div style="display: flex; gap: 15px; margin-top: 15px;">
-    
+
     <button onclick="generateAdmitCards('ALL')" style="background:#3b82f6; color:white; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">
         <i class="fas fa-users"></i> Show All Cards
     </button>
-    
+
     <button onclick="generateAdmitCards('CLEARED')" style="background:#10b981; color:white; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">
         <i class="fas fa-check-double"></i> Show (Fee Cleared Only)
     </button>
 
     </div>
-
-        
-        
-        
-        
-        
-        
 
         <div style="margin-top:10px; padding:8px; background:#334155; border-radius:4px; display:flex; justify-content:space-between; align-items:center;">
             <label style="font-size:11px; cursor:pointer; display:flex; gap:5px; align-items:center;">
@@ -281,7 +259,7 @@ body.print-bw-mode .watermark {
         </div>
 
         <div style="border-top:1px dashed #475569; margin:10px 0;"></div>
-        
+
         <div class="input-group">
             <label>Reporting Time</label>
             <input type="text" id="reportTime" value="09:00 AM" onkeyup="updateUI()" onchange="saveGlobalDB()">
@@ -295,10 +273,10 @@ body.print-bw-mode .watermark {
 
         <div style="border-top:1px dashed #475569; margin:10px 0;"></div>
         <div style="font-size:12px; font-weight:bold; margin-bottom:5px; color:#fbbf24;">EXAM ROUTINE</div>
-        
+
         <div id="routineInputs"></div>
         <button class="btn" style="background:#334155; font-size:10px; margin-top:5px;" onclick="addRow()">+ Manual Row</button>
-        
+
         <div style="display: flex; gap: 10px; margin-top: 10px;">
     <button class="btn btn-print" onclick="printCards('color')" style="flex: 1;">
         <i class="fas fa-palette"></i> Colorful
@@ -318,17 +296,6 @@ body.print-bw-mode .watermark {
     </div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let allStudents = [];
         let currentDisplayList = [];
@@ -364,7 +331,7 @@ body.print-bw-mode .watermark {
             db.collection('settings').doc('admitCardConfig').get().then(doc => {
                 if (doc.exists) {
                     savedSettings = doc.data();
-                    
+
                     if(savedSettings.logo) {
                         logoSrc = savedSettings.logo;
                         document.getElementById('previewLogo').src = logoSrc;
@@ -373,7 +340,7 @@ body.print-bw-mode .watermark {
                     if(savedSettings.schoolReg) document.getElementById('schoolReg').value = savedSettings.schoolReg;
                     if(savedSettings.reportTime) document.getElementById('reportTime').value = savedSettings.reportTime;
                     if(savedSettings.examNote) document.getElementById('examNote').value = savedSettings.examNote.replace(/<br>/g, '\n');
-                    
+
                     // Init empty routine if no class selected
                     initRoutine();
                     updateUI(); // Refresh UI
@@ -497,7 +464,7 @@ body.print-bw-mode .watermark {
             const clsRaw = document.getElementById('filterClass').value;
             const sec = document.getElementById('filterSection').value;
             const container = document.getElementById('cardContainer');
-            
+
             if(!clsRaw) return;
 
             // Load Saved Routine for this class
@@ -517,7 +484,7 @@ body.print-bw-mode .watermark {
                         }
                     }
                 });
-                
+
                 allStudents.sort((a,b) => (parseInt(a.roll)||0) - (parseInt(b.roll)||0));
 
                 if(allStudents.length === 0) {
@@ -535,9 +502,9 @@ body.print-bw-mode .watermark {
             const regID = document.getElementById('schoolReg').value;
             const time = document.getElementById('reportTime').value;
             const note = document.getElementById('examNote').value.replace(/\n/g, '<br>');
-            
+
             const searchQ = document.getElementById('searchBox').value.toLowerCase().trim();
-            
+
             const filteredList = currentDisplayList.filter(s => {
                 const name = (s.name || "").toLowerCase();
                 const roll = (s.roll || "").toString();
@@ -553,13 +520,13 @@ body.print-bw-mode .watermark {
                         filteredList.forEach(s => {
                 // 1. Check karein photo hai ya nahi
                 const hasPhoto = s.photo && s.photo.trim() !== "";
-                
+
                 // 2. Agar photo hai to HTML banayein, nahi to empty rakhein
                 const photoHTML = hasPhoto ? `<div class="photo-frame"><img src="${s.photo}"></div>` : "";
-                
+
                 let displayClass = s.class || document.getElementById('filterClass').options[document.getElementById('filterClass').selectedIndex].text;
                 if(displayClass.includes("Select")) displayClass = "";
-                
+
                 const currentLogo = logoSrc;
 
                 const html = `
@@ -580,13 +547,13 @@ body.print-bw-mode .watermark {
 
                         <div class="content-row">
                             ${photoHTML} <div class="details-grid">
-    
+
                                 <div class="field"><span class="lbl">Reg. ID</span><span class="val" style="color:#000;">${s.stesID || '-'}</span></div>
                                 <div class="field"><span class="lbl">Class</span><span class="val">${displayClass} (${s.section || 'A'})</span></div>
-                                
+
                                 <div class="field"><span class="lbl">Name</span><span class="val">${s.name}</span></div>
                                 <div class="field"><span class="lbl">Father</span><span class="val">${s.fatherName || '-'}</span></div>
-                                
+
                                 <div class="field"><span class="lbl">Roll No</span><span class="val">${s.roll || '-'}</span></div>
                                 <div class="field"><span class="lbl">Gender</span><span class="val">${s.gender || '-'}</span></div>
                             </div>
@@ -624,7 +591,7 @@ body.print-bw-mode .watermark {
                         </div>
                     </div>
                 </div>`;
-                
+
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
                 container.appendChild(tempDiv);
@@ -651,7 +618,7 @@ body.print-bw-mode .watermark {
             document.querySelectorAll('.school-reg').forEach(el => el.innerText = regID);
             document.querySelectorAll('.time-text').forEach(el => el.innerText = time);
             document.querySelectorAll('.note-text').forEach(el => el.innerHTML = note);
-            
+
             document.querySelectorAll('img').forEach(img => {
                 if(img.parentNode.classList.contains('logo-box') || img.parentNode.classList.contains('watermark-box')) {
                     img.src = logoSrc;
@@ -698,7 +665,7 @@ if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td><
 
     function printCards(mode) {
     const sel = document.querySelectorAll('.admit-card.selected').length;
-    
+
     // 1. Selection Logic (Agar kuch select hai to wahi dikhega)
     if(sel > 0) {
         document.body.classList.add('print-selected');
@@ -720,9 +687,6 @@ if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td><
     // ❌ Yahan se humne automatic remove wala code hata diya hai.
     // Ab Paper size change karne par B&W mode nahi hategi.
 }
-
-
-
 
             async function generateAdmitCards(mode) {
         const clsRaw = document.getElementById('filterClass').value;
@@ -780,7 +744,7 @@ if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td><
                 const monthMapIdx = {"Apr":0, "May":1, "Jun":2, "Jul":3, "Aug":4, "Sep":5, "Oct":6, "Nov":7, "Dec":8, "Jan":9, "Feb":10, "Mar":11};
 
                 const todayIdx = (new Date().getMonth() >= 3) ? new Date().getMonth() - 3 : new Date().getMonth() + 9;
-                
+
                 // 🟢 STRICT PREVIOUS MONTH LOGIC (e.g., Feb running, check till Jan)
                 const targetIdx = todayIdx - 1;
 
@@ -854,7 +818,7 @@ if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td><
                             } else {
                                 const startM = h.validFrom || 'Apr';
                                 const feeMonthIdx = monthMapIdx[startM];
-                                
+
                                 // 🟢 PREVIOUS MONTH RULE
                                 const isTimeReached = (targetIdx >= feeMonthIdx);
                                 const isStudentEligible = (startMonthIdx <= feeMonthIdx);
@@ -870,7 +834,7 @@ if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td><
                              let fHead = (f.headName || f.otherHead || "").toLowerCase();
                              let fType = f.type;
                              let match = false;
-                             
+
                              if (fHead === hNameLower) match = true;
                              if (fType === 'TUITION' && hNameLower.includes('tuition')) match = true;
                              if (fType === 'PAYMENT' && hNameLower.includes('tuition')) match = true; 
@@ -923,12 +887,6 @@ if(dt || sb) routineHTML += `<tr><td>${dt}</td><td>${sb}</td><td></td><td></td><
         }
             }
 
-
-
-
-
-
-
         // Init App
             // 🟢 SECURE INITIALIZATION 🟢
     // admin-fees.html aur baaki data wale pages ke liye
@@ -940,9 +898,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 loadSettingsFromDB(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -951,8 +909,6 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.replace("admin-login.html");
     }
 });
-
-
 
     </script>
 </body>

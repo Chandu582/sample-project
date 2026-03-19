@@ -1,17 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bulk Print Results | STES Admin</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,7 +26,7 @@
             border: 1px solid #cbd5e1;
         }
         .control-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; margin-bottom: 20px; }
-        
+
         .input-group { flex: 1; min-width: 180px; }
         .input-group label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 6px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
         .inp { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #f8fafc; transition: 0.2s; box-sizing: border-box; }
@@ -46,7 +45,7 @@
         }
         .selector-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; }
         .sel-title { font-weight: 700; color: var(--primary); font-size: 14px; }
-        
+
         .student-grid { 
             display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; 
             max-height: 300px; overflow-y: auto; padding-right: 5px;
@@ -98,7 +97,7 @@
         .school-reg-id { font-size: 11px; font-weight: 700; color: #333; margin: 2px 0; text-transform: uppercase; }
         .school-addr { font-size: 11px; margin: 4px 0; font-weight: 600; color: #555; }
         .card-badge { background: var(--primary); color: white; display: inline-block; padding: 3px 25px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 6px; border-radius: 12px; letter-spacing: 1px; }
-        
+
                 /* --- QR CODE STYLE --- */
         .qr-code {
             position: absolute;
@@ -112,7 +111,7 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         /* Print me QR code clear dikhe */
         @media print {
             .qr-code img {
@@ -120,7 +119,6 @@
                 print-color-adjust: exact;
             }
         }
-
 
         /* --- INFO BOX --- */
         .info-box { 
@@ -147,7 +145,7 @@
         .marks-table th { background: var(--primary); color: white; padding: 6px; font-weight: 800; text-transform: uppercase; text-align: center; border: 1px solid #000; font-size: 11px; letter-spacing: 0.5px; }
         .marks-table td { border: 1px solid #000; padding: 6px; text-align: center; font-weight: 800; color: #334155; }
         .sub-col { text-align: center !important; padding-left: 0px !important; font-weight: 900; color: #0f172a; }
-        
+
         /* Fail Row Color (Screen View) */
         .row-fail { background-color: #fee2e2 !important; color: #991b1b !important; }
 
@@ -190,7 +188,7 @@
                 size: A4; 
                 margin: 0; 
             }
-            
+
             body { 
                 background: white; 
                 margin: 0; 
@@ -253,7 +251,7 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            
+
             .res-fail, .status-val.res-fail { 
                 color: #b91c1c !important; 
                 -webkit-print-color-adjust: exact !important;
@@ -263,7 +261,7 @@
             .school-name { color: var(--primary) !important; }
             .sum-val { color: var(--primary) !important; }
             .card-badge { background: var(--primary) !important; color: #fff !important; }
-            
+
             .status-strip { border: 2px solid var(--primary) !important; }
             .status-val { color: var(--primary) !important; } 
 
@@ -273,9 +271,6 @@
             }
         }
 
-        
-        
-        
     </style>
 </head>
 <body>
@@ -335,17 +330,6 @@
 <div id="bulkContainer"></div>
 
 <script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
         let fetchedStudents = [];
     let globalLogo = "1000084138-removebg-preview.png";
@@ -362,9 +346,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 initBulkPrintPage(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -373,7 +357,6 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.replace("admin-login.html");
     }
 });
-
 
     async function initBulkPrintPage() {
         // ✅ Load Sessions
@@ -421,9 +404,9 @@ firebase.auth().onAuthStateChanged((user) => {
 
         if(!examId) return alert("Please select Exam first!");
         if(!cls) return alert("Please select Class!");
-        
+
         document.querySelector('.btn-load').innerText = "Loading...";
-        
+
         try {
             // ✅ Fetch students from RESULTS (session-specific, not live students)
             const resSnap = await db.collection('results')
@@ -543,23 +526,23 @@ firebase.auth().onAuthStateChanged((user) => {
 
             // 3. Prepare List of Students to Process
             const studentsToProcess = fetchedStudents.filter(s => selectedIds.includes(s.id));
-            
+
             if(studentsToProcess.length === 0) {
                 container.innerHTML = "<h3 style='text-align:center; color:red;'>No results found.</h3>";
                 return;
             }
 
             container.innerHTML = ""; // Clear Loading
-            
+
             // 4. BATCH PROCESSING FUNCTION
             let index = 0;
             const batchSize = 5;
-            
+
             function processBatch() {
                 if (index >= studentsToProcess.length) return;
 
                 const batch = studentsToProcess.slice(index, index + batchSize);
-                
+
                 batch.forEach(stu => {
                     // ✅ Inactive student ka result card generate nahi karna
                     if (stu.status === 'Inactive') return;
@@ -571,10 +554,10 @@ firebase.auth().onAuthStateChanged((user) => {
                         const nonDrawingMarks = Object.entries(res.marks)
                             .filter(([subName]) => !/drawing/i.test(subName))
                             .map(([, val]) => String(val).trim().toUpperCase());
-                        
+
                         const allAbsent = nonDrawingMarks.length > 0 &&
                             nonDrawingMarks.every(v => v === 'AB' || v === '');
-                        
+
                         if (allAbsent) return; // Card nahi banega
                     }
                     if(res) {
@@ -642,8 +625,6 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         }
     }
 
-
-
         // REPLACE THIS FUNCTION in admin-bulk-print.html
 
     function generateCardHTML(stu, res, examMax, subjectsConfig) {
@@ -676,20 +657,20 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         });
 
         let rowsHtml = "";
-        
+
         subjectList.forEach(sub => {
             const marks = res.marks[sub.name];
             if(marks !== undefined) {
                 let displayMax = examMax; 
                 if(examMax === 100 && sub.is50) displayMax = 50;
-                
+
                 // --- FIX START: Drawing ke liye Max Marks hatayein ---
                 if(/drawing/i.test(sub.name)) displayMax = "-";
-                
+
                 let gradeObj = { grade: marks, remark: "-" };
                 let isFail = false;
                 const mVal = parseFloat(marks); // Agar 'AB' hai to NaN ayega
-                
+
                 if(isNaN(mVal)) {
                     // Agar Number nahi hai (AB, Medical etc)
                     gradeObj.grade = marks; 
@@ -699,12 +680,12 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                     let p = 0; 
                     if(examMax === 25) p = mVal * 4; 
                     else p = sub.is50 ? mVal * 2 : mVal * 1;
-                    
+
                     gradeObj = getGradeDetails(Math.round(p));
                     if(gradeObj.grade.includes("N.I")) isFail = true;
                 }
                 const rowClass = isFail ? "row-fail" : "";
-                
+
                 rowsHtml += `<tr class="${rowClass}">
                     <td class="sub-col">${sub.name} ${sub.is50 ? '' : ''}</td>
                     <td><b>${displayMax}</b></td>
@@ -719,13 +700,13 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         let totalStr = res.total || "0/0";
         let tParts = totalStr.split('/');
         let obtainedMarks = parseFloat(tParts[0]) || 0; // Numerator Database se uthao
-        
+
         // Denominator humara naya calculated wala use karo
         let finalMax = calculatedMaxTotal > 0 ? calculatedMaxTotal : (parseFloat(tParts[1]) || 0);
 
         let perc = finalMax > 0 ? ((obtainedMarks / finalMax) * 100).toFixed(2) : "0.00";
         // ----------------------------------------------------
-        
+
         let finalStatus = parseFloat(perc) < 32.5 ? "N.I" : "PASS";
         let statusClass = finalStatus === "PASS" ? "res-pass" : "res-fail";
         // ✅ FIX: Grade bhi recalculated perc se nikalo, purana stale overallGrade nahi
@@ -733,7 +714,6 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         // --- NAYA LOGIC ---
         let displayPromoted = finalStatus === "PASS" ? (res.promotedTo || "------") : "------";
 
-        
         let quote = getPremiumQuote(parseFloat(perc), finalStatus);
 
         let photoHtml = "";
@@ -744,7 +724,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         return `
         <div class="report-card">
             <img src="${globalLogo}" class="watermark" alt="Watermark">
-            
+
             <div class="school-header">
                 <img src="${globalLogo}" class="logo" alt="Logo"> 
                 <div id="qr-${stu.id}" class="qr-code"></div>
@@ -761,7 +741,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                     <div class="info-row"><span class="lbl">Class & Sec:</span> <span class="val">${res.class} - ${res.section || stu.section}</span></div>
                     <div class="info-row"><span class="lbl">Roll No:</span> <span class="val">${res.roll || stu.roll}</span></div>
                 </div>
-                
+
                 <div class="info-col">
                     <div class="info-row"><span class="lbl">Father Name:</span> <span class="val">${stu.fatherName || "-"}</span></div>
                     <div class="info-row"><span class="lbl">Exam Name:</span> <span class="val">${res.examId}</span></div>
@@ -824,9 +804,6 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         </div>
         `;
     }
-
-
-
 
     function getGradeDetails(p) {
         if(p >= 91) return { grade: "O ", remark: "Outstanding" };

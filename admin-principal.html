@@ -1,41 +1,42 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Principal Message</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f4f7f6; padding: 20px; }
         .admin-box { max-width: 750px; margin: 30px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { color: #1a73e8; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-top: 0; }
-        
+
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: 500; margin-bottom: 8px; color: #555; }
         input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
 
         /* --- ADVANCED EDITOR STYLE --- */
         .editor-container { border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
-        
+
         .editor-toolbar {
             background: #f8f9fa; padding: 8px; border-bottom: 1px solid #ddd;
             display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
         }
-        
+
         /* Buttons */
         .toolbar-btn {
             background: white; border: 1px solid #ccc; padding: 6px 10px; cursor: pointer;
             border-radius: 4px; font-size: 14px; color: #444; transition: 0.2s; min-width: 32px;
         }
         .toolbar-btn:hover { background: #e2e8f0; color: #1a73e8; border-color: #b3b3b3; }
-        
+
         /* Dropdowns (Font & Size) */
         .toolbar-select {
             padding: 5px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 13px; color: #444;
@@ -59,7 +60,7 @@
 
         /* Image Preview */
         .img-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #1a73e8; display: block; margin: 10px auto; background: #eee; }
-        
+
         button.main-btn { width: 100%; padding: 14px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 20px; }
         button.main-btn:hover { background: #0d47a1; }
         button:disabled { background: #ccc; }
@@ -219,17 +220,7 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-        authDomain: "sample-school-13ca4.firebaseapp.com",
-        projectId: "sample-school-13ca4",
-        storageBucket: "sample-school-13ca4.firebasestorage.app",
-        messagingSenderId: "198448853287",
-        appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+
     const cloudName = "dngejhffd";
     const uploadPreset = "school_gallery";
 

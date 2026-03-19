@@ -1,15 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional TC Generator | STES</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Great+Vibes&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Noto+Serif:wght@400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 
@@ -22,7 +23,7 @@
 
         /* --- ADMIN LAYOUT --- */
         .app-container { display: flex; width: 100%; height: 100%; }
-        
+
         .sidebar { width: 260px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px; z-index: 10; overflow-y: auto; transition: 0.3s; }
         .nav-item { padding: 12px; color: #cbd5e1; text-decoration: none; display: block; border-radius: 6px; margin-bottom: 5px; font-family: sans-serif; font-size: 14px; }
         .nav-item.active, .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
@@ -83,8 +84,7 @@
         .header-right { width: 110px; } /* Spacer for balance */
 
         .logo { width: 90px; height: 90px; object-fit: contain; }
-        
-        
+
         .s-name { 
     font-family: 'Playfair Display', serif; 
     font-size: 30px; /* Size adjust kiya hai taaki 1 line me aaye */
@@ -97,9 +97,6 @@
     letter-spacing: 1px; 
 }
 
-        
-        
-        
         .s-addr { font-size: 13px; color: #444; margin-top: 5px; font-family: sans-serif; font-weight: 600; }
         .s-meta { font-size: 11px; margin-top: 3px; font-style: italic; }
 
@@ -117,7 +114,7 @@
         /* CONTENT BODY */
         .content { font-size: 16px; line-height: 2.0; text-align: justify; font-family: 'Merriweather', serif; flex-grow: 1; }
         .content p { margin-bottom: 12px; margin-top: 0; }
-        
+
         .val { 
             font-weight: 900; color: #000; text-transform: uppercase; 
             border-bottom: 1px dotted #333; padding: 0 5px; display: inline-block;
@@ -196,14 +193,14 @@
                     <div class="input-group"><label>TC No (Auto)</label><input type="text" id="tcNo" class="input-box" readonly style="background:#f1f5f9;"></div>
                     <div class="input-group"><label>Adm No</label><input type="text" id="admNo" class="input-box"></div>
                     <div class="input-group"><label>Name</label><input type="text" id="sName" class="input-box"></div>
-                    
+
                     <div class="input-group"><label>Father's Name</label><input type="text" id="fName" class="input-box"></div>
                     <div class="input-group"><label>Mother's Name</label><input type="text" id="mName" class="input-box"></div>
-                    
+
                     <div class="input-group"><label>Address</label><input type="text" id="address" class="input-box" placeholder="Full Address"></div>
                     <div class="input-group"><label>Nationality</label><input type="text" id="nation" class="input-box" value="Indian"></div>
                     <div class="input-group"><label>Category</label><input type="text" id="cat" class="input-box" placeholder="Gen/SC/ST/OBC"></div>
-                    
+
                     <div class="input-group"><label>Aadhar No</label><input type="text" id="aadhar" class="input-box" placeholder="Optional"></div>
                     <div class="input-group"><label>PEN No</label><input type="text" id="pen" class="input-box" placeholder="Optional"></div>
                     <div class="input-group"><label>APAAR ID</label><input type="text" id="apaar" class="input-box" placeholder="Optional"></div>
@@ -211,7 +208,7 @@
                     <div class="input-group"><label>Class Admitted</label><input type="text" id="firstCls" class="input-box"></div>
                     <div class="input-group"><label>Class Leaving</label><input type="text" id="lastCls" class="input-box"></div>
                     <div class="input-group" style="grid-column: span 2;"><label>Result Status (Sentence)</label><input type="text" id="result" class="input-box" placeholder="e.g. Passed and Promoted to Class X"></div>
-                    
+
                     <div class="input-group"><label>Reason</label><input type="text" id="reason" class="input-box" value="Parents Request"></div>
                     <div class="input-group"><label>Conduct</label><select id="conduct" class="input-box"><option>Excellent</option><option>Very Good</option><option>Good</option></select></div>
                 </div>
@@ -249,7 +246,7 @@
         <div class="a4-sheet">
             <div class="border-fancy">
                 <div class="border-inner">
-                    
+
                     <img id="pWatermark" src="" class="watermark">
 
                     <div class="header-layout">
@@ -303,17 +300,6 @@
 
     <script>
         // --- CONFIG ---
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let students = [], school = {}, saveData = null;
 
@@ -336,14 +322,11 @@
             // Fetch Students
             const snap = await db.collection('students').where('status','!=','Trash').get();
             students = snap.docs.map(d => ({id:d.id, ...d.data()}));
-            
+
                       document.getElementById('issueDate').valueAsDate = new Date();
             loadHistory();
         } // yahan semicolon (;) hat gaya hai
 
-        
-        
-        
         // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -353,9 +336,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 loadTCSystem(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -365,20 +348,11 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
-        
-        
-        
-        
-        
-        
-        
-
-
         function searchStudent() {
             const txt = document.getElementById('searchInp').value.toLowerCase();
             const cls = document.getElementById('filterClass').value;
             const res = document.getElementById('searchRes');
-            
+
             // If both empty, hide result box
             if(!txt && !cls) { res.style.display = 'none'; return; }
 
@@ -433,12 +407,12 @@ firebase.auth().onAuthStateChanged((user) => {
         function generate() {
             const val = (id) => document.getElementById(id).value;
             const fmt = (d) => { if(!d) return ""; const x=new Date(d); return `${x.getDate()}-${x.toLocaleString('default',{month:'short'}).toUpperCase()}-${x.getFullYear()}`; };
-            
+
             // Meta
             const tcNo = val('tcNo');
             document.getElementById('pTcNo').innerText = "TC No: " + tcNo;
             document.getElementById('pAdm').innerText = "Adm No: " + val('admNo');
-            
+
             // QR Code (Name | ID | Father | TC | Date | Valid)
             const qrData = `Name:${val('sName')}|ID:${val('admNo')}|F:${val('fName')}|TC:${tcNo}|Date:${fmt(val('issueDate'))}|Valid`;
             document.getElementById('qrCode').innerHTML = "";
@@ -449,18 +423,18 @@ firebase.auth().onAuthStateChanged((user) => {
 
             // Para 1: Bio
             html += `<p>This is to certify that <span class="val">${val('sName')}</span>, `;
-            
+
             // Parents (Smart Logic)
             const f = val('fName'), m = val('mName');
             if(f && m) html += `Son/Daughter of Mr. <span class="val">${f}</span> and Mrs. <span class="val">${m}</span>, `;
             else if(f) html += `Son/Daughter of Mr. <span class="val">${f}</span>, `;
-            
+
             // Address & Nationality (Smart Hide)
             const addr = val('address');
             if(addr) html += `resident of <span class="val">${addr}</span>, `;
-            
+
             html += `is a bonafide student of this school. He/She bears <span class="val">${val('nation')}</span> Nationality`;
-            
+
             if(val('cat')) html += ` and belongs to <span class="val">${val('cat')}</span> Category`;
             html += `.</p>`;
 
@@ -468,7 +442,7 @@ firebase.auth().onAuthStateChanged((user) => {
             html += `<p>He/She was admitted to this school on <span class="val">${fmt(val('admDate'))}</span>`;
             if(val('firstCls')) html += ` in Class <span class="val">${val('firstCls')}</span>`;
             html += `.</p>`;
-            
+
             if(val('dob')) {
                 const d = new Date(val('dob'));
                 const words = d.toLocaleDateString('en-IN', {year:'numeric', month:'long', day:'numeric'});
@@ -477,9 +451,9 @@ firebase.auth().onAuthStateChanged((user) => {
 
             // Para 3: Leaving Info
             html += `<p>He/She left the school on <span class="val">${fmt(val('leaveDate'))}</span> while studying in Class <span class="val">${val('lastCls')}</span>.</p>`;
-            
+
             if(val('result')) html += `<p><b>Academic Status:</b> <span class="val">${val('result')}</span>.</p>`;
-            
+
             // Para 4: Conduct & Reason
             html += `<p>During his/her stay in the school, his/her character and conduct have been <span class="val">${val('conduct').toUpperCase()}</span>.</p>`;
             html += `<p>Reason for leaving: <span class="val">${val('reason')}</span>.</p>`;
@@ -489,14 +463,14 @@ firebase.auth().onAuthStateChanged((user) => {
             if(val('aadhar')) idBlock += `<div>Aadhar No: <b>${val('aadhar')}</b></div>`;
             if(val('pen')) idBlock += `<div>PEN No: <b>${val('pen')}</b></div>`;
             if(val('apaar')) idBlock += `<div>APAAR ID: <b>${val('apaar')}</b></div>`;
-            
+
             if(idBlock) html += `<div class="ids-block">${idBlock}</div>`;
 
             // Date of Issue
             html += `<p style="margin-top:20px; text-align:left;"><b>Date of Issue:</b> ${fmt(val('issueDate'))}</p>`;
 
             document.getElementById('pBody').innerHTML = html;
-            
+
             saveData = { 
                 tcNo: tcNo, name: val('sName'), className: val('lastCls'), 
                 issueDate: fmt(val('issueDate')), createdAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -527,12 +501,11 @@ firebase.auth().onAuthStateChanged((user) => {
                     // Print ke baad modal band karein aur refresh karein
                     document.getElementById('printModal').style.display = 'none';
                     loadHistory();
-                    
+
                     // Note: Title wapis purana nahi kar rahe taaki phone par glitch na ho
                 }, 000);
             }
         }
-
 
         function toggleHistory() {
             const h = document.getElementById('histPanel');

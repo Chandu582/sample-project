@@ -1,12 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
-
-
-
-
-
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -339,7 +335,6 @@
             }
         }
 
-
         /* --- PRINT CONTROL CSS (Paste inside <style> tag) --- */
         /* --- NEW ROBUST PRINT LOGIC --- */
 
@@ -462,10 +457,6 @@
             }
         }
 
-
-
-
-
         /* Drag & Drop Visuals */
         .seat {
             cursor: grab;
@@ -487,9 +478,6 @@
         }
 
         /* Mobile support fix needed later, currently for Desktop */
-
-
-
 
         /* --- SPOTLIGHT SEARCH CSS --- */
         @keyframes pulseRing {
@@ -612,21 +600,9 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let rooms = [];
         let studentsRawData = [];
-
 
         let globalExamName = "";
         let globalExamDate = "";
@@ -677,9 +653,6 @@
                 })
                 .catch(err => console.error("Error saving settings: ", err));
         }
-
-
-
 
         window.onload = function () { loadRoomsFromDB(); };
 
@@ -733,7 +706,6 @@
                 }
             });
         }
-
 
         async function saveRoom() {
             const name = document.getElementById('roomName').value.trim();
@@ -989,7 +961,6 @@
             showStep(3);
         }
 
-
         // =========================================================================
         // ✅ RENDER FUNCTION: SEPARATE SECTIONS FOR MAP & ATTENDANCE
         // =========================================================================
@@ -1057,9 +1028,8 @@
     </select>
 </div>
 
-                
                 <p id="statsText" style="font-size:14px; color:#4b5563; margin-top:5px;">Seated: <b>${totalSeated}</b> | Candidates: <b>${totalNeeded}</b></p>
-                
+
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
                     <button onclick="saveAllocationToDB()" class="btn" style="background:#2563eb; color:white;"><i class="fas fa-save"></i> Save</button>
                     <button id="resetBtn" onclick="resetSeatingPlan()" class="btn" style="background:#ef4444; color:white;"><i class="fas fa-trash-alt"></i> Reset</button>
@@ -1081,11 +1051,10 @@
 
                 let html = `
             <div class="card room-print-container" style="margin-bottom: 30px;">
-                
-                            
+
                 <div class="hall-header" style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
                     <h2 style="margin:0; font-size: 28px;">${room.name}</h2>
-                    
+
                     <div style="margin: 10px 0; display: flex; justify-content: center; gap: 15px; font-weight: 600;">
                         <span>Exam: <input type="text" class="print-input sync-name" value="${globalExamName}" placeholder="Exam Name" style="width:150px; border-bottom: 1px dashed #ccc;"></span>
                         <span>Date: <input type="text" class="print-input sync-date" value="${globalExamDate}" placeholder="Date" style="width:100px; border-bottom: 1px dashed #ccc;"></span>
@@ -1096,7 +1065,6 @@
                         <span class="title-attendance">Attendance Sheet</span>
                     </h3>
                 </div>
-
 
                 <div class="map-section">
                     <div class="final-grid" style="grid-template-columns: repeat(${room.cols}, 1fr) !important;">`;
@@ -1150,7 +1118,6 @@
                     html += `</div>`;
                 });
                 // --- CODE END ---
-
 
                 html += `</div></div> `;
 
@@ -1259,9 +1226,6 @@
             }, 50);
         }
 
-
-
-
         // --- FINAL FIXED LOGIC: PRINT, SYNC & DATABASE ---
 
         // 1. SYNC FUNCTION (Ye missing tha, isliye copy nahi ho raha tha)
@@ -1361,10 +1325,6 @@
             setTimeout(() => window.print(), 500);
         }
 
-
-
-
-
         // --- 1. SAVE FUNCTION: Ye plan ko database me permanent karega ---
         function saveAllocationToDB() {
             // Button par "Saving..." dikhayein
@@ -1387,11 +1347,6 @@
                 alert("Error saving plan. Check console.");
             });
         }
-
-
-
-
-
 
         // --- 2. DRAG & DROP VARIABLES ---
         let dragSrcEl = null;
@@ -1527,13 +1482,10 @@
             return false;
         }
 
-
         function handleDragEnd(e) {
             this.style.opacity = '1';
             document.querySelectorAll('.seat').forEach(col => col.classList.remove('over'));
         }
-
-
 
         // --- INVIGILATOR SEARCH FUNCTION ---
         // --- ✅ 1. DEBOUNCE TIMER (Jhatka roke ga) ---
@@ -1612,9 +1564,6 @@
             }
         }
 
-
-
-
         // --- RESET FUNCTION: Sab kuch delete kar dega ---
         function resetSeatingPlan() {
             if (!confirm("⚠️ ARE YOU SURE?\n\nIsse puri seating arrangement delete ho jayegi aur sab reset ho jayega.\n\nKya aap proceed karna chahte hain?")) {
@@ -1646,8 +1595,6 @@
             });
         }
 
-
-
         // admin-fees.html aur baaki data wale pages ke liye
         firebase.auth().onAuthStateChanged((user) => {
             const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -1667,12 +1614,6 @@
                 window.location.replace("admin-login.html");
             }
         });
-
-
-
-
-
-
 
     </script>
 

@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -205,7 +206,6 @@
             font-weight: 700;
             color: var(--side);
         }
-
 
         /* CARDS */
         .stu-card {
@@ -438,7 +438,6 @@
             letter-spacing: 0.5px;
         }
 
-
         /* --- FIX PAGE HEADER & CONTROLS --- */
 
         /* 1. Header Container (White Box) */
@@ -568,7 +567,6 @@
         </a>
     </div>
 
-
     <div class="content-wrapper">
         <div class="mobile-header">
             <i class="fas fa-bars" onclick="toggleSidebar()" style="font-size:20px; cursor: pointer;"></i>
@@ -581,19 +579,8 @@
                 <h1 style="margin:0; font-size: 25px;">Collect Fees</h1>
                 <div style="display:flex; gap:30px;">
 
-
-
-
-
-
-
-
                     <select id="sessionSelect" onchange="handleSessionChange()"
                         style="padding:8px; border-radius:6px; border:1px solid #ccc;"></select>
-
-
-
-
 
                     <input type="text" id="reprintNo" placeholder="Receipt No"
                         style="padding:8px; border-radius:6px; border:1px solid #ccc; width:120px;">
@@ -652,8 +639,6 @@
             <div class="modal-body">
                 <div>
 
-
-
                     <div id="studentReminderBox"
                         style="display:none; background:linear-gradient(135deg, #991b1b, #7f1d1d); border:1px solid #7f1d1d; border-left:5px solid #450a0a; padding:10px 15px; border-radius:8px; margin-bottom:15px; box-shadow: 0 4px 10px rgba(153, 27, 27, 0.3);">
                         <div style="display:flex; justify-content:space-between; align-items:start;">
@@ -683,15 +668,6 @@
                         </button>
                     </div>
 
-
-
-
-
-
-
-
-
-
                     <div class="dues-header">
                         <div class="due-card" style="position:relative;">
                             <span style="color:#c2410c; font-weight:700;">Prev Due</span>
@@ -706,7 +682,6 @@
                                 style="color:#b91c1c;">Total Due</span>
                             <h3 id="dispTotal" style="margin:5px 0 0 0; font-size:16px;">₹0</h3>
                         </div>
-
 
                         <div id="creditAlertSection"
                             style="display:none; background:#fef2f2; border:1px dashed #ef4444; padding:10px; margin-bottom:15px; border-radius:8px;">
@@ -739,8 +714,6 @@
                         <div id="annualFeeContainer" class="annual-grid"></div>
                     </div>
 
-
-
                     <div style="margin-top:20px; border-top:1px dashed #e2e8f0; padding-top:15px;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
@@ -764,7 +737,6 @@
 
                 <div>
 
-
                     <div style="margin-bottom:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <input type="text" id="mPayer" class="inp" placeholder="Payer Name">
 
@@ -776,10 +748,6 @@
                             <option value="Card">Card</option>
                         </select>
                     </div>
-
-
-
-
 
                     <div class="summary-box">
                         <h3 style="margin:0 0 10px 0; font-size:16px;">Payment Summary</h3>
@@ -810,15 +778,6 @@
                     </div>
                 </div>
 
-
-
-
-
-
-
-
-
-
             </div>
         </div>
     </div>
@@ -847,24 +806,9 @@
 
     <script>
         // FIREBASE CONFIGURATION
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-
-
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         // Script ke top par add karein
         let masterHeads = []; // <--- Ye variable zaroori hai rules store karne ke liye
-
 
         let currentSession = "";
         let students = [], allFees = [], transRates = {}, schoolInfo = {};
@@ -878,8 +822,6 @@
         const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
         const fullMonths = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
         let selections = { monthly: {}, annual: {}, transport: [] };
-
-
 
         // --- 🟢 PASTE THIS AT THE BOTTOM OF YOUR SCRIPT TAG 🟢 ---
 
@@ -993,19 +935,9 @@
              });*/
         }
 
-
-
         // --- 🔴 CODE ENDS HERE 🔴 ---
 
-
         // --- YAHAN PASTE KAREIN (End) ---
-
-
-
-
-
-
-
 
         // ✅ DYNAMIC SESSION LOADER (Database se list uthayega)
 
@@ -1117,7 +1049,6 @@
                         // AGAR FEE PAR KOI TAG NAHI HAI (PURANI FEE), TO USE SIRF 'REGULAR' MAANO
                         const allowedCats = h.appTo || ['REGULAR'];
 
-
                         const isCategoryAllowed = allowedCats.includes(stuCat);
 
                         // B. Check Time Activation (For Annual)
@@ -1199,7 +1130,6 @@
                             if (match) paid += (Number(f.paidAmount) || 0) + (Number(f.discountUsed) || 0);
                         });
 
-
                         let due = Math.max(0, exp - paid);
                         headsData[h.name] = { exp, paid, due };
                         currentDues += due;
@@ -1264,7 +1194,6 @@
                     let finalLateDue = Math.max(0, currentPendingFine - totalLatePaid);
                     let finalLateExp = Math.max(totalLatePaid, currentPendingFine);
 
-
                     // 8. FINAL TOTALS
                     let prevDue = 0;
                     const sessionDueKey = `dues_${currentSession}`;
@@ -1296,16 +1225,7 @@
             }
         }
 
-
-
-
-
-
-
-
         // Helper function to load transport separately
-
-
 
         // --- SEARCH LAG FIX (DEBOUNCING) ---
         let searchTimeout;
@@ -1322,10 +1242,6 @@
 
         // --- Niche aapka purana runSearch function rahega ---
         // ... (baaki code same rahega)
-
-
-
-
 
         function runSearch() {
             const n = document.getElementById('srchName').value.toLowerCase();
@@ -1363,11 +1279,11 @@
             <div style="color:gray; font-size:12px; margin-top:4px;">
                 ${s.class} (${s.section || 'A'}) | Roll: ${s.roll}
             </div>
-            
+
             <div style="color:#64748b; font-size:11px; margin-top:2px; font-weight: 600;">
                 <i class="fas fa-user-tie" style="margin-right:4px;"></i>F: ${s.fatherName || 'N/A'}
             </div>
-            
+
             <div style="margin-top:6px;">
                 <span style="background:${badgeColor}; color:${textColor}; border:1px solid ${borderColor}; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:800; text-transform:uppercase;">
                     ${cat}
@@ -1379,10 +1295,6 @@
             }).join('');
         }
 
-
-
-
-
         // --- 🟢 PASTE THIS NEW CODE (REPLACE OLD openModal) 🟢 ---
 
         async function openModal(sid) {
@@ -1390,8 +1302,6 @@
                 // A. Basic Setup
                 activeStu = students.find(x => x.id === sid);
                 if (!activeStu) return alert("Student not found!");
-
-
 
                 // 👇👇👇 YAHAN PASTE KAREIN (Ye Naya Code Hai) 👇👇👇
 
@@ -1406,7 +1316,6 @@
 
                 // 👆👆👆 YAHAN KHATAM 👇👇👇
 
-
                 // 1. Name & Category Badge
                 document.getElementById('mName').innerText = activeStu.name;
                 const cat = activeStu.admissionCategory || "Regular";
@@ -1414,7 +1323,6 @@
                 if (cat === 'Hostler') { catStyle = "background:#f3e8ff; color:#6b21a8; border-color:#d8b4fe;"; } // ✅ Purple
                 else if (cat === 'RTE') { catStyle = "background:#fff7ed; color:#c2410c; border-color:#fed7aa;"; }
                 else if (cat === 'Freeship') { catStyle = "background:#f0fdf4; color:#15803d; border-color:#bbf7d0;"; }
-
 
                 document.getElementById('mMeta').innerHTML = `
             ${activeStu.class} (${activeStu.section || 'A'}) | ID: <b>${activeStu.stesID}</b>
@@ -1434,13 +1342,6 @@
                 document.getElementById('mPayer').value = "Parent";
                 document.getElementById('mMobile').value = activeStu.mobile || "";
 
-
-
-
-
-
-
-
                 // --- 🟢 NEW: REMINDER LOGIC START ---
                 const remBox = document.getElementById('studentReminderBox');
                 const remText = document.getElementById('reminderText');
@@ -1456,21 +1357,6 @@
                     addRemBtn.style.display = 'block'; // Show Add Button
                 }
                 // --- 🟢 NEW: REMINDER LOGIC END ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 // B. Pending Credit Check (Udhaar)
                 const creditBox = document.getElementById('creditAlertSection');
@@ -1618,7 +1504,6 @@
 
                 const stuCat = (activeStu.admissionCategory || 'Regular').toUpperCase();
 
-
                 heads.forEach(hName => {
                     // Category Filter
                     const headRule = masterHeads.find(h => h.name === hName);
@@ -1651,7 +1536,6 @@
                     });
 
                     const safeName = hName.replace(/'/g, "\\'");
-
 
                     if (isMonthly) {
                         // --- MONTHLY FEES LOOP (Updated with startIdx) ---
@@ -1866,20 +1750,8 @@
                 recalcAll();
                 document.getElementById('payModal').style.display = 'flex';
 
-
             } catch (e) { console.error(e); alert("Error opening modal: " + e.message); }
         }
-
-
-
-
-
-
-
-
-
-
-
 
         function autoCalculateLateFee() {
             // 1. Basic Checks
@@ -1973,14 +1845,6 @@
             window.currentLateFeeDesc = totalFine > 0 ? `Late Fee (${overdueList.join(', ')})` : "Late Fee";
         }
 
-
-
-
-
-
-
-
-
         // --- LOGIC FUNCTIONS ---
         function toggleMonth(head, m, amt, btn) {
             if (!selections.monthly[head]) selections.monthly[head] = [];
@@ -1989,7 +1853,6 @@
             else { selections.monthly[head].push({ m, amt }); btn.classList.add('selected'); }
             recalcAll();
         }
-
 
         // Is function ko script tag ke andar kahin bhi paste kar dein
         window.toggleAnnual = function (head, amount, el) {
@@ -2033,10 +1896,6 @@
             recalcAll();
         };
 
-
-
-
-
         function toggleTrans(m, rate, btn) {
             if (selections.transport.includes(m)) { selections.transport = selections.transport.filter(x => x !== m); btn.classList.remove('selected'); }
             else { selections.transport.push(m); btn.classList.add('selected'); }
@@ -2048,9 +1907,6 @@
             if (!on) selections.transport = [];
             recalcAll();
         }
-
-
-
 
         // --- STEP 3: NAYA FUNCTION ---
         function addExtraRow() {
@@ -2075,9 +1931,6 @@
             }
         }
         // --- STEP 3 END ---
-
-
-
 
         // --- 🟢 UPDATED RECALC FUNCTION (Fixes Total Amount Issue) 🟢 ---
 
@@ -2216,17 +2069,6 @@
 
         }
 
-
-
-
-
-
-
-
-
-
-
-
         function sumRow(lbl, amt, color) { return `<div class="sum-row" style="color:${color || 'inherit'}"><span>${lbl}</span><span>₹${amt}</span></div>`; }
 
         // --- 🟢 FIX 1: UPDATE BALANCE LOGIC 🟢 ---
@@ -2332,9 +2174,6 @@
             }
         }
 
-
-
-
         // ✅ UPDATED checkAndSave (Allows 0 Payment if Discount covers the bill)
         function checkAndSave() {
             // Current Bill Amount
@@ -2373,15 +2212,9 @@
             }
         }
 
-
-
-
-
         // ✅ UPDATED SAVE PAYMENT (Calculates Bill vs Paid for Receipt)
 
-
         // --- 🟢 FIX 3: SAVE PAYMENT LOGIC (Fixes Receipt Dues) 🟢 ---
-
 
         // ✅ STEP 2: Replace your existing 'savePayment' function with this SAFER version
         // ✅ STEP 2: REPLACE THIS FUNCTION (Saves Class/Roll for Dashboard)
@@ -2528,7 +2361,6 @@
                             roll: activeStu.roll || "",
                             stesID: activeStu.stesID || "", // 🔥 YE LINE ADD KAREIN
 
-
                             snap_class: activeStu.class, snap_section: activeStu.section || "",
                             snap_roll: activeStu.roll || "", snap_stesID: activeStu.stesID || "", // 🔥 YE LINE BHI ADD KAREIN
 
@@ -2554,7 +2386,6 @@
 
                             snap_class: activeStu.class, snap_section: activeStu.section || "",
                             snap_roll: activeStu.roll || "", snap_stesID: activeStu.stesID || "", // 🔥 YE LINE BHI ADD KAREIN
-
 
                             type: 'ADVANCE', headName: 'Advance', otherHead: 'Wallet Balance',
                             paidAmount: advanceAmt, fullHeadAmount: advanceAmt,
@@ -2631,15 +2462,6 @@
                 btn.disabled = false;
             }
         }
-
-
-
-
-
-
-
-
-
 
         // ✅ REPRINT FIX (Wallet & Partial Aware)
 
@@ -2746,15 +2568,6 @@
             } catch (e) { console.error(e); alert("Error fetching receipt: " + e.message); }
         }
 
-
-
-
-
-
-
-
-
-
         async function reversePayment() {
             const rNo = document.getElementById('reprintNo').value.trim();
             if (!rNo) return alert("Please enter Receipt No");
@@ -2837,31 +2650,10 @@
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // ✅ NEW RECEIPT DESIGN (With Logo, Reg No, Note & QR)
-
-
-
-
-
-
 
         // ✅ FINAL RECEIPT (Shows Wallet Usage)
         function generateReceipt(rNo, date, items, billAmount, paidCash, currentDue, totalPending, walletUsed = 0, discountGiven = 0) {
-
 
             const s = schoolInfo || {};
             const sName = s.schoolName || "ST. TERESA ENGLISH SCHOOL";
@@ -2986,7 +2778,6 @@
         `;
             }
 
-
             // --- 🟢 YE CODE ADD KAREIN (createTemplate ke upar) 🟢 ---
 
             let pendingLabel = "PENDING";
@@ -3004,15 +2795,9 @@
                 pendingStyle = "background:#000; color:#fff;"; // ✅ Ye bhi BLACK rahega
             }
 
-
-
-
-
-
-
             const createTemplate = (copyTitle) => `
         <div style="border: 2px solid #000; padding: 15px; position: relative; background: white; width: 100%; max-width: 800px; height: auto; display: flex; flex-direction: column;">
-            
+
             <div style="position:relative; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; min-height:55px;">
                 <div style="position:absolute; top:0; left:0;">${logoHtml}</div>
                 <div style="text-align:center; padding-top:2px; width:100%;">
@@ -3049,13 +2834,13 @@
                 <div style="display: flex; justify-content: flex-end;">
                     <div style="width: 200px;">
                         <div style="display: flex; justify-content: space-between; font-size:11px; padding:2px 0; border-bottom: 1px solid #ddd; color:000;"><span>Bill Amount</span><span>₹${billAmount - discountGiven}</span></div>
-                        
+
                         <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; padding: 5px 0; border-bottom: 2px solid #000;">
                             <span>TOTAL PAID</span><span>₹${totalPayment}</span>
                         </div>
                         ${paymentBreakdown}
                         ${discountRow}
-                        
+
                         <div style="margin-top: 3px; font-size:11px;">
                             <div style="display: flex; justify-content: space-between; color: #000;"><span>Current Due</span><span>₹${currentDue}</span></div>
                         </div>
@@ -3066,7 +2851,7 @@
                     <div style="width: 65%;">
                         <div style="font-size: 12px; color: #000;">Paid Amount in words:</div>
                         <div style="font-size: 11px; font-weight: bold; font-style: italic; margin-bottom: 5px;">"${amtWords}"</div>
-                        
+
                         <div style="background:#f0fdf4; border:1px dashed #16a34a; color:#000000; padding:3px 6px; border-radius:4px; display:inline-block; font-size:10px; font-weight:bold; margin-right:5px; vertical-align:middle;">Prior Dues: ₹${sessionDuesBefore}</div>
 
                         <div style="${pendingStyle} padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px; font-weight:800; vertical-align:middle;">
@@ -3074,7 +2859,7 @@
 </div>
 
                     </div>
-                    
+
                     <div style="text-align: center;">
                         <div style="border-bottom: 1px solid #999; width: 80px; margin-bottom:2px;"></div>
                         <div style="font-size: 9px; font-weight: bold; text-transform:uppercase;">Accountant</div>
@@ -3087,10 +2872,6 @@
             const htmlStructure = `<div id="print-parent">${createTemplate("PARENT COPY")}</div><div id="print-office" style="display:none;">${createTemplate("OFFICE COPY")}</div>`;
             document.getElementById('receiptData').innerHTML = htmlStructure;
             document.getElementById('genReceiptNo').innerText = rNo;
-
-
-
-
 
             // --- WHATSAPP MESSAGE GENERATION START (FIXED BOLD) ---
 
@@ -3201,38 +2982,9 @@ ${itemListStr}--------------------------------
 
             // --- 🟢 WHATSAPP FIX END 🟢 ---
 
-
-
-
-
-
-
-
-
-
             closeModal();
             document.getElementById('successModal').style.display = 'flex';
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         function printReceipt(mode) {
             const parentContent = document.getElementById('print-parent').innerHTML;
@@ -3267,9 +3019,9 @@ ${itemListStr}--------------------------------
             <title>Fee Receipt</title>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
-                
+
                 @page { size: A4 portrait; margin: 0; }
-                
+
                 body { 
                     margin: 0; 
                     padding: 0; 
@@ -3277,7 +3029,7 @@ ${itemListStr}--------------------------------
                     background: #fff; 
                     -webkit-print-color-adjust: exact; 
                 }
-                
+
                 .receipt-wrapper {
                     width: 100%;
                     padding: 10mm 10mm 0 10mm; /* Side Margins */
@@ -3307,7 +3059,7 @@ ${itemListStr}--------------------------------
                     color: #666;
                     font-weight: bold;
                 }
-                
+
                 table { width: 100%; border-collapse: collapse; }
                 th, td { padding: 3px 5px; }
             </style>
@@ -3319,19 +3071,6 @@ ${itemListStr}--------------------------------
             win.document.close();
             setTimeout(() => { win.focus(); win.print(); }, 500);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         // ✅ NEW SESSION CHANGE HANDLER
         function handleSessionChange() {
@@ -3373,12 +3112,6 @@ ${itemListStr}--------------------------------
             runSearch();
         }
 
-
-
-
-
-
-
         function convertNumberToWords(amount) {
             const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
             const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
@@ -3394,9 +3127,6 @@ ${itemListStr}--------------------------------
             str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
             return str ? str + "Rupees Only" : "Zero Rupees";
         }
-
-
-
 
         // --- 🟢 NEW: GIVE ITEM ON CREDIT ---
         async function giveItemOnCredit() {
@@ -3432,8 +3162,6 @@ ${itemListStr}--------------------------------
                 alert("Error: " + e.message);
             }
         }
-
-
 
         // Global variable to track items being paid from credit
         let itemsPaidFromCredit = [];
@@ -3471,13 +3199,6 @@ ${itemListStr}--------------------------------
             recalcAll();
 
         }
-
-
-
-
-
-
-
 
         // --- 🟢 NEW FUNCTION: EDIT REMINDER ---
         async function editFeeReminder() {
@@ -3519,29 +3240,7 @@ ${itemListStr}--------------------------------
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         function closeModal() { document.getElementById('payModal').style.display = 'none'; }
-
-
 
         // --- SIDEBAR TOGGLE FUNCTIONS ---
         function toggleSidebar() {
@@ -3554,16 +3253,7 @@ ${itemListStr}--------------------------------
             document.getElementById('overlay').classList.remove('active');
         }
 
-
-
-
         // 🟢 SECURE INITIALIZATION 🟢
-
-
-
-
-
-
 
         // admin-fees.html aur baaki data wale pages ke liye
         firebase.auth().onAuthStateChanged((user) => {
@@ -3586,16 +3276,9 @@ ${itemListStr}--------------------------------
             }
         });
 
-
-
-
     </script>
 
-
     <datalist id="inventoryListOptions"></datalist>
-
-
-
 
 </body>
 

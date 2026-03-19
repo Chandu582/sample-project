@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,8 +13,6 @@
     <link rel="preload" as="image"
         href="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop">
 
-
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
@@ -28,15 +26,10 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </noscript>
 
-
-
-
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
-
-
-
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <style>
         :root {
@@ -46,7 +39,6 @@
             --text: #333;
             --bg: #f4f7f6;
         }
-
 
         :root {
             /* Core Brand Colors */
@@ -65,8 +57,6 @@
             --title-gradient: linear-gradient(135deg, var(--primary-dark), var(--primary));
         }
 
-
-
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -78,7 +68,6 @@
             background-image: radial-gradient(rgba(26, 115, 232, 0.07) 1px, transparent 1px);
             background-size: 25px 25px;
         }
-
 
         /* --- CUSTOM GLOBAL SCROLLBAR --- */
         ::-webkit-scrollbar {
@@ -103,8 +92,6 @@
             /* Hover karne par school ka blue color */
         }
 
-
-
         .premium-title {
             background: var(--title-gradient);
             -webkit-background-clip: text;
@@ -118,12 +105,6 @@
             margin-bottom: 8px;
             line-height: 1.2;
         }
-
-
-
-
-
-
 
         /* --- NAVBAR --- */
         /* --- ULTRA-PREMIUM NAVBAR --- */
@@ -408,7 +389,6 @@
                 inset 0 -3px 5px rgba(0, 0, 0, 0.15);
         }
 
-
         /* --- NOTICE MARQUEE --- */
         /* --- NOTICE MARQUEE PREMIUM --- */
         .notice-bar {
@@ -468,9 +448,6 @@
             }
         }
 
-
-
-
         /* --- MODERN CSS MARQUEE ANIMATION --- */
         .marquee-wrapper {
             overflow: hidden;
@@ -504,8 +481,6 @@
                 transform: translate(-100%, 0);
             }
         }
-
-
 
         /* --- GRID MENU (Quick Links) --- */
         /* --- PREMIUM DASHBOARD GRID --- */
@@ -589,7 +564,6 @@
             box-shadow: 0 15px 35px rgba(253, 160, 133, 0.25), inset 0 2px 5px rgba(255, 255, 255, 1);
         }
 
-
         /* Punchy, Modern App Icon Gradients */
         /* --- LIQUID GLASS ICONS --- */
         .menu-icon {
@@ -644,8 +618,6 @@
             /* Text ko ubharne ke liye safed shadow */
         }
 
-
-
         /* --- WHY CHOOSE US --- */
         .section-title {
             text-align: center;
@@ -655,7 +627,6 @@
             font-weight: 700;
             color: var(--primary);
         }
-
 
         /* --- PREMIUM WHY CHOOSE US CARDS --- */
         .features-scroll {
@@ -724,7 +695,6 @@
             font-weight: 500;
         }
 
-
         /* --- STATS --- */
         .stats-box {
             background: linear-gradient(135deg, #1a73e8, #0d47a1);
@@ -749,11 +719,6 @@
             font-size: 12px;
             opacity: 0.8;
         }
-
-
-
-
-
 
         /* --- UPDATED FOOTER CSS (Padding Fixed) --- */
         /* --- UPDATED FOOTER CSS --- */
@@ -815,7 +780,6 @@
             opacity: 0.9;
             margin-top: 10px;
         }
-
 
         /* ... (Baaki footer CSS same rahegi) ... */
 
@@ -895,7 +859,6 @@
             }
         }
 
-
         .view-profile-btn {
             background: rgba(255, 255, 255, 0.1);
             color: var(--accent);
@@ -933,17 +896,6 @@
             gap: 6px;
             box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
         }
-
-
-
-
-
-
-
-
-
-
-
 
         /* --- BOTTOM FLOATING BAR --- */
         .bottom-nav {
@@ -1110,17 +1062,9 @@
             opacity: 1;
         }
 
-
-
         /* --- TOPPERS SECTION STYLE --- */
 
-
-
         /* --- MODERN HORIZONTAL CAROUSEL SECTION --- */
-
-
-
-
 
         /* --- TOPPERS SECTION (Fixed Layout) --- */
         .toppers-section {
@@ -1162,7 +1106,6 @@
         /* --- 🔥 MAGIC SCROLL CONTAINER (Center Aligned) 🔥 --- */
         /* --- SCROLL CONTAINER (Perfect Center Logic) --- */
 
-
         /* कार्ड का साइज फिक्स रखें ताकि कैलकुलेशन सही रहे */
         .topper-card {
             min-width: 260px;
@@ -1182,7 +1125,6 @@
             padding-bottom: 20px;
             flex-shrink: 0;
         }
-
 
         /* बाकी डिजाइन वही रहेगा */
         .topper-card:hover {
@@ -1263,7 +1205,6 @@
             gap: 5px;
         }
 
-
         .topper-name {
             font-size: 1.1rem;
             font-weight: 800;
@@ -1312,25 +1253,6 @@
             color: #1a237e;
             -webkit-text-fill-color: #ff6f00;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         /* --- EVENTS SECTION --- */
         #events-section {
@@ -1513,7 +1435,6 @@
             border-color: #bfdbfe;
         }
 
-
         /* --- 🎂 BIRTHDAY SECTION (Mobile Fixed) --- */
         .birthday-section {
             padding: 20px 0 40px 0;
@@ -1545,7 +1466,6 @@
             text-overflow: ellipsis;
             padding: 0 10px;
         }
-
 
         #birthday-section .section-title-box p {
             color: #78909c;
@@ -1617,7 +1537,6 @@
             margin: auto;
         }
 
-
         /* 🔥 MOBILE Setting: Pehla card screen ke perfect beech mein rahe (Snap Effect) */
         @media (max-width: 768px) {
             .toppers-scroll-container {
@@ -1631,10 +1550,7 @@
             }
         }
 
-
         /* --- CARD DESIGN --- */
-
-
 
         /* --- INTERACTIVE BIRTHDAY CARD --- */
         .bday-card {
@@ -1676,14 +1592,6 @@
             /* Thoda chhota hoga */
             box-shadow: 0 5px 15px rgba(255, 65, 108, 0.2);
         }
-
-
-
-
-
-
-
-
 
         /* --- MODERN PRELOADER CSS --- */
         #preloader {
@@ -1784,8 +1692,6 @@
             }
         }
 
-
-
         /* Decoration */
         .bday-header-deco {
             height: 65px;
@@ -1854,10 +1760,6 @@
             display: block;
             font-weight: 500;
         }
-
-
-
-
 
         /* --- DEVELOPER BADGE CSS --- */
         .developer-credit-box {
@@ -1943,39 +1845,6 @@
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         /* --- PRINCIPAL SECTION STYLE --- */
 
         /* --- PRINCIPAL SECTION (Fully Responsive Fix) --- */
@@ -2039,7 +1908,6 @@
             border: 4px solid #fff;
         }
 
-
         /* Content Box (Right Side) */
         .principal-content {
             width: 65%;
@@ -2086,7 +1954,6 @@
             /* Boldness bani rahegi */
         }
 
-
         /* --- MOBILE RESPONSIVE (Phone Layout) --- */
         @media (max-width: 768px) {
             .principal-container {
@@ -2126,10 +1993,6 @@
             }
         }
 
-
-
-
-
         /* --- 🎓 MODERN ALUMNI SUCCESS WALL --- */
         .alumni-section {
             padding: 50px 20px;
@@ -2139,7 +2002,6 @@
             text-align: center;
         }
 
-
         /* --- ALUMNI TITLE FIX (Responsive One-Liner) --- */
         #alumni-section .section-title-box h2 {
             /* 1. Magic Line: Font size screen ke hisab se apne aap adjust hoga */
@@ -2147,7 +2009,6 @@
             font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
 
             /* 2. Zabardasti Ek Line mein rakhega */
-
 
             /* 3. Agar screen bahut hi chhoti ho to text katega nahi, '...' dikhayega */
             overflow: hidden;
@@ -2160,12 +2021,6 @@
             padding: 0 5px;
             box-sizing: border-box;
         }
-
-
-
-
-
-
 
         /* Container for Grid */
         .alumni-grid-wrapper {
@@ -2221,7 +2076,6 @@
             text-align: center;
         }
 
-
         /* Card Top Design (Blue Header) */
         .alumni-card-header {
             width: 100%;
@@ -2247,7 +2101,6 @@
 
         /* Photo Styling */
         /* --- FIXED ALUMNI PHOTO STYLE --- */
-
 
         /* --- FIXED ALUMNI PHOTO STYLE --- */
         .alumni-photo-box {
@@ -2285,16 +2138,6 @@
             /* Chehre par focus rakhna */
             object-position: top center;
         }
-
-
-
-
-
-
-
-
-
-
 
         /* Content Styling */
         .alumni-info {
@@ -2368,8 +2211,6 @@
             }
         }
 
-
-
         /* --- DESKTOP NAVBAR FIX --- */
         /* Mobile par in naye links ko chhupa kar rakho */
         .desktop-nav {
@@ -2439,7 +2280,6 @@
                     inset 0 2px 3px rgba(255, 255, 255, 0.9);
             }
 
-
             /* --- DRAG TO SCROLL CURSOR --- */
             .toppers-scroll-container,
             .birthday-scroll-container,
@@ -2455,13 +2295,6 @@
                 /* Click karne par closed hand dikhega */
             }
         }
-
-
-
-
-
-
-
 
         /* ========================================== */
         /* --- ABOUT US, VISION & MISSION CSS --- */
@@ -2649,12 +2482,6 @@
             }
         }
 
-
-
-
-
-
-
         /* ========================================== */
         /* --- CORE VALUES CSS --- */
         /* ========================================== */
@@ -2766,9 +2593,6 @@
             }
         }
 
-
-
-
         /* --- WHY CHOOSE US DESKTOP CENTER FIX --- */
         @media (min-width: 769px) {
             .features-scroll {
@@ -2856,10 +2680,6 @@
             </div>
         </div>
 
-
-
-
-
         <!-- ══ UPCOMING EVENTS SECTION ══ -->
         <section id="events-section" style="display:none;">
             <div class="section-title-box">
@@ -2868,7 +2688,6 @@
             </div>
             <div id="events-display" class="events-scroll-container fade-up"></div>
         </section>
-
 
         <div class="section-title fade-up">Quick Actions</div>
 
@@ -2892,8 +2711,6 @@
             </a>
         </div>
 
-
-
         <section id="birthday-section" class="birthday-section" style="display:none;">
             <div class="section-title-box">
                 <h2
@@ -2908,15 +2725,6 @@
             </div>
         </section>
 
-
-
-
-
-
-
-
-
-
         <section id="toppers-section" class="toppers-section" style="display:none;">
             <div class="section-title-box">
                 <h2 style="color:#1a73e8; margin-bottom:5px;">🌟 School Toppers🎖️</h2>
@@ -2927,11 +2735,6 @@
 
             </div>
         </section>
-
-
-
-
-
 
         <!-- Director Section — same design, teal left border -->
         <div id="director-section" style="display: none; margin-top: 25px;">
@@ -2956,11 +2759,6 @@
             </div>
         </div>
 
-
-
-
-
-
         <div id="principal-section" style="display: none; margin-top: 40px;">
             <div class="principal-container fade-up">
 
@@ -2980,18 +2778,6 @@
                 </div>
             </div>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
 
         <section id="about-section" class="about-vision-section">
             <div class="container fade-up">
@@ -3058,12 +2844,6 @@
             </div>
         </section>
 
-
-
-
-
-
-
         <section id="core-values-section" class="core-values-section">
             <div class="container fade-up">
 
@@ -3118,28 +2898,6 @@
             </div>
         </section>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <section id="alumni-section" class="alumni-section" style="display: none;">
             <div class="section-title-box">
                 <h2
@@ -3156,27 +2914,6 @@
 
             </div>
         </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="section-title fade-up">Why Choose Us?</div>
 
@@ -3242,8 +2979,6 @@
             <p class="developer-credit">Developed with ❤️ for Education</p>
         </div>
 
-
-
         <div class="developer-credit-box">
 
             <div class="dev-intro">Designed & Developed by</div>
@@ -3262,17 +2997,6 @@
             </a>
 
         </div>
-
-
-
-
-
-
-
-
-
-
-
 
     </footer>
 
@@ -3342,8 +3066,6 @@
 
     </script>
 
-
-
     <div class="bottom-nav">
         <a href="index.html" class="nav-btn active" aria-label="Home">
             <i class="fas fa-home"></i>
@@ -3379,7 +3101,6 @@
         .bottom-nav.hidden-nav {
             transform: translate(-50%, 150%);
         }
-
 
         /* --- BOTTOM NAV PREMIUM DOT --- */
         .nav-btn {
@@ -3426,10 +3147,6 @@
             }
         }
 
-
-
-
-
         /* --- SAFE SCROLL REVEAL ANIMATIONS --- */
         /* 1. Static items ke liye (Niche se upar) */
         .fade-up {
@@ -3456,7 +3173,6 @@
         }
     </style>
 
-
     <script>
         // YAHAN PASTE KARNA HAI (Bina quotes ke)
         function toggleMenu() {
@@ -3476,9 +3192,6 @@
             }
         }
     </script>
-
-
-
 
     <div class="sidebar-overlay" onclick="toggleMenu()"></div>
 
@@ -3502,8 +3215,6 @@
             <li><a href="admin-login.html" style="color: #d32f2f;" aria-label="Admin Login"><i class="fas fa-lock"></i>
                     Admin, Teachers<br> and Parents Login</a></li>
 
-
-
         </ul>
 
         <div style="margin-top: auto; font-size: 12px; color: #555; text-align: center;">
@@ -3511,10 +3222,6 @@
             St. Teresa English School<br>App v1.0
         </div>
     </div>
-
-
-
-
 
     <script>
         // --- PRELOADER REMOVAL SCRIPT ---
@@ -3537,22 +3244,12 @@
 
             try {
                 // --- FIREBASE CONFIGURATION ---
-                const firebaseConfig = {
-                    apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-                    authDomain: "sample-school-13ca4.firebaseapp.com",
-                    projectId: "sample-school-13ca4",
-                    storageBucket: "sample-school-13ca4.firebasestorage.app",
-                    messagingSenderId: "198448853287",
-                    appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-                };
-
 
                 // 2. Check if Firebase is loaded properly
                 if (typeof firebase !== 'undefined') {
                     if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
+
                     }
-                    const db = firebase.firestore();
 
                     // 3. NOTICE UPDATE
                     db.collection('settings').doc('flash_notice').onSnapshot(doc => {
@@ -3631,15 +3328,12 @@
             }
         });
 
-
-
         // --- FETCH TOPPERS SCRIPT (Smart Visibility) ---
         // --- FETCH TOPPERS & AUTO SCROLL SCRIPT ---
 
-
         // --- ULTIMATE GOLD CAROUSEL SCRIPT ---
         document.addEventListener('DOMContentLoaded', function () {
-            const db = firebase.firestore();
+
             const section = document.getElementById('toppers-section');
             const container = document.getElementById('toppers-display');
             let scrollInterval;
@@ -3668,18 +3362,18 @@
                         const card = `
                         <div class="topper-card">
                             <div class="card-header-curve"></div>
-                            
+
                             <div class="topper-img-box">
                                 <img src="${photo}" alt="${data.name}" class="topper-img">
                                 <div class="rank-badge">
                                     <i class="fas fa-crown"></i> ${rankText}
                                 </div>
                             </div>
-                            
+
                             <h4 class="topper-name">${data.name}</h4>
                             <div class="class-pill">${data.class} ${secText}</div>
                             <span class="roll-text">${rollText}</span>
-                            
+
                             <div>
                                 <span class="percent-val">${data.percentage}<span class="percent-sym">%</span></span>
                             </div>
@@ -3727,34 +3421,15 @@
                 }, 3000); // 3 Second Speed
             }
 
-
             container.addEventListener('mouseenter', () => { isHovering = true; });
             container.addEventListener('mouseleave', () => { isHovering = false; });
             container.addEventListener('touchstart', () => { isHovering = true; });
             container.addEventListener('touchend', () => { setTimeout(() => isHovering = false, 2000); });
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // --- LOAD UPCOMING EVENTS ---
         document.addEventListener('DOMContentLoaded', function () {
-            const db = firebase.firestore();
+
             const section = document.getElementById('events-section');
             const container = document.getElementById('events-display');
 
@@ -3827,11 +3502,9 @@
                 .catch(() => { section.style.display = 'none'; });
         });
 
-
         // --- LOAD PRINCIPAL MESSAGE ---
         // --- LOAD PRINCIPAL MESSAGE (Final Logic) ---
         document.addEventListener('DOMContentLoaded', function () {
-            const db = firebase.firestore();
 
             // Load Principal
             db.collection('settings').doc('principal').get().then(doc => {
@@ -3862,20 +3535,11 @@
             });
         });
 
-
-
-
-
-
-
-
-
-
         // --- FETCH ALUMNI SCRIPT (MODERN GRID) ---
 
         // --- FETCH ALUMNI SCRIPT (AUTO SCROLL & CENTER) ---
         document.addEventListener('DOMContentLoaded', function () {
-            const db = firebase.firestore();
+
             const section = document.getElementById('alumni-section');
             const container = document.getElementById('alumni-display');
             let alumniScrollInterval;
@@ -3896,7 +3560,7 @@
                         <div class="alumni-card-header">
                             <div class="batch-badge"><i class="fas fa-graduation-cap"></i> ${data.batch}</div>
                         </div>
-                        
+
                         <div class="alumni-photo-box">
                             <img src="${photo}" alt="${data.name}" class="alumni-photo">
                         </div>
@@ -3905,7 +3569,7 @@
                             <h3 class="alumni-name">${data.name}</h3>
                             <span class="alumni-role">${data.job}</span>
                             <div class="alumni-divider"></div>
-                            
+
                             <div style="font-size:11px; color:#28a745; margin-top:5px;">
                                 <i class="fas fa-check-circle"></i> Success Story
                             </div>
@@ -3956,28 +3620,12 @@
                 }, 3000);
             }
 
-
             // User touch kare to scroll rok do
             container.addEventListener('touchstart', () => { isAlumniHovering = true; });
             container.addEventListener('touchend', () => { setTimeout(() => isAlumniHovering = false, 3000); });
             container.addEventListener('mouseenter', () => { isAlumniHovering = true; });
             container.addEventListener('mouseleave', () => { isAlumniHovering = false; });
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         // --- 🎂 ULTIMATE BIRTHDAY CELEBRATION SCRIPT ---
         // --- 🎂 SECURE AUTO-BIRTHDAY SCRIPT (WITH FULL ANIMATIONS & SCROLLING) ---
@@ -3989,7 +3637,6 @@
                 document.head.appendChild(script);
             }
 
-            const db = firebase.firestore();
             const section = document.getElementById('birthday-section');
             const container = document.getElementById('birthday-display');
 
@@ -4077,7 +3724,6 @@
                 }, 3000); // 3 Second Speed
             }
 
-
             // Hover & Touch event taaki scroll ruk jaye jab koi padh raha ho
             container.addEventListener('mouseenter', () => { isBdayHovering = true; });
             container.addEventListener('mouseleave', () => { isBdayHovering = false; });
@@ -4131,9 +3777,6 @@
             }, 400);
         }
 
-
-
-
         // --- SAFE SCROLL OBSERVER ---
         document.addEventListener("DOMContentLoaded", function () {
             const observer = new IntersectionObserver((entries, obs) => {
@@ -4151,13 +3794,6 @@
             // Sirf unhi ko animate karega jisme fade-up class hai
             document.querySelectorAll(".fade-up").forEach(el => observer.observe(el));
         });
-
-
-
-
-
-
-
 
         // --- DESKTOP DRAG-TO-SCROLL FEATURE ---
         document.addEventListener('DOMContentLoaded', function () {
@@ -4201,14 +3837,6 @@
             });
         });
 
-
-
-
-
-
-
-
-
         // --- SMART BOTTOM NAV (HIDE ON SCROLL DOWN) ---
         document.addEventListener('DOMContentLoaded', function () {
             let lastScrollTop = 0;
@@ -4231,19 +3859,7 @@
             }, { passive: true });
         });
 
-
-
-
-
-
-
-
     </script>
-
-
-
-
-
 
     <a href="check-status.html" class="status-float-btn">
         <i class="fas fa-search-location"></i>Check status
@@ -4291,7 +3907,6 @@
                 inset 0 2px 5px rgba(255, 255, 255, 0.9);
         }
 
-
         @keyframes float {
 
             0%,
@@ -4323,8 +3938,6 @@
             }
         }
     </style>
-
-
 
     <audio id="bdayAudio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
 

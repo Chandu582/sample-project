@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Manager | Pro Admin</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,7 +19,7 @@
         :root { --primary: #2563eb; --primary-dark: #1e40af; --bg: #f1f5f9; --card-bg: #ffffff; --text-main: #1e293b; --text-light: #64748b; --border: #e2e8f0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        
+
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-header h1 { font-size: 24px; font-weight: 700; margin: 0; }
         .back-btn { text-decoration: none; color: var(--text-light); font-weight: 500; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
@@ -38,7 +38,7 @@
         .form-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-light); }
         .input-box { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: #f8fafc; box-sizing: border-box; transition: 0.2s; }
         .input-box:focus { outline: none; border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        
+
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
         .upload-zone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; background: #f8fafc; position: relative; transition: 0.2s; }
@@ -81,21 +81,21 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-card { background: white; width: 90%; max-width: 400px; border-radius: 20px; overflow: hidden; position: relative; animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
+
         .p-header { background: linear-gradient(135deg, #2563eb, #1e40af); padding: 30px 20px; text-align: center; color: white; position: relative; }
         .p-close { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; }
         .p-img { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .p-name { font-size: 22px; font-weight: 700; margin: 0; }
         .p-role { font-size: 13px; opacity: 0.9; margin-top: 5px; }
-        
+
         .p-body { padding: 20px; }
         .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .p-item { font-size: 12px; color: #64748b; }
         .p-item strong { display: block; color: #1e293b; font-size: 13px; margin-bottom: 2px; }
-        
+
         .p-section { background: #f8fafc; border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
         .p-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; display: block; }
-        
+
         .action-row { display: flex; gap: 10px; margin-top: 20px; }
         .act-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; text-decoration: none; transition: 0.2s; }
         .act-call { background: #dcfce7; color: #166534; }
@@ -138,9 +138,9 @@
             <div class="card">
                 <div class="card-title"><i class="fas fa-user-edit"></i><span>Staff Details Form</span></div>
                 <input type="hidden" id="editId">
-                
+
                 <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="sName" class="input-box" placeholder="e.g. Mr. Chandu" oninput="updatePreview()"></div>
-                
+
                 <div class="form-group" style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px;">
                     <div><label class="form-label">Mobile No. (10 Digits)</label><input type="number" id="sMobile" class="input-box" placeholder="9693776982" oninput="if(this.value.length>10) this.value=this.value.slice(0,10); updatePreview()"></div>
                     <div>
@@ -302,17 +302,7 @@
     <div id="toast">Saved!</div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
         const cloudName = "dngejhffd", uploadPreset = "school_gallery";
 
         let allStaff = [];
@@ -335,7 +325,7 @@
             document.getElementById('live-qual').innerText = document.getElementById('sQual').value || "Qualification";
             document.getElementById('live-mob').innerText = document.getElementById('sMobile').value || "--";
             document.getElementById('live-gen').innerText = document.getElementById('sGender').value || "--";
-            
+
             const addr = document.getElementById('sAddr').value;
             const vill = document.getElementById('sVillage').value;
             const pin = document.getElementById('sPin').value;
@@ -368,7 +358,6 @@
             });
         }
 
-
         function filterStaff() {
             const query = document.getElementById('searchBox').value.toLowerCase();
             const role = document.getElementById('filterRole').value;
@@ -385,7 +374,7 @@
         function renderList(data) {
             document.getElementById('staffCount').innerText = data.length;
             if(data.length === 0) { document.getElementById('staffContainer').innerHTML = "<p>No records found.</p>"; return; }
-            
+
             let html = "";
             data.forEach(d => {
                 html += `
@@ -427,7 +416,7 @@
                 let bankInfo = "";
                 if(s.paymentMode === 'UPI') bankInfo = `UPI: ${s.bankDetails?.upiId || ''}`;
                 else if(s.paymentMode === 'Bank') bankInfo = `Acc: ${s.bankDetails?.accNo}, IFSC: ${s.bankDetails?.ifsc}`;
-                
+
                 rows.push([
                     s.name, s.role, s.mobile, s.gender, s.dob, s.aadhar, s.qualification,
                     s.address, s.village, s.pincode, s.paymentMode, bankInfo
@@ -435,7 +424,7 @@
             });
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
-            
+
             // Style Header
             const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "2563EB" } } };
             for(let c=0; c<rows[0].length; c++) {
@@ -443,7 +432,7 @@
                 if(!ws[cellRef]) continue;
                 ws[cellRef].s = headerStyle;
             }
-            
+
             // Auto Width
             const wscols = rows[0].map((_, i) => ({ wch: 20 }));
             ws['!cols'] = wscols;
@@ -459,7 +448,7 @@
             const btn = document.getElementById('saveBtn');
             const name = document.getElementById('sName').value;
             const mobile = document.getElementById('sMobile').value;
-            
+
             if(!name || !mobile) return showToast("Name and Mobile Required!", true);
             if(mobile.length !== 10) return showToast("Mobile must be 10 digits!", true);
 
@@ -467,7 +456,7 @@
 
             let photoUrl = document.getElementById('live-img').src; 
             const file = document.getElementById('sPhoto').files[0];
-            
+
             if(file) {
                 const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', uploadPreset);
                 try {
@@ -534,7 +523,7 @@
             document.getElementById('p-dob').innerText = data.dob || "--";
             document.getElementById('p-aadhar').innerText = data.aadhar || "--";
             document.getElementById('p-addr').innerText = [data.address, data.village, data.pincode].filter(Boolean).join(", ") || "--";
-            
+
             const payBtn = document.getElementById('btn-pay');
             const bankInfo = document.getElementById('p-bank-info');
             payBtn.style.display = 'none';
@@ -571,9 +560,7 @@
             x.style.backgroundColor = isError ? "#ef4444" : "#10b981"; 
             x.className = "show"; setTimeout(()=>{ x.className = x.className.replace("show", ""); }, 3000); 
         }
-        
-        
-        
+
         // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -583,9 +570,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 fetchStaff(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -595,13 +582,6 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
-        
-        
-        
-        
-        
-        
-        
     </script>
 </body>
 </html>

@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <script src="config.js"></script>
     <script>
-        if (sessionStorage.getItem("isLoggedIn") !== "true") {
-            window.location.href = "admin-login.html";
-        }
+    if (sessionStorage.getItem("isLoggedIn") !== "true") {
+        window.location.href = "admin-login.html";
+    }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,184 +14,97 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: #f3f4f6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        body { font-family: 'Outfit', sans-serif; background: #f3f4f6; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
 
         .header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
+            background: white; padding: 20px; border-radius: 15px; 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px;
         }
-
-        .header h2 {
-            margin: 0;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .back-btn {
-            text-decoration: none;
-            color: #64748b;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .back-btn:hover {
-            color: #1a73e8;
-        }
+        .header h2 { margin: 0; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+        .back-btn { text-decoration: none; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+        .back-btn:hover { color: #1a73e8; }
 
         .grid-menu {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;
         }
 
         .menu-card {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            text-align: center;
-            text-decoration: none;
-            color: #333;
-            transition: all 0.3s ease;
-            border: 1px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
+            background: white; padding: 30px; border-radius: 16px; text-align: center;
+            text-decoration: none; color: #333; transition: all 0.3s ease;
+            border: 1px solid #e2e8f0; position: relative; overflow: hidden;
         }
 
-        .menu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        .menu-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             border-color: #1a73e8;
         }
 
         .icon-box {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 15px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
+            width: 70px; height: 70px; margin: 0 auto 15px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 30px;
         }
 
         /* Colors for different cards */
-        .card-1 .icon-box {
-            background: #e0f2fe;
-            color: #0284c7;
-        }
+        .card-1 .icon-box { background: #e0f2fe; color: #0284c7; } /* Toppers - Blue */
+        .card-2 .icon-box { background: #fef3c7; color: #d97706; } /* Leadership - Orange */
+        .card-3 .icon-box { background: #dcfce7; color: #16a34a; } /* Alumni - Green */
+        .card-4 .icon-box { background: #ede9fe; color: #7c3aed; } /* Events - Purple */
 
-        /* Toppers - Blue */
-        .card-2 .icon-box {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        /* Leadership - Orange */
-        .card-3 .icon-box {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        /* Alumni - Green */
-
-        .menu-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #1e293b;
-        }
-
-        .menu-desc {
-            font-size: 13px;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.4;
-        }
+        .menu-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; color: #1e293b; }
+        .menu-desc { font-size: 13px; color: #64748b; margin: 0; line-height: 1.4; }
 
         .arrow-icon {
-            margin-top: 20px;
-            color: #cbd5e1;
-            font-size: 18px;
-            transition: 0.3s;
+            margin-top: 20px; color: #cbd5e1; font-size: 18px; transition: 0.3s;
         }
+        .menu-card:hover .arrow-icon { color: #1a73e8; transform: translateX(5px); }
 
-        .menu-card:hover .arrow-icon {
-            color: #1a73e8;
-            transform: translateX(5px);
-        }
     </style>
 </head>
-
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <div class="header">
-            <h2><i class="fas fa-globe" style="color: #4f46e5;"></i> Website Content Manager</h2>
-            <a href="admin-students.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        </div>
+    <div class="header">
+        <h2><i class="fas fa-globe" style="color: #4f46e5;"></i> Website Content Manager</h2>
+        <a href="admin-students.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
 
-        <div class="grid-menu">
+    <div class="grid-menu">
 
-            <a href="admin-school-topper.html" class="menu-card card-1">
-                <div class="icon-box"><i class="fas fa-trophy"></i></div>
-                <div class="menu-title">School Toppers</div>
-                <p class="menu-desc">Manage board exam toppers list and ranks.</p>
-                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
-            </a>
+        <a href="admin-school-topper.html" class="menu-card card-1">
+            <div class="icon-box"><i class="fas fa-trophy"></i></div>
+            <div class="menu-title">School Toppers</div>
+            <p class="menu-desc">Manage board exam toppers list and ranks.</p>
+            <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+        </a>
 
-            <a href="admin-principal.html" class="menu-card card-2">
-                <div class="icon-box"><i class="fas fa-chalkboard-teacher"></i></div>
-                <div class="menu-title">Leadership Messages</div>
-                <p class="menu-desc">Update Principal's &amp; Director's photo, name and message.</p>
-                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
-            </a>
+        <a href="admin-principal.html" class="menu-card card-2">
+            <div class="icon-box"><i class="fas fa-user-tie"></i></div>
+            <div class="menu-title">Principal's Desk</div>
+            <p class="menu-desc">Update Principal's photo, name and message.</p>
+            <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+        </a>
 
-            <a href="admin-alumni.html" class="menu-card card-3">
-                <div class="icon-box"><i class="fas fa-user-graduate"></i></div>
-                <div class="menu-title">Success Stories</div>
-                <p class="menu-desc">Add successful alumni details and jobs.</p>
-                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
-            </a>
+        <a href="admin-alumni.html" class="menu-card card-3">
+            <div class="icon-box"><i class="fas fa-user-graduate"></i></div>
+            <div class="menu-title">Success Stories</div>
+            <p class="menu-desc">Add successful alumni details and jobs.</p>
+            <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+        </a>
 
-        </div>
+        <a href="admin-events.html" class="menu-card card-4">
+            <div class="icon-box"><i class="fas fa-calendar-alt"></i></div>
+            <div class="menu-title">School Events</div>
+            <p class="menu-desc">Add upcoming events, exams, holidays & functions.</p>
+            <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+        </a>
 
     </div>
 
-</body>
-
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sample project </title>
-</head>
-
-<body>
+</div>
 
 </body>
-
 </html>

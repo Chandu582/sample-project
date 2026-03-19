@@ -1,0 +1,411 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Events</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7f6;
+            background-image: radial-gradient(rgba(26,115,232,0.06) 1px, transparent 1px);
+            background-size: 25px 25px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .admin-box {
+            max-width: 780px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        /* ── TOP BANNER ── */
+        .box-header {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            padding: 25px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .box-header::after {
+            content: ''; position: absolute; right: -40px; top: -40px;
+            width: 160px; height: 160px; border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+        }
+        .box-header::before {
+            content: ''; position: absolute; right: 80px; bottom: -50px;
+            width: 100px; height: 100px; border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .back-link {
+            color: rgba(255,255,255,0.75); text-decoration: none;
+            font-size: 13px; display: inline-flex; align-items: center;
+            gap: 6px; margin-bottom: 12px; transition: 0.2s; position: relative; z-index: 2;
+        }
+        .back-link:hover { color: white; }
+        .box-header h2 {
+            color: white; font-size: 22px; font-weight: 700;
+            display: flex; align-items: center; gap: 10px; position: relative; z-index: 2;
+        }
+        .box-header p { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 4px; position: relative; z-index: 2; }
+
+        /* ── FORM AREA ── */
+        .form-body { padding: 30px; border-bottom: 1px solid #f1f5f9; }
+        .form-body h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .form-body h3 i { color: #1a73e8; }
+
+        .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        @media (max-width: 580px) { .fields-row { grid-template-columns: 1fr; } }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 7px;
+        }
+        .form-input {
+            width: 100%; padding: 11px 14px;
+            border: 1.5px solid #e2e8f0; border-radius: 10px;
+            font-family: 'Poppins', sans-serif; font-size: 14px; color: #1e293b;
+            background: #fafbfd; transition: 0.2s; outline: none;
+        }
+        .form-input:focus { border-color: #1a73e8; background: white; box-shadow: 0 0 0 4px rgba(26,115,232,0.08); }
+        textarea.form-input { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+        /* Category pills */
+        .category-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .cat-pill {
+            padding: 7px 15px; border-radius: 30px; border: 1.5px solid #e2e8f0;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            background: white; color: #64748b; font-family: 'Poppins', sans-serif;
+        }
+        .cat-pill:hover { border-color: #1a73e8; color: #1a73e8; background: #eff6ff; }
+        .cat-pill.selected { color: white; border-color: transparent; }
+        .cat-pill[data-cat="Exam"].selected       { background: #ef4444; }
+        .cat-pill[data-cat="Holiday"].selected     { background: #f59e0b; }
+        .cat-pill[data-cat="Function"].selected    { background: #8b5cf6; }
+        .cat-pill[data-cat="Sports"].selected      { background: #10b981; }
+        .cat-pill[data-cat="Meeting"].selected     { background: #3b82f6; }
+        .cat-pill[data-cat="Other"].selected       { background: #64748b; }
+        input#catHidden { display: none; }
+
+        /* Save button */
+        .save-btn {
+            width: 100%; padding: 13px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white; font-family: 'Poppins', sans-serif; font-size: 15px;
+            font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(26,115,232,0.3);
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,115,232,0.4); }
+        .save-btn:disabled { background: #cbd5e1; box-shadow: none; transform: none; cursor: not-allowed; }
+
+        /* ── EVENT LIST ── */
+        .list-area { padding: 30px; }
+        .list-area h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .list-area h3 i { color: #1a73e8; }
+
+        #events-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .event-item {
+            background: #fafbfd; border: 1px solid #e2e8f0; border-radius: 14px;
+            padding: 16px 18px; display: flex; align-items: flex-start;
+            gap: 14px; transition: 0.2s;
+        }
+        .event-item:hover { border-color: #c7d7f5; box-shadow: 0 4px 15px rgba(26,115,232,0.06); }
+
+        .event-date-box {
+            flex-shrink: 0; width: 52px; height: 58px; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center;
+        }
+        .event-date-box .eday { font-size: 20px; font-weight: 800; line-height: 1; }
+        .event-date-box .emon { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+        .event-info { flex: 1; min-width: 0; }
+        .event-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 3px; }
+        .event-meta { font-size: 12px; color: #64748b; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
+        .event-meta i { color: #94a3b8; margin-right: 3px; }
+        .event-desc { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+
+        .cat-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; color: white; margin-bottom: 5px;
+        }
+
+        .del-btn {
+            flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px;
+            background: #fff1f2; border: 1px solid #fecdd3; color: #ef4444;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; transition: 0.2s;
+        }
+        .del-btn:hover { background: #ef4444; color: white; border-color: #ef4444; }
+
+        .empty-msg {
+            text-align: center; padding: 40px 20px; color: #94a3b8;
+        }
+        .empty-msg i { font-size: 40px; margin-bottom: 10px; display: block; opacity: 0.4; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 25px; left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e293b; color: white; padding: 12px 22px;
+            border-radius: 12px; font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+            z-index: 9999; opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2); white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.success { background: linear-gradient(135deg, #16a34a, #15803d); }
+        .toast.error   { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+
+        /* Past event indicator */
+        .event-item.past { opacity: 0.55; }
+        .past-tag {
+            font-size: 10px; background: #f1f5f9; color: #94a3b8;
+            padding: 2px 8px; border-radius: 10px; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-box">
+
+    <!-- Header -->
+    <div class="box-header">
+        <a href="admin-website-content.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Content Manager</a>
+        <h2><i class="fas fa-calendar-alt"></i> Manage School Events</h2>
+        <p>Add upcoming events, holidays, exams &amp; functions</p>
+    </div>
+
+    <!-- Add Event Form -->
+    <div class="form-body">
+        <h3><i class="fas fa-plus-circle"></i> Add New Event</h3>
+
+        <div class="form-group">
+            <label>Event Title *</label>
+            <input type="text" id="eTitle" class="form-input" placeholder="e.g. Annual Sports Day, Class 10 Board Exam">
+        </div>
+
+        <div class="fields-row">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Event Date *</label>
+                <input type="date" id="eDate" class="form-input">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Time (Optional)</label>
+                <input type="time" id="eTime" class="form-input">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:15px;">
+            <label>Category *</label>
+            <div class="category-group" id="catGroup">
+                <button type="button" class="cat-pill" data-cat="Exam">📝 Exam</button>
+                <button type="button" class="cat-pill" data-cat="Holiday">🎉 Holiday</button>
+                <button type="button" class="cat-pill" data-cat="Function">🎭 Function</button>
+                <button type="button" class="cat-pill" data-cat="Sports">🏆 Sports</button>
+                <button type="button" class="cat-pill" data-cat="Meeting">📋 Meeting</button>
+                <button type="button" class="cat-pill" data-cat="Other">📌 Other</button>
+            </div>
+            <input type="hidden" id="catHidden" value="">
+        </div>
+
+        <div class="form-group">
+            <label>Description (Optional)</label>
+            <textarea id="eDesc" class="form-input" placeholder="Add any extra details about this event..."></textarea>
+        </div>
+
+        <button onclick="saveEvent()" id="saveBtn" class="save-btn">
+            <i class="fas fa-plus-circle"></i> Add Event
+        </button>
+    </div>
+
+    <!-- Events List -->
+    <div class="list-area">
+        <h3><i class="fas fa-list-ul"></i> All Events</h3>
+        <div id="events-list">
+            <div class="empty-msg"><i class="fas fa-calendar-times"></i><p>Loading events...</p></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+    // ── Category color map ──
+    const catColors = {
+        Exam: '#ef4444', Holiday: '#f59e0b', Function: '#8b5cf6',
+        Sports: '#10b981', Meeting: '#3b82f6', Other: '#64748b'
+    };
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    // ── Set today as min date ──
+    document.getElementById('eDate').min = new Date().toISOString().split('T')[0];
+
+    // ── Category pill selection ──
+    document.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('catHidden').value = btn.dataset.cat;
+        });
+    });
+
+    // ── SAVE EVENT ──
+    async function saveEvent() {
+        const title    = document.getElementById('eTitle').value.trim();
+        const date     = document.getElementById('eDate').value;
+        const time     = document.getElementById('eTime').value;
+        const cat      = document.getElementById('catHidden').value;
+        const desc     = document.getElementById('eDesc').value.trim();
+        const btn      = document.getElementById('saveBtn');
+
+        if (!title)  { showToast('Event title is required!', 'error'); return; }
+        if (!date)   { showToast('Please select a date!', 'error'); return; }
+        if (!cat)    { showToast('Please select a category!', 'error'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        try {
+            // Store date as YYYY-MM-DD string for easy sorting & comparison
+            await db.collection('school_events').add({
+                title, date, time: time || '', category: cat,
+                description: desc,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            showToast('Event added successfully! ✓', 'success');
+
+            // Reset form
+            document.getElementById('eTitle').value = '';
+            document.getElementById('eDate').value = '';
+            document.getElementById('eTime').value = '';
+            document.getElementById('eDesc').value = '';
+            document.getElementById('catHidden').value = '';
+            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('selected'));
+
+            loadEvents();
+        } catch (e) {
+            console.error(e);
+            showToast('Error: ' + e.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Event';
+        }
+    }
+
+    // ── LOAD EVENTS ──
+    function loadEvents() {
+        const container = document.getElementById('events-list');
+        container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin" style="opacity:0.4;font-size:30px;"></i><p style="margin-top:10px;">Loading...</p></div>';
+
+        db.collection('school_events')
+            .orderBy('date', 'asc')
+            .get()
+            .then(snap => {
+                if (snap.empty) {
+                    container.innerHTML = '<div class="empty-msg"><i class="fas fa-calendar-times"></i><p>No events added yet. Add your first event above!</p></div>';
+                    return;
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+                container.innerHTML = '';
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const isPast = d.date < today;
+                    const dateObj = new Date(d.date + 'T00:00:00');
+                    const day   = dateObj.getDate();
+                    const month = monthNames[dateObj.getMonth()];
+                    const color = catColors[d.category] || '#64748b';
+
+                    // Format time nicely
+                    let timeStr = '';
+                    if (d.time) {
+                        const [h, m] = d.time.split(':');
+                        const hr = parseInt(h);
+                        timeStr = `${hr > 12 ? hr-12 : hr || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
+                    }
+
+                    container.innerHTML += `
+                        <div class="event-item ${isPast ? 'past' : ''}">
+                            <div class="event-date-box" style="background:${color};">
+                                <div class="eday">${day}</div>
+                                <div class="emon">${month}</div>
+                            </div>
+                            <div class="event-info">
+                                <div>
+                                    <span class="cat-badge" style="background:${color};">${d.category}</span>
+                                    ${isPast ? '<span class="past-tag">Past</span>' : ''}
+                                </div>
+                                <div class="event-title">${d.title}</div>
+                                <div class="event-meta">
+                                    <span><i class="fas fa-calendar"></i>${d.date}</span>
+                                    ${timeStr ? `<span><i class="fas fa-clock"></i>${timeStr}</span>` : ''}
+                                </div>
+                                ${d.description ? `<div class="event-desc">${d.description}</div>` : ''}
+                            </div>
+                            <button class="del-btn" onclick="deleteEvent('${doc.id}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>`;
+                });
+            });
+    }
+
+    // ── DELETE ──
+    function deleteEvent(id) {
+        if (!confirm('Delete this event? It will be removed from the website.')) return;
+        db.collection('school_events').doc(id).delete()
+            .then(() => { showToast('Event deleted.', 'error'); loadEvents(); })
+            .catch(e => showToast('Error: ' + e.message, 'error'));
+    }
+
+    // ── TOAST ──
+    function showToast(msg, type = '') {
+        const t = document.getElementById('toast');
+        const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+        t.innerHTML = `<span>${icon}</span> ${msg}`;
+        t.className = 'toast show ' + type;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    // ── SECURITY ──
+    firebase.auth().onAuthStateChanged((user) => {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+        const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+        if (user && isLoggedIn && userData.role === 'admin') {
+            db.collection('admins').doc(user.uid).get().then((doc) => {
+                if (doc.exists && doc.data().role === 'SuperAdmin') {
+                    loadEvents();
+                } else {
+                    auth.signOut().then(() => window.location.replace("admin-login.html"));
+                }
+            });
+        } else {
+            window.location.replace("admin-login.html");
+        }
+    });
+</script>
+</body>
+</html>

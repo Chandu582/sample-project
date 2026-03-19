@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admission List - Admin</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,9 +27,9 @@
         table { width: 100%; border-collapse: collapse; min-width: 1100px; }
         th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; }
         th { background: #f8f9fa; color: #555; text-transform: uppercase; font-size: 12px; }
-        
+
         .student-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; cursor: pointer; }
-        
+
         .badge { padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; }
         .status-Pending { background: #fff3cd; color: #856404; }
         .status-Approved { background: #d4edda; color: #155724; }
@@ -39,7 +39,7 @@
         .btn-approve { background: #16a34a; } .btn-approve:hover { background: #15803d; }
         .btn-reject { background: #f59e0b; } .btn-reject:hover { background: #d97706; }
         .btn-delete { background: #ef4444; } .btn-delete:hover { background: #dc2626; }
-        
+
         /* Disabled button style */
         .btn-action:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }
     </style>
@@ -74,17 +74,6 @@
     </div>
 
         <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let rawAdmissions = []; 
 
@@ -99,17 +88,17 @@
             // Asli test: Kya ye UID admins collection mein hai?
             db.collection('admins').doc(user.uid).get().then((doc) => {
                 if (doc.exists && doc.data().role === 'SuperAdmin') {
-                    
+
                     // 👉 ADMIN VERIFIED! Ab aapka original data load karne ka code chalega
                     db.collection('admissions').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
                         const tbody = document.getElementById('tableBody');
                         tbody.innerHTML = '';
                         rawAdmissions = [];
-                        
+
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             const id = doc.id;
-                            
+
                             const sName = data.name || data.studentName || 'N/A';
                             const sFather = data.fatherName || data.father || 'N/A';
                             const sPhone = data.mobile || data.parentPhone || 'N/A';
@@ -119,7 +108,7 @@
                             const photo = data.photoUrl || data.photo || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
                             const status = data.status || "Pending";
                             const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-                            
+
                             const linkedId = data.linkedStudentDocId || null;
 
                             rawAdmissions.push({ "ID": sAppId, "Date": date, "Name": sName, "Class": sClass, "Father": sFather, "Mobile": sPhone, "Status": status });
@@ -145,7 +134,7 @@
                             `;
                         });
                     });
-                    
+
                 } else {
                     // Agar login kiya hua hai par database mein admin nahi hai, toh bahar nikalo
                     firebase.auth().signOut().then(() => window.location.replace("admin-login.html"));
@@ -159,8 +148,6 @@
             window.location.replace("admin-login.html");
         }
     });
-
-
 
         // 1. APPROVE LOGIC
         async function handleApprove(docId, data) {
@@ -182,7 +169,7 @@
                 };
 
                 const studentRef = await db.collection('students').add(studentData);
-                
+
                 // Link ID save kar rahe hain
                 await db.collection('admissions').doc(docId).update({ 
                     status: 'Approved',
@@ -219,7 +206,7 @@
         async function deleteReq(admissionDocId) {
             // Sirf Admission request delete hogi
             if(!confirm("Delete this request history permanently?\n(Student data in Main List will remain SAFE)")) return;
-            
+
             // Hum sirf 'admissions' collection se delete kar rahe hain
             await db.collection('admissions').doc(admissionDocId).delete();
         }

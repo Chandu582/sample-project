@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bonafide Certificate | STES</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Great+Vibes&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,7 +22,7 @@
 
         /* --- ADMIN LAYOUT --- */
         .app-container { display: flex; width: 100%; height: 100%; }
-        
+
         .sidebar { width: 260px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px; z-index: 10; transition: 0.3s; }
         .nav-item { padding: 12px; color: #cbd5e1; text-decoration: none; display: block; border-radius: 6px; margin-bottom: 5px; font-family: sans-serif; font-size: 14px; }
         .nav-item.active, .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
@@ -81,11 +81,11 @@
         /* Space kam kiya taaki Center ko jagah mile */
         .header-left { width: 70px; display: flex; justify-content: flex-start; } 
         .header-right { width: 70px; } 
-        
+
         .header-center { flex: 1; text-align: center; }
 
         .logo { width: 70px; height: 70px; object-fit: contain; }
-        
+
         .s-name { 
             font-family: 'Cinzel', serif; 
             font-size: 28px; /* Thoda chhota kiya taaki fit ho */
@@ -109,7 +109,7 @@
         .photo-img { width: 100%; height: 100%; object-fit: cover; }
 
         .content { font-size: 17px; line-height: 2.2; text-align: justify; font-family: 'Merriweather', serif; flex-grow: 1; padding-top: 10px; }
-        
+
         .val { 
             font-weight: 900; color: #000; text-transform: uppercase; 
             border-bottom: 1px dotted #333; padding: 0 5px; display: inline-block;
@@ -177,7 +177,7 @@
                     <div class="input-group"><label>Issue Date</label><input type="date" id="issueDate" class="input-box"></div>
                     <div class="input-group"><label>Purpose</label>
     <input type="text" id="purpose" list="purposeList" class="input-box" placeholder="Select or Type Purpose">
-    
+
     <datalist id="purposeList">
         <option value="General Purpose">
         <option value="Opening Bank Account">
@@ -187,25 +187,21 @@
     </datalist>
 </div>
 
-
-
 <div class="input-group">
     <label>Additional Note / Remark</label>
     <input type="text" id="customNote" class="input-box" placeholder="Ex: Fee Paid, Character Good, etc.">
 </div>
 
-
-                    
                     <div class="input-group"><label>Session</label><input type="text" id="session" class="input-box" value="2025-2026"></div>
 
                     <div class="input-group"><label>Name</label><input type="text" id="sName" class="input-box"></div>
                     <div class="input-group"><label>Father's Name</label><input type="text" id="fName" class="input-box"></div>
                     <div class="input-group"><label>Mother's Name</label><input type="text" id="mName" class="input-box"></div>
-                    
+
                     <div class="input-group"><label>Admission No</label><input type="text" id="admNo" class="input-box"></div>
                     <div class="input-group"><label>Class</label><input type="text" id="class" class="input-box"></div>
                     <div class="input-group"><label>DOB (YYYY-MM-DD)</label><input type="date" id="dob" class="input-box"></div>
-                    
+
                     <div class="input-group"><label>Address</label><input type="text" id="address" class="input-box"></div>
                     <div class="input-group"><label>Aadhar No</label><input type="text" id="aadhar" class="input-box"></div>
                     <div class="input-group"><label>PEN No</label><input type="text" id="pen" class="input-box"></div>
@@ -252,7 +248,7 @@
         <div class="a4-sheet">
             <div class="border-fancy">
                 <div class="border-inner">
-                    
+
                     <img id="pWatermark" src="" class="watermark">
 
                     <div class="header-layout">
@@ -299,17 +295,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let students = [], school = {}, saveData = null;
 
@@ -323,9 +308,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 initBonafidePage(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -334,7 +319,6 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.replace("admin-login.html");
     }
 });
-
 
     // Humne window.onload ka naam change karke initBonafidePage kar diya hai
     async function initBonafidePage() {
@@ -357,12 +341,11 @@ firebase.auth().onAuthStateChanged((user) => {
             const snap = await db.collection('students').where('status','!=','Trash').get();
             students = snap.docs.map(d => ({id:d.id, ...d.data()}));
         } catch(e) { console.log("Student Load Error"); }
-        
+
         document.getElementById('issueDate').valueAsDate = new Date();
         loadHistory();
         generateNextRefNo(); 
     }
-
 
         async function generateNextRefNo() {
             try {
@@ -370,7 +353,7 @@ firebase.auth().onAuthStateChanged((user) => {
                 const snap = await db.collection('certRecords').orderBy('createdAt', 'desc').limit(20).get();
                 let nextNum = 1;
                 const lastBonafide = snap.docs.find(d => d.data().type === 'Bonafide');
-                
+
                 if(lastBonafide) {
                     const parts = lastBonafide.data().refNo.split('/');
                     if(parts.length === 3 && parts[1] == y) {
@@ -387,7 +370,7 @@ firebase.auth().onAuthStateChanged((user) => {
             const txt = document.getElementById('searchInp').value.toLowerCase();
             const cls = document.getElementById('filterClass').value;
             const res = document.getElementById('searchRes');
-            
+
             if(!txt && !cls) { res.style.display = 'none'; return; }
 
             const hits = students.filter(s => {
@@ -409,7 +392,7 @@ firebase.auth().onAuthStateChanged((user) => {
             document.getElementById('selName').innerText = s.name;
 
             const set = (k, v) => document.getElementById(k).value = v || "";
-            
+
             set('sName', s.name);
             set('fName', s.fatherName);
             set('mName', s.motherName);
@@ -420,8 +403,6 @@ firebase.auth().onAuthStateChanged((user) => {
             set('aadhar', s.aadhar);
             set('pen', s.pen);
             set('apaar', s.apaar);
-        
-    
 
             await generateNextRefNo();
         }
@@ -430,12 +411,12 @@ firebase.auth().onAuthStateChanged((user) => {
             try {
                 const val = (id) => document.getElementById(id).value;
                 const fmt = (d) => { if(!d) return ""; const x=new Date(d); return `${x.getDate()}-${x.toLocaleString('default',{month:'short'}).toUpperCase()}-${x.getFullYear()}`; };
-                
+
                 if(!val('sName')) { alert("Please select a student first!"); return; }
 
                 document.getElementById('pRef').innerText = val('refNo');
                 document.getElementById('pDate').innerText = fmt(val('issueDate'));
-                
+
                 const pUrl = val('photoUrl');
                 if(pUrl) {
                     document.getElementById('pPhoto').src = pUrl;
@@ -447,12 +428,12 @@ firebase.auth().onAuthStateChanged((user) => {
                 // --- 🔴 FIXED QR CODE LOGIC (Shortened & Limited) ---
                 // Address ko 25 characters tak cut kar diya taaki overflow na ho
                 const addrShort = (val('address') || "").substring(0, 25);
-                
+
                 // Labels ko single letter kar diya (N=Name, F=Father etc)
                 const qrStr = `N:${val('sName')}|ID:${val('admNo')}|F:${val('fName')}|M:${val('mName')}|D:${fmt(val('dob'))}|A:${addrShort}|I:${fmt(val('issueDate'))}|S:Valid|UD:${val('aadhar')}|P:${val('pen')}|AP:${val('apaar')}`;
-                
+
                 document.getElementById('qrCode').innerHTML = "";
-                
+
                 // CorrectLevel.L use kiya (sabse zyada capacity)
                 new QRCode(document.getElementById('qrCode'), { 
                     text: qrStr, 
@@ -485,8 +466,7 @@ firebase.auth().onAuthStateChanged((user) => {
                 if(purpose && purpose !== 'General Purpose') {
                     html += `<p style="margin-top:20px;"><b>Purpose:</b> This certificate is issued for the purpose of <span class="val">${purpose}</span>.</p>`;
                 }
-                
-                
+
                 // --- 🔴 START: YE PART ADD KAREIN ---
 const note = val('customNote');
 if(note) {
@@ -495,24 +475,16 @@ if(note) {
 }
 // --- 🔴 END: YE PART ADD KAREIN ---
 
-                
-                
-                
-                
-                
-                
-
                                 // IDs Block (Smart Hide - Vertical Layout)
                 let ids = "";
                 if(val('aadhar')) ids += `<div>Aadhar No: <b>${val('aadhar')}</b></div>`;
                 if(val('pen')) ids += `<div>PEN No: <b>${val('pen')}</b></div>`;
                 if(val('apaar')) ids += `<div>APAAR ID: <b>${val('apaar')}</b></div>`;
 
-                
                 if(ids) html += `<div class="id-list">${ids}</div>`;
 
                 document.getElementById('pBody').innerHTML = html;
-                
+
                 saveData = { 
                     type: 'Bonafide', refNo: val('refNo'), name: val('sName'), purpose: purpose,
                     issueDate: fmt(val('issueDate')), createdAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -535,7 +507,7 @@ if(note) {
     try {
         // 1. Pehle Save karein
         await db.collection('certRecords').add(saveData);
-        
+
         // 2. History update karein (Background me)
         loadHistory(); 
 
@@ -554,23 +526,10 @@ if(note) {
     }
 }
 
-
-
-        
-
-
-
-
-
-
-
-
-
         function toggleHistory() {
             const h = document.getElementById('histPanel');
             h.style.display = h.style.display === 'none' ? 'block' : 'none';
         }
-        
 
         // Is purane function ko hatakar ye naya code paste karein
         // 1. History Load karne ka updated function (Delete button ke saath)
@@ -585,13 +544,13 @@ async function loadHistory() {
         const html = snap.docs.map(d => {
             const x = d.data();
             const id = d.id; // Document ID delete karne ke liye chahiye
-            
+
             // Date format sahi karna
             let dateStr = x.issueDate || "";
             if(x.createdAt && !x.issueDate) {
                 dateStr = x.createdAt.toDate().toLocaleDateString('en-IN');
             }
-            
+
             return `
             <tr style="border-bottom:1px solid #eee;">
                 <td style="padding:8px;">${x.refNo}</td>
@@ -631,7 +590,6 @@ async function deleteCert(id) {
         }
     }
 }
-
 
     </script>
 </body>

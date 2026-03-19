@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,24 +6,25 @@
     <title>Admin - Manage Toppers</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f4f7f6; padding: 20px; }
         .admin-container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
+
         h2 { color: #1a73e8; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
-        
+
         /* --- LIVE SEARCH PANEL --- */
         .search-panel { 
             background: #fffbeb; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #fcd34d; 
             position: relative;
         }
         .search-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;}
-        
+
         input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 13px; }
         input:focus, select:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 5px rgba(26, 115, 232, 0.3); }
 
@@ -47,11 +48,11 @@
         /* FORM LAYOUT */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; font-size: 14px; }
-        
+
         /* IMAGE PREVIEW */
         .img-preview-box { text-align: center; margin: 15px 0; padding: 15px; border: 2px dashed #ccc; border-radius: 10px; background: #fafafa; }
         #preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; border: 3px solid #1a73e8; display: none; margin: 0 auto 10px; }
-        
+
         /* BUTTONS */
         .save-btn { width: 100%; padding: 12px; background: #2e7d32; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: 600; margin-top: 10px; }
         .save-btn:hover { background: #1b5e20; }
@@ -73,12 +74,12 @@
 
     <div class="search-panel">
         <h4 style="margin:0 0 10px 0; color:#d97706;"><i class="fas fa-search"></i> Search Student (Filter & Select)</h4>
-        
+
         <div class="search-row">
             <div style="flex: 2;">
                 <input type="text" id="sInput" placeholder="Name (e.g. Rohit) OR ID..." onkeyup="liveSearch()" autocomplete="off">
             </div>
-            
+
             <div style="flex: 1;">
                 <select id="sClass" onchange="liveSearch()">
                     <option value="">Class</option>
@@ -99,7 +100,7 @@
                     <option value="C">C</option><option value="D">D</option>
                 </select>
             </div>
-            
+
             <div style="flex: 1; max-width: 70px;">
                 <input type="number" id="sRoll" placeholder="Roll" onkeyup="liveSearch()">
             </div>
@@ -143,9 +144,9 @@
     <div class="img-preview-box">
         <label>Student Photo</label>
         <img id="preview-img" src="" alt="Preview">
-        
+
         <input type="hidden" id="fetchedPhotoUrl">
-        
+
         <input type="file" id="tPhotoFile" accept="image/*" onchange="previewFile(event)" style="display:block; margin:auto; width:auto; margin-top:10px;">
         <small style="color: #666; display:block; margin-top:5px;">(Fetched photo will auto-load. Upload new to override.)</small>
     </div>
@@ -162,17 +163,8 @@
 
 <script>
     // --- FIREBASE CONFIGURATION ---
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
 
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    if (!firebase.apps.length) 
 
     const cloudName = "dngejhffd"; 
     const uploadPreset = "school_gallery";
@@ -210,10 +202,10 @@
             query = query.where('class', '==', cls);
             useClientFiltering = true; // Baaki filtering hum JS se karenge
         }
-        
+
         // Agar Section hai to query me jod do (Equality chaining is allowed)
         if (sec) query = query.where('section', '==', sec);
-        
+
         // Agar Roll hai to query me jod do
         if (roll) query = query.where('roll', '==', roll);
 
@@ -232,7 +224,7 @@
         // --- EXECUTE QUERY ---
         query.limit(20).get().then(snap => {
             box.innerHTML = '';
-            
+
             if (snap.empty) {
                 box.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">No student found</div>';
                 box.style.display = 'block';
@@ -242,14 +234,14 @@
             // --- RENDER RESULTS (With Client Side Filter if needed) ---
             snap.forEach(doc => {
                 const data = doc.data();
-                
+
                 // CLIENT SIDE FILTERING: Agar Class select ki thi, to ab Name check karo
                 // Ye Firestore ke "Index Required" error ko bypass karta hai
                 if (useClientFiltering && text) {
                     const searchStr = text.toUpperCase();
                     const nameMatch = data.name.toUpperCase().includes(searchStr);
                     const idMatch = (data.stesID || "").toUpperCase().includes(searchStr);
-                    
+
                     if (!nameMatch && !idMatch) return; // Skip if name doesn't match
                 }
 
@@ -271,12 +263,12 @@
                 `;
                 box.appendChild(div);
             });
-            
+
             // Check if client filtering hid all results
             if (box.children.length === 0) {
                  box.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">No matching name in this class</div>';
             }
-            
+
             box.style.display = 'block';
 
         }).catch(err => {
@@ -292,11 +284,11 @@
         document.getElementById('tClass').value = data.class;
         document.getElementById('tSection').value = data.section || 'A';
         document.getElementById('tRoll').value = data.roll || '';
-        
+
         // Handle Photo
         const img = document.getElementById('preview-img');
         const hiddenUrl = document.getElementById('fetchedPhotoUrl');
-        
+
         if(data.photo) {
             img.src = data.photo;
             img.style.display = 'block';
@@ -339,7 +331,7 @@
         const roll = document.getElementById('tRoll').value;
         const percent = document.getElementById('tPercent').value;
         const rank = document.getElementById('tRank').value;
-        
+
         const fileInput = document.getElementById('tPhotoFile');
         const fetchedUrl = document.getElementById('fetchedPhotoUrl').value;
         const btn = document.getElementById('saveBtn');
@@ -396,13 +388,13 @@
     // --- 6. LOAD EXISTING TOPPERS ---
     function loadToppers() {
         const listDiv = document.getElementById('existing-list');
-        
+
         db.collection('school_toppers').orderBy('timestamp', 'desc').get().then((snap) => {
             if(snap.empty) {
                 listDiv.innerHTML = "<p style='text-align:center'>No toppers added yet.</p>";
                 return;
             }
-            
+
             listDiv.innerHTML = '';
             snap.forEach(doc => {
                 const data = doc.data();
@@ -433,10 +425,6 @@
         }
     }
 
-    
-    
-        
-        
         // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -446,9 +434,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 loadToppers(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -457,13 +445,6 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.replace("admin-login.html");
     }
 });
-
-    
-    
-    
-    
-    
-    
 
 </script>
 

@@ -1,18 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
-
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STES Master Media Gallery</title>
-    
-    
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,7 +28,7 @@
         /* Modern Upload Section */
         .upload-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); border: 2.5px dashed var(--primary); text-align: center; margin-bottom: 30px; }
         .upload-inputs { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 20px; align-items: center; }
-        
+
         input[type="text"], select { padding: 12px 15px; border: 1.5px solid #eee; border-radius: 12px; outline: none; width: 200px; font-family: inherit; transition: 0.3s; }
         input[type="text"]:focus, select:focus { border-color: var(--primary); }
 
@@ -50,16 +47,16 @@
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px; }
         .media-card { position: relative; height: 180px; border-radius: 15px; overflow: hidden; background: #eee; cursor: pointer; transition: 0.4s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid transparent; }
         .media-card:hover { transform: scale(1.04) translateY(-5px); z-index: 2; }
-        
+
         /* NEW: Selection Style */
         .media-card.selected { border-color: var(--primary); box-shadow: 0 0 15px rgba(26, 115, 232, 0.4); }
         .select-checkbox { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; z-index: 15; accent-color: var(--primary); cursor: pointer; }
 
         .media-card img, .media-card video { width: 100%; height: 100%; object-fit: cover; }
-        
+
         .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 35px; opacity: 0.8; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .media-tag { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: white; padding: 3px 10px; border-radius: 15px; font-size: 10px; font-weight: 600; }
-        
+
         .delete-btn { position: absolute; top: 10px; right: 10px; background: rgba(211, 47, 47, 0.9); color: white; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; opacity: 0; transition: 0.3s; z-index: 10; }
         .media-card:hover .delete-btn { opacity: 1; }
 
@@ -104,7 +101,7 @@
             <span id="fileStatus" style="font-size:12px; color:#666; font-weight:600;">No files picked</span>
 
             <input type="text" id="mediaTitle" placeholder="Event Title (Optional)">
-            
+
             <select id="catSelect">
                 <option value="General">Category: General</option>
                 <option value="Events">Category: Events</option>
@@ -151,17 +148,7 @@
 
 <script>
     // Firebase Config
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
     const cloudName = "dngejhffd", uploadPreset = "school_gallery"; 
 
     let fullGallery = [];
@@ -234,7 +221,6 @@ function loadGallery() {
     });
 }
 
-
     function displayMedia(data) {
         const container = document.getElementById('galleryContainer');
         container.innerHTML = '';
@@ -274,11 +260,11 @@ function loadGallery() {
             selectedIds.push(id);
             document.getElementById(`card-${id}`).classList.add('selected');
         }
-        
+
         // Sync checkbox state
         const cb = document.querySelector(`#card-${id} .select-checkbox`);
         if(cb) cb.checked = selectedIds.includes(id);
-        
+
         updateBulkBar();
     }
 
@@ -307,7 +293,7 @@ function loadGallery() {
         for(let id of selectedIds) {
             await db.collection('gallery').doc(id).delete();
         }
-        
+
         alert("Bulk delete finished! 🗑️");
         selectedIds = [];
         updateBulkBar();
@@ -341,9 +327,7 @@ function loadGallery() {
     function deleteCurrentAsset() {
         if(deleteId) { deleteAsset(deleteId); closeModal(); }
     }
-    
-    
-    
+
         // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -353,9 +337,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 loadGallery(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -365,9 +349,6 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
-    
-    
-    
 </script>
 </body>
 </html>

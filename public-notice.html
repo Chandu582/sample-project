@@ -1,18 +1,19 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notice Board - St. Teresa School</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f9fafb; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
+
         /* HEADER */
         .page-header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 50px 20px; text-align: center; color: white; margin-bottom: 40px; }
         .page-header h1 { margin: 0; font-size: 32px; font-weight: 700; }
@@ -31,10 +32,10 @@
         /* ACTION AREA */
         .action-area { margin-top: 20px; border-top: 1px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
         .btn-action { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; flex: 1; justify-content: center; max-width: 200px; border: none; }
-        
+
         .btn-view { background: #e0f2fe; color: #0284c7; }
         .btn-view:hover { background: #bae6fd; }
-        
+
         .btn-download { background: #dcfce7; color: #16a34a; }
         .btn-download:hover { background: #bbf7d0; }
 
@@ -49,7 +50,7 @@
             justify-content: center; align-items: center; flex-direction: column;
             overflow: hidden;
         }
-        
+
         .close-btn {
             position: absolute; top: 20px; right: 20px; color: white; 
             font-size: 35px; cursor: pointer; z-index: 1005; padding: 10px;
@@ -88,17 +89,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         // 1. FETCH NOTICES
         db.collection('notices').orderBy('timestamp', 'desc').onSnapshot(snap => {
@@ -228,7 +218,7 @@
                 updateImageTransform(true);
                 return;
             }
-            
+
             if (isDragging) {
                 // Notice board me "Next Image" logic nahi hai isliye swipe left/right se sirf pan hoga
                 if (currentScale > 1) {

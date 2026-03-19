@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,12 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Attendence-Dashboard | STES ERP</title>
 
-
-
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -746,17 +745,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         // Default Date Today
         document.getElementById('adminDate').valueAsDate = new Date();
@@ -802,7 +790,6 @@
             const secFilter = document.getElementById('sectionFilter').value; // Get Section Value
 
             document.getElementById('dateDisplay').innerText = new Date(date).toDateString() + ` | Session: ${currentSessionName}`;
-
 
             // 1. TEACHERS
             // Date range is already session-specific (Apr-Mar never overlaps between sessions)
@@ -855,7 +842,6 @@
             let allStudents = studSnap.docs
                 .map(d => ({ id: d.id, ...d.data() }))
                 .filter(s => s.status !== 'Trash' && s.status !== 'Inactive');
-
 
             // Apply Section Filter in JS (Safer than compound query)
             if (secFilter !== 'All') {
@@ -1301,7 +1287,6 @@
                 window.location.replace("admin-login.html");
             }
         });
-
 
     </script>
 </body>

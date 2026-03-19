@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,8 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -851,10 +851,6 @@
                 </button>
             </div>
 
-
-
-
-
             <div class="filter-bar">
                 <div class="date-input-group">
                     <label>From:</label>
@@ -868,13 +864,6 @@
                     onkeyup="resetAndRender()">
 
             </div>
-
-
-
-
-
-
-
 
             <div class="data-panel">
                 <div class="panel-head">
@@ -1061,29 +1050,12 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
 
-
-
-
         // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-
-
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let activeSession = "";
         let incomeData = [];
         let expenseData = [];
-        
+
         // --- OPTIMIZATION VARIABLES ---
         let feesCache = [], othersCache = [];
         let unsubscribeFees = null, unsubscribeOthers = null, unsubscribeExpenses = null;
@@ -1123,7 +1095,6 @@
             // 'From' me 1st April aur 'To' me aaj ki date set ho jayegi
             document.getElementById('filterStart').value = formatLocal(firstApril);
             document.getElementById('filterEnd').value = formatLocal(today);
-
 
             try {
                 const doc = await db.collection('masterSettings').doc('sessions').get();
@@ -1170,7 +1141,6 @@
                 });
             });
         }
-
 
         // 3. LOAD DATA
         function loadDashboardData() {
@@ -1261,8 +1231,6 @@
             updateDashboard();
             if (currentMode === 'income') renderTable();
         }
-
-
 
         // --- 1. NEW: Ye function Date Range ke hisaab se Data Filter karega ---
         function updateDashboard() {
@@ -1532,7 +1500,7 @@
 
             // C. TOP DEFAULTERS (Fetching from fees & students logic is complex without students collection available directly here.)
             // Alternative: We will calculate defaulters by fetching students collection.
-            
+
             // --- DEBOUNCED AUTOMATIC REFRESH ---
             if (defaulterDebounceTimer) clearTimeout(defaulterDebounceTimer);
             defaulterDebounceTimer = setTimeout(() => {
@@ -1907,7 +1875,6 @@
             }
         }
 
-
         // --- 4. RENDER TABLE (No Date Logic changes) ---
         function switchTab(mode) {
             currentMode = mode;
@@ -1954,10 +1921,8 @@
                 return textMatch && dateMatch;
             });
 
-
             // 👇 1. YAHAN YE LINE ADD KARO (Data ko katne ke liye)
             const dataToShow = filtered.slice(0, renderLimit);
-
 
             let h = "";
             dataToShow.forEach(x => {
@@ -1998,7 +1963,6 @@
                 </div>`;
                     }
 
-
                     h += `<tr style="${rowStyle}">
                 <td style="vertical-align:top; padding-top:14px;">
                     <div style="font-weight:600; color:#334155; font-size:12px;">${x.dateStr}</div>
@@ -2036,11 +2000,8 @@
         </td></tr>`;
             }
 
-
             tbody.innerHTML = h;
         }
-
-
 
         // ADD & EXPORT FUNCTIONS
         function openExpenseModal() { document.getElementById('expenseModal').style.display = 'flex'; }
@@ -2096,8 +2057,6 @@
             } catch (e) { alert(e.message); }
         }
 
-
-
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => {
                 // Optional: Button ka color change kar sakte hain user ko feedback dene ke liye
@@ -2111,18 +2070,10 @@
             event.stopPropagation();
         }
 
-
-
-
         function resetAndRender() {
             renderLimit = 50; // Search karte waqt wapas 50 se shuru karo
             renderTable();
         }
-
-
-
-
-
 
         function exportReport() {
             // Re-use logic from renderTable to export filtered data
@@ -2179,10 +2130,6 @@
             XLSX.writeFile(wb, `STES_${currentMode}_Report.xlsx`);
         }
 
-
-
-
-
         // 🟢 Function to check scroll position and load more data
         function checkScroll(el) {
             // Agar user bottom ke kareeb pahunch gaya (50px buffer)
@@ -2196,12 +2143,6 @@
                 }
             }
         }
-
-
-
-
-
-
 
         // admin-fees.html aur baaki data wale pages ke liye
         firebase.auth().onAuthStateChanged((user) => {

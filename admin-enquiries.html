@@ -1,8 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +8,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    
+    <script src="config.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -18,9 +17,9 @@
         body { font-family: 'Poppins', sans-serif; background: #f3f4f6; padding: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .back-btn { text-decoration: none; color: #333; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-        
+
         .msg-container { max-width: 850px; margin: auto; }
-        
+
         .msg-card {
             background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-left: 6px solid #ccc;
@@ -28,15 +27,15 @@
         .msg-card.unread { border-left: 6px solid #1a73e8; background: #f0f7ff; }
 
         .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        
+
         .sender-info h4 { margin: 0; color: #333; font-size: 18px; font-weight: 700; }
-        
+
         /* PHONE NUMBER STYLE (Bada aur Saaf) */
         .phone-display { 
             font-size: 16px; color: #1a73e8; font-weight: 600; margin-top: 5px; 
             display: flex; align-items: center; gap: 8px;
         }
-        
+
         .date-badge { background: #eee; padding: 5px 12px; border-radius: 6px; font-size: 12px; color: #555; font-weight: 500; }
 
         .message-box {
@@ -45,13 +44,13 @@
         }
 
         .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-        
+
         .btn {
             border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer;
             font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; 
             text-decoration: none; transition: 0.2s;
         }
-        
+
         .btn-whatsapp { background: #25D366; color: white; }
         .btn-whatsapp:hover { background: #1ebe57; transform: translateY(-2px); }
 
@@ -60,7 +59,7 @@
 
         .btn-read { background: #1a73e8; color: white; margin-left: auto; }
         .btn-delete { background: #fee2e2; color: #dc2626; }
-        
+
         .status-read { margin-left: auto; color: #2ecc71; font-weight: 700; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
@@ -77,29 +76,18 @@
 
             <script>
         // CONFIG
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         // 1. CLEANER FUNCTION
         function cleanPhone(phone) {
             if(!phone) return "";
             // Sirf digits rakho (Space, -, brackets sab hata do)
             let p = String(phone).replace(/\D/g, ''); 
-            
+
             // Agar 10 digit hai to aage 91 lagao
             if(p.length === 10) return "91" + p;
             // Agar 0 se start ho raha hai (e.g. 098...) to 0 hata kar 91 lagao
             if(p.length > 10 && p.startsWith('0')) return "91" + p.substring(1);
-            
+
             return p;
         }
 
@@ -114,13 +102,13 @@
             // Asli test: Kya ye SuperAdmin hai?
             db.collection('admins').doc(user.uid).get().then((doc) => {
                 if (doc.exists && doc.data().role === 'SuperAdmin') {
-                    
+
                     // 👉 ADMIN VERIFIED! LOAD ENQUIRIES
                     db.collection('enquiries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
                         // FIX: ID 'msgList' sahi kardi gayi hai
                         const container = document.getElementById('msgList');
                         container.innerHTML = '';
-                        
+
                         if (snapshot.empty) {
                             container.innerHTML = '<p style="text-align:center; color:#666;">No enquiries found.</p>';
                             return;
@@ -130,13 +118,13 @@
                             const data = doc.data();
                             const id = doc.id;
                             const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : 'Just now';
-                            
+
                             // Status text aur class fix
                             const isRead = data.status === 'read';
                             const statusText = isRead ? 'Read' : 'Unread';
                             const statusClass = isRead ? 'status-resolved' : 'status-pending';
                             const statusStyle = isRead ? 'color: #16a34a; background: #dcfce7;' : 'color: #ef4444; background: #fee2e2;';
-                            
+
                             container.innerHTML += `
                                 <div class="msg-card">
                                     <div class="msg-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -177,12 +165,9 @@
         }
     });
 
-
-
         function markAsRead(id) { db.collection('enquiries').doc(id).update({ status: 'read' }); }
         function deleteMsg(id) { if(confirm("Delete permanently?")) db.collection('enquiries').doc(id).delete(); }
     </script>
-
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -587,17 +588,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         const userData = JSON.parse(sessionStorage.getItem("userData"));
         if (!userData) location.href = 'admin-login.html';
@@ -1110,8 +1100,6 @@
             setInterval(() => document.getElementById('camTime').innerText = new Date().toLocaleTimeString(), 1000);
         }
 
-
-
         async function capturePunch() {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
@@ -1183,7 +1171,6 @@
                 }
             }
         }
-
 
         function showToast(msg, type) {
             const x = document.getElementById("toast-box");

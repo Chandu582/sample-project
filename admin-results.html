@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Result Manager | STES ERP</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -36,7 +37,7 @@
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
         .input-box { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
-        
+
         .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; background: var(--primary); color: white; }
         .btn:hover { background: var(--primary-dark); }
 
@@ -56,13 +57,13 @@
         table { width: 100%; border-collapse: collapse; min-width: 1200px; }
         th { background: #f8fafc; padding: 12px; text-align: center; font-size: 13px; color: #64748b; border-bottom: 2px solid var(--border); white-space: nowrap; }
         td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; text-align: center; }
-        
+
         .mark-input { width: 50px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-weight: 700; transition: all 0.2s; }
         .mark-input:focus { border-color: var(--primary); outline: none; background: #f0f9ff; }
-        
+
         /* ERROR ANIMATION CLASS */
         .input-error { border-color: #ef4444 !important; background: #fee2e2 !important; color: #b91c1c; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        
+
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
             20%, 80% { transform: translate3d(2px, 0, 0); }
@@ -112,7 +113,7 @@
 
         @keyframes slideDown { to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
-        
+
         /* --- DYNAMIC FREEZE STYLES --- */
 
 /* Jab table par 'sticky-mode' class hogi tabhi freeze karega */
@@ -141,14 +142,8 @@
     background: #fff;
 }
 
-        
-        
-        
-        
-        
-        
     </style>
-    
+
 </head>
 <body>
 
@@ -199,7 +194,7 @@
                     <option value="7th">7th</option><option value="8th">8th</option><option value="9th">9th</option>
                     <option value="10th">10th</option>
                 </select>
-                
+
                 <div style="display:flex; flex-direction:column;">
                     <div class="quick-tags">
                         <span class="q-tag" onclick="toggleTag(this)">English</span>
@@ -214,7 +209,7 @@
                     </div>
                     <input type="text" id="customSubject" class="input-box" placeholder="Or type custom..." style="margin-top:10px;">
                 </div>
-                
+
                 <div style="display:flex; flex-direction:column; justify-content:center;">
                     <label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; margin-bottom:10px;">
                         <input type="checkbox" id="isHalfMarks"> Is 50 Marks? (GK/Sanskrit)
@@ -268,20 +263,13 @@
         <label>Promoted to Class</label>
         <input type="text" id="promotedTo" class="input-box" placeholder="e.g. 5th - A">
     </div>
-    
-    
-    
+
     <div style="display:flex; align-items:flex-end;">
     <button id="btnPublish" class="btn" style="background: #ef4444; height: 42px; min-width: 140px;" onclick="togglePublish()">
         <i class="fas fa-eye-slash"></i> Unpublished
     </button>
 </div>
 
-    
-    
-    
-    
-    
     <div style="display:flex; align-items:flex-end;">
         <button id="btnFreeze" class="btn" style="background: #475569; height: 42px;" onclick="toggleFreezeCols()">
             <i class="fas fa-thumbtack"></i> Freeze Names
@@ -292,9 +280,6 @@
         Max: <span id="displayMax">--</span>
     </div>
 </div>
-
-                
-            
 
             <div class="table-wrap">
                 <table id="marksTable">
@@ -313,7 +298,6 @@
     <i class="fas fa-save"></i> Save All Results
 </button>
 
-
 </div>
 
     </div>
@@ -321,17 +305,6 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
     // --- GLOBAL SESSION VARIABLE ---
     let currentSession = "";
@@ -341,12 +314,12 @@
         const box = document.getElementById('toastBox');
         const div = document.createElement('div');
         div.classList.add('toast', type);
-        
+
         const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
         div.innerHTML = `${icon} <span>${msg}</span>`;
-        
+
         box.appendChild(div);
-        
+
         setTimeout(() => {
             div.style.animation = "fadeOut 0.4s ease forwards";
             setTimeout(() => div.remove(), 400);
@@ -437,14 +410,14 @@
             const doc = await docRef.get();
             let currentList = doc.exists ? doc.data().list : [];
             let addedCount = 0;
-            
+
             newSubjects.forEach(newSub => {
                 // Auto Detect 50 Marks
                 if(/^(gk|g\.k|g\.k\.|sanskrit)$/i.test(newSub.name)) newSub.is50 = true;
                 const exists = currentList.some(s => s.name.toLowerCase() === newSub.name.toLowerCase());
                 if(!exists) { currentList.push(newSub); addedCount++; }
             });
-            
+
             if(addedCount > 0) {
                 await docRef.set({ list: currentList });
                 showToast(`${addedCount} Subjects Added!`);
@@ -493,9 +466,9 @@
         const examSel = document.getElementById('entryExam');
         const cls = document.getElementById('entryClass').value;
         const sec = document.getElementById('entrySection').value;
-        
+
         if(!examSel.value || !cls) return showToast("Select details first!", "error");
-        
+
         const btn = document.querySelector('#entry button');
         btn.innerText = "Loading..."; btn.disabled = true;
         document.getElementById('sheetArea').style.display = 'none';
@@ -507,13 +480,12 @@
             // Check if result is already published
             checkPublishStatus(examId, cls);
 
-            
             const subDoc = await db.collection('subjects').doc(cls).get();
             if(!subDoc.exists || !subDoc.data().list) {
                 showToast(`Subjects missing for Class ${cls}.`, "error");
                 btn.innerText = "Load Sheet"; btn.disabled = false; return;
             }
-            
+
             currentSubjects = subDoc.data().list;
             currentSubjects.forEach(s => {
                 if(/^(gk|g\.k|g\.k\.|sanskrit)$/i.test(s.name)) s.is50 = true;
@@ -525,7 +497,7 @@
                 showToast(`No students found in Class ${cls}`, "error");
                 btn.innerText = "Load Sheet"; btn.disabled = false; return;
             } 
-            
+
             let allStudents = stuSnap.docs.map(doc => ({id: doc.id, ...doc.data()}));
             currentStudents = allStudents.filter(s => String(s.section || "").trim().toUpperCase() === String(sec).trim().toUpperCase());
 
@@ -541,7 +513,7 @@
                 .where('section', '==', sec)
                 .where('session', '==', currentSession)
                 .get();
-            
+
             savedResultsMap = {};
             let commonData = null;
 
@@ -628,7 +600,7 @@
             htmlBody += `<tr id="row_${stu.id}" ${isInactive ? 'class="row-inactive"' : ''}>
                 <td>${stu.roll || '-'}</td>
                 <td style="text-align:left;">${nameCellHtml}</td>`;
-            
+
             currentSubjects.forEach(sub => {
                 const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
                 const val = savedMarks[sub.name] || "";
@@ -654,7 +626,6 @@
         });
         document.querySelector('#marksTable tbody').innerHTML = htmlBody;
     }
-
 
     // --- Absent-All Tracking ---
     const absentAllSet = new Set();
@@ -706,7 +677,7 @@
             if(!el) return;
             const valStr = el.value.trim();
             const gradeSpan = document.getElementById(`grade_${inputId}`);
-            
+
             // --- DRAWING LOGIC (Allow Text, No Marks) ---
             if (/drawing/i.test(sub.name)) {
                 gradeSpan.innerText = valStr.toUpperCase();
@@ -745,10 +716,10 @@
                 } else {
                     calcPercent = sub.is50 ? marks * 2 : marks * 1;
                 }
-                
+
                 gradeSpan.innerText = getGrade(Math.round(calcPercent));
                 totalObtained += marks;
-                
+
             } else {
                 // Agar 'AB' ya koi text hai
                 gradeSpan.innerText = valStr.toUpperCase() || "-";
@@ -760,7 +731,7 @@
 
         document.getElementById(`total_${stuId}`).innerText = totalObtained + "/" + totalMax;
         document.getElementById(`perc_${stuId}`).innerText = overallPerc + "%";
-        
+
         document.getElementById(`overG_${stuId}`).innerText = getGrade(parseFloat(overallPerc));
 
         const resEl = document.getElementById(`res_${stuId}`);
@@ -771,7 +742,6 @@
         }
         setTimeout(calculateRanks, 100);
     }
-
 
     function calculateRanks() {
         let studentScores = [];
@@ -789,7 +759,7 @@
         // Logic: Rank is sequential for everyone, but only displayed for passed
         for (let i = 0; i < studentScores.length; i++) {
              if (i > 0 && studentScores[i].perc < studentScores[i-1].perc) rank++;
-             
+
              const el = document.getElementById(`rank_${studentScores[i].id}`);
              // EDITED: Empty if failed
              if (studentScores[i].passed) {
@@ -810,11 +780,7 @@
         if(p >= 33) return "P ";
         return "F ";
     }
-    
-    
-    
-    
-    
+
         // --- FREEZE / UNFREEZE TOGGLE LOGIC ---
     let isFrozen = false;
 
@@ -840,7 +806,7 @@
 
     // --- VERTICAL NAVIGATION (Enter/Tab se neeche jana) ---
     // (RenderTable function me onkeydown="focusNextRow(event, this)" lagana na bhoolein)
-    
+
             // --- ADVANCED NAVIGATION (Snake Pattern: Down -> Top Right) ---
     function focusNextRow(e, currentInput) {
         const key = e.key || e.code;
@@ -853,7 +819,7 @@
             const currentCell = currentInput.closest('td');
             const currentRow = currentInput.closest('tr');
             const tbody = currentRow.parentElement; // Table Body
-            
+
             // Pata karein hum kaunse column number par hain
             const cellIndex = Array.from(currentRow.children).indexOf(currentCell);
 
@@ -872,14 +838,14 @@
                     }
                 }
             } 
-            
+
             // Step 2: Agar Niche Row NAHI hai (Matlab Last Student), to Next Column -> First Student
             else {
                 const firstRow = tbody.firstElementChild; // Sabse pehli row (Roll No 1)
-                
+
                 // Agla Column check karein (Current Index + 1)
                 const nextCellIndex = cellIndex + 1;
-                
+
                 if (firstRow && firstRow.children[nextCellIndex]) {
                     const targetCell = firstRow.children[nextCellIndex];
                     const nextColInput = targetCell.querySelector('input');
@@ -887,12 +853,12 @@
                     // Agar agle column me input box hai (e.g. Maths -> Science)
                     if (nextColInput) {
                         nextColInput.focus();
-                        
+
                         // Mobile/Desktop par user ko dikhane ke liye scroll karein
                         nextColInput.scrollIntoView({ behavior: "smooth", block: "center" });
-                        
+
                         setTimeout(() => nextColInput.select(), 10);
-                        
+
                         // User ko pata chale ki subject change hua hai
                         showToast("Next Subject", "success");
                     } else {
@@ -904,8 +870,6 @@
         }
     }
 
-    
-    
             // --- PUBLISH / UNPUBLISH LOGIC ---
     let isResultPublished = false;
 
@@ -930,7 +894,7 @@
     async function togglePublish() {
         const examId = document.getElementById('entryExam').value;
         const cls = document.getElementById('entryClass').value;
-        
+
         if (!examId || !cls) return showToast("Error: Missing Exam or Class", "error");
 
         const btn = document.getElementById('btnPublish');
@@ -946,7 +910,7 @@
             });
 
             isResultPublished = newState;
-            
+
             if (isResultPublished) {
                 btn.style.background = "#16a34a";
                 btn.innerHTML = '<i class="fas fa-eye"></i> Published';
@@ -963,12 +927,6 @@
         btn.disabled = false;
     }
 
-    
-        
-        
-        
-        
-        
             // --- CLEAR ALL DATA FUNCTION ---
     function clearAllEntries() {
         // 1. Warning Message
@@ -978,14 +936,14 @@
 
         // 2. Loop through all students and clear inputs
         currentStudents.forEach(stu => {
-            
+
             // A. Subjects ke marks clear karo
             currentSubjects.forEach(sub => {
                 const inputId = `${stu.id}_${sub.name.replace(/\s/g,'')}`;
                 const el = document.getElementById(inputId);
                 if(el) {
                     el.value = ""; // Khali kar do
-                    
+
                     // Grade wapas "-" kar do
                     const gradeSpan = document.getElementById(`grade_${inputId}`);
                     if(gradeSpan) gradeSpan.innerText = "-";
@@ -1003,25 +961,6 @@
         showToast("All Data Cleared!", "error"); // Red toast dikhao
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
         async function saveResults() {
         const examId = document.getElementById('entryExam').value;
         const teacher = document.getElementById('classTeacher').value;
@@ -1031,7 +970,7 @@
         const promoted = document.getElementById('promotedTo').value;   
 
         const batch = db.batch();
-        
+
         // --- FIX: Specific ID use karein ---
         const btn = document.getElementById('btnSaveAll');
         const originalText = btn.innerHTML; // Icon save rakhne ke liye
@@ -1086,15 +1025,12 @@
         } catch(e) { 
             showToast("Error: " + e.message, "error"); 
         }
-        
+
         // Button ko wapas normal karein
         btn.innerHTML = originalText; 
         btn.disabled = false;
     }
 
-    
-       
-       
        // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -1114,12 +1050,6 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.replace("admin-login.html");
     }
 });
-
-       
-       
-       
-       
-       
 
 </script>
 </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         /* Background Pattern Effect (Optional subtle circles) */
         .terms-header-banner::before {
             content: ''; position: absolute; top: -50px; right: -50px;
@@ -80,18 +80,18 @@
         }
 
         .card-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        
+
         .card-icon {
             background: var(--highlight-bg); color: var(--primary-purple);
             width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;
             border-radius: 14px; margin-right: 20px; flex-shrink: 0;
         }
         .fee-card .card-icon { background: #c8e6c9; color: #2e7d32; }
-        
+
         .card-icon svg { height: 28px; width: 28px; }
 
         .card-title { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
-        
+
         .card-content ul { padding-left: 20px; margin: 0; }
         .card-content li { margin-bottom: 12px; color: var(--text-light); font-size: 0.95rem; }
         .card-content strong { color: var(--primary-purple); }
@@ -119,7 +119,7 @@
     </header>
 
     <main class="main-content">
-        
+
         <div class="back-btn-container">
             <a href="index.html" class="back-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -209,6 +209,7 @@
         &copy; <span id="year"></span> St. Teresa English School. All Rights Reserved.
     </footer>
 
+    <script src="config.js"></script>
     <script>
         // Automatic Year Update
         document.getElementById("year").textContent = new Date().getFullYear();

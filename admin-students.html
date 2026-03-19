@@ -3,11 +3,6 @@
 
 <head>
 
-
-
-
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced School ERP | STES</title>
@@ -18,14 +13,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-
-
 
     <style>
         :root {
@@ -202,7 +196,6 @@
             /* ✨ CRITICAL FIX: Ye table ko parent se bahar nikalne se rokega */
             scroll-behavior: smooth;
         }
-
 
         /* --- DASHBOARD STATS --- */
         .stats-grid {
@@ -508,7 +501,6 @@
             border-bottom: 2px solid #d97706;
         }
 
-
         /* --- NEW FILTER GRID DESIGN --- */
         .filter-container {
             display: grid;
@@ -584,8 +576,6 @@
         .reset-btn-styled:hover {
             background: #fef2f2;
         }
-
-
 
         /* NEW CLASS FOR TABLE SCROLL */
         .table-responsive {
@@ -677,10 +667,6 @@
                 <i class="fas fa-home" style="width:20px;"></i> Main Dashboard
             </a>
 
-
-
-
-
             <a href="#" onclick="showSection('dashboard')" id="nav-dashboard" class="nav-link active-link"><i
                     class="fas fa-th-large" style="width:20px;"></i> Dashboard</a>
             <a href="#" onclick="showSection('admission')" id="nav-admission" class="nav-link"><i
@@ -693,29 +679,17 @@
                     <i class="fas fa-file-excel" style="width:20px;"></i> Bulk Import
                 </a>
 
-
                 <a href="#" onclick="openModal('updateModal')" class="nav-link" style="color: #60a5fa;">
                     <i class="fas fa-edit" style="width:20px;"></i> Bulk Update
                 </a>
 
-
-
-
-
-
                 <!--       <button onclick="openPromotionModal()" class="btn btn-primary" style="background:#4f46e5;">
         <i class="fas fa-exchange-alt"></i> Promote Students
     </button>
-    
-      
-      
-      
+
       <a href="#" onclick="undoPromotion()" class="nav-link" style="color: #ef4444;">
         <i class="fas fa-undo" style="width:20px;"></i> Undo Promote
     </a> -->
-
-
-
 
             </div>
         </nav>
@@ -840,34 +814,28 @@
                     </div>
                 </div>
 
-
-
                 <div class="card"
                     style="background: linear-gradient(135deg, #fff 0%, #fffbeb 100%); border: 1px solid #fcd34d;">
                     <div
-                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px dashed #fcd34d; padding-bottom:10px;">
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px dashed #fcd34d; padding-bottom:10px; flex-wrap:wrap; gap:8px;">
                         <h3 style="margin:0; color:#d97706; display:flex; align-items:center; gap:10px;">
                             <i class="fas fa-birthday-cake" style="font-size:24px; color:#f59e0b;"></i> Today's
                             Birthdays
                         </h3>
-                        <span id="bdayCount"
-                            style="background:#f59e0b; color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:bold;">-</span>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button id="waBdayAllBtn" onclick="startWhatsAppBirthdays()"
+                                style="display:none; background:#25d366; color:white; padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:none; box-shadow:0 2px 5px rgba(37,211,102,0.3);">
+                                <i class="fab fa-whatsapp"></i> Send All
+                            </button>
+                            <span id="bdayCount"
+                                style="background:#f59e0b; color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:bold;">-</span>
+                        </div>
                     </div>
 
                     <div id="birthdayList" style="max-height: 250px; overflow-y: auto;">
                         <p style="color:#9ca3af; text-align:center; padding:20px;">Checking birthdays... 🎈</p>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
             <div class="card">
@@ -896,8 +864,6 @@
                 </table>
             </div>
         </div>
-
-
 
         <div id="section-admission" style="display:none;" class="fade-in">
 
@@ -958,9 +924,6 @@
                                 <input type="date" id="admissionDate" class="required-field">
                             </div>
 
-
-
-
                             <div class="form-group">
                                 <label>Admission Category</label>
                                 <select id="admissionCategory"
@@ -971,10 +934,6 @@
                                     <option value="Freeship">Freeship</option>
                                 </select>
                             </div>
-
-
-
-
 
                             <div class="form-group">
                                 <label>Student Type</label>
@@ -1092,7 +1051,6 @@
                             </div>
                         </div>
 
-
                         <div style="display:flex; justify-content:space-between; margin-top:30px;">
                             <button type="button" class="btn btn-outline"
                                 onclick="openTab(event, 'tab-basic')">Previous</button>
@@ -1150,8 +1108,6 @@
                             </div>
                         </div>
 
-
-
                         <div class="form-group">
                             <label>House Assignment</label>
                             <select id="house" class="form-control">
@@ -1162,7 +1118,6 @@
                                 <option value="Blue">🔵Blue House</option>
                             </select>
                         </div>
-
 
                         <h4
                             style="margin-top:20px; color:var(--primary); border-bottom:2px dashed var(--border); padding-bottom:12px; margin-bottom:20px;">
@@ -1411,7 +1366,6 @@
                                             style="background:#dcfce7; font-weight:700; color:#166534; border-color:#bbf7d0;">
                                     </div>
 
-
                                     <div class="form-group">
                                         <label>Start Date (Record Purpose)</label>
                                         <input type="date" id="transportStart">
@@ -1459,8 +1413,6 @@
                                         </div>
                                     </div>
 
-
-
                                 </div>
                             </div>
                         </div>
@@ -1472,7 +1424,6 @@
                                 Documents <i class="fas fa-arrow-right"></i></button>
                         </div>
                     </div>
-
 
                     <div id="tab-docs" class="tab-content">
                         <h4
@@ -1574,7 +1525,6 @@
                                     </div>
                                 </div>
 
-
                             </div>
                         </div>
 
@@ -1587,10 +1537,6 @@
                             </span>
                         </div>
                     </div>
-
-
-
-
 
                     <div
                         style="margin-top: 0; padding: 20px 25px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 16px 16px; flex-wrap: wrap; gap: 15px;">
@@ -1710,7 +1656,6 @@
                                 <option value="Inactive">Inactive</option>
                             </select>
 
-
                             <select id="filterAdmCategory" onchange="filterStudents()" class="std-filter">
                                 <option value="">All Categories</option>
                                 <option value="Regular">Regular</option>
@@ -1718,9 +1663,6 @@
                                 <option value="RTE">RTE (Right to Edu)</option>
                                 <option value="Freeship">Freeship</option>
                             </select>
-
-
-
 
                             <div style="position:relative;">
                                 <input list="routeOptionsList" id="filterRoute" onkeyup="debounceFilter()"
@@ -1739,7 +1681,6 @@
                         </div>
                     </div>
 
-
                     <div class="table-responsive">
                         <table style="width: 100%; border-collapse: collapse; min-width: 1100px; white-space: nowrap;">
 
@@ -1751,8 +1692,6 @@
                                         <input type="checkbox" id="selectAll" onclick="toggleSelectAll()"
                                             style="width: 18px; height: 18px; cursor: pointer;">
                                     </th>
-
-
 
                                     <th style="padding: 15px;">Photo</th>
                                     <th style="padding: 15px; text-align: left;">Identity</th>
@@ -1781,18 +1720,6 @@
                 </div>
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
         </div>
         <div id="importModal" class="modal-overlay"
             onclick="if(event.target.id === 'importModal') closeModal('importModal')">
@@ -1813,8 +1740,6 @@
                     style="width:100%; margin-top:15px;">Import Data</button>
             </div>
         </div>
-
-
 
         <div id="promotionModal" class="modal-overlay">
             <div class="modal-box"
@@ -1953,13 +1878,6 @@
             </div>
         </div>
 
-
-
-
-
-
-
-
         <div id="docListModal" class="modal-overlay" onclick="closeModal('docListModal')">
             <div class="modal-box">
                 <span onclick="closeModal('docListModal')"
@@ -1983,7 +1901,6 @@
         </div>
 
         <div id="toast"></div>
-
 
         <div id="printableForm" class="no-print" style="display:none; font-family: 'Times New Roman', serif;">
             <div class="print-container" style="width: 210mm; margin: 0 auto; padding: 20px;">
@@ -2223,17 +2140,7 @@
             // ==========================================
             // 1. FIREBASE & CONFIG SETUP
             // ==========================================
-            const firebaseConfig = {
-                apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-                authDomain: "sample-school-13ca4.firebaseapp.com",
-                projectId: "sample-school-13ca4",
-                storageBucket: "sample-school-13ca4.firebasestorage.app",
-                messagingSenderId: "198448853287",
-                appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-            };
 
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.firestore();
             const cloudName = "dngejhffd";
             const uploadPreset = "school_gallery";
 
@@ -2242,7 +2149,6 @@
             let transportRoutes = {};
             let isSaving = false;
             let activeWhatsAppWindow = null;
-
 
             // ==========================================
             // 2. INITIALIZATION & NAVIGATION
@@ -2280,9 +2186,6 @@
                     window.location.replace("admin-login.html");
                 }
             });
-
-
-
 
             function toggleSidebar() {
                 document.getElementById('sidebar').classList.toggle('active');
@@ -2344,10 +2247,6 @@
 
                 }, 50); // 50ms ka delay (Insan ko pata nahi chalega, par browser free ho jayega)
             }
-
-
-
-
 
             // Toast Notification (Auto Hide Fix)
             function showToast(msg, type) {
@@ -2437,7 +2336,6 @@
                     document.getElementById(inputId).style.backgroundColor = "#f0fdf4"; // Green tint
                 }
             }
-
 
             function generateNewID() {
                 const year = new Date().getFullYear().toString().slice(-2);
@@ -2593,8 +2491,6 @@
                 }
                 // --- NEW IMPROVED VALIDATION LOGIC END ---
 
-
-
                 isSaving = true;
                 const btn = document.getElementById('saveBtn');
                 const originalText = btn.innerHTML;
@@ -2617,11 +2513,6 @@
                         upload('stdPhoto'), upload('aadharScan'), upload('birthScan'), upload('tcScan'), upload('reportScan'),
                         upload('fatherAadharScan'), upload('motherAadharScan')
                     ]);
-
-
-
-
-
 
                     const editId = document.getElementById('editDocId').value;
                     const existing = editId ? (allStudents.find(s => s.id === editId) || {}) : {};
@@ -2694,7 +2585,6 @@
                         transportStart: document.getElementById('transportStart').value,
                         transportMonths: tMonths,  // <--- YE LINE ADD KARNI HAI
 
-
                         photo: photo || existing.photo || "",
                         docAadhar: aadhar || existing.docAadhar || "",
                         docBirth: birth || existing.docBirth || "",
@@ -2702,7 +2592,6 @@
                         docReport: report || existing.docReport || "",
                         docFatherAadhar: fatherAadhar || existing.docFatherAadhar || "",
                         docMotherAadhar: motherAadhar || existing.docMotherAadhar || "",
-
 
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
@@ -2722,11 +2611,11 @@
 
                         // 2. Background mein Secure Firebase Auth Account banayein
                         try {
-                            const secondaryApp = firebase.initializeApp(firebaseConfig, "SecondaryStudent");
+                            const appName = "SecApp_" + Date.now();
+                            const secondaryApp = firebase.initializeApp(firebaseConfig, appName);
                             const secAuth = secondaryApp.auth();
 
                             const idToUse = data.stesID || data.mobile;
-                            const dummyEmail = idToUse.toLowerCase() + "@stes.com";
                             const pass = data.dob || "123456"; // Password DOB rahega
 
                             await secAuth.createUserWithEmailAndPassword(dummyEmail, pass);
@@ -2739,8 +2628,6 @@
                         // 3. Success Popup dikhayein
                         openSuccessPopup(data);
                     }
-
-
 
                 } catch (e) {
                     console.error(e);
@@ -2846,7 +2733,6 @@
                     }
                 };
 
-
                 // Print Button Logic
                 const printBtn = document.querySelector('#successModal button[onclick*="printFilledForm"]') || document.getElementById('successPrintBtn');
                 if (printBtn) {
@@ -2855,9 +2741,6 @@
 
                 openModal('successModal');
             }
-
-
-
 
             function closeSuccessModal() {
                 closeModal('successModal');
@@ -2958,7 +2841,6 @@
                     }
                 }
 
-
                 renderDocPreview('link-stdPhoto', s.photo, 'photo');
                 renderDocPreview('link-aadharScan', s.docAadhar, 'docAadhar');
                 renderDocPreview('link-birthScan', s.docBirth, 'docBirth');
@@ -2967,10 +2849,8 @@
                 renderDocPreview('link-fatherAadharScan', s.docFatherAadhar, 'docFatherAadhar');
                 renderDocPreview('link-motherAadharScan', s.docMotherAadhar, 'docMotherAadhar');
 
-
                 showToast("Edit Mode: Data Loaded", "success");
             }
-
 
             // 1. IS FUNCTION KO REPLACE KAREIN
             function renderDocPreview(elId, url, fieldName) {
@@ -2979,14 +2859,14 @@
 
                 el.innerHTML = `
             <div style="margin-top:5px; display:flex; gap:10px; align-items:center; background:#f0f9ff; padding:8px; border-radius:8px; border:1px solid #bae6fd;">
-                
+
                 <button type="button" onclick="openLightbox('${url}')" 
                         style="background:#0ea5e9; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <i class="fas fa-eye"></i> View
                 </button>
 
                 <span style="color:#cbd5e1;">|</span>
-                
+
                 <button type="button" onclick="deleteDocField('${fieldName}')" 
                         style="background:#fee2e2; color:#ef4444; border:none; border-radius:4px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <i class="fas fa-trash"></i> Remove
@@ -2994,10 +2874,6 @@
             </div>
         `;
             }
-
-
-
-
 
             // FIX: Delete Document (UI updates instantly for ALL docs)
             function deleteDocField(field) {
@@ -3037,7 +2913,6 @@
                 }
             }
 
-
             function resetForm() {
                 document.getElementById('editDocId').value = "";
 
@@ -3069,7 +2944,6 @@
                 // Optional: Show a small toast message
                 if (typeof showToast === "function") showToast("Form Reset", "success");
             }
-
 
             // ==========================================
             // 5. DASHBOARD & LIST LOGIC
@@ -3150,7 +3024,6 @@
                 calculateStats(); // Total Count Update
                 checkBirthdays(); // ✅ YE LINE JOD DO (Birthday Check)
 
-
                 // ✅ NEW: Year Filter me Years bharo
                 if (typeof populateYearFilter === 'function') {
                     populateYearFilter();
@@ -3183,7 +3056,6 @@
                 if (loader) loader.remove();
                 if (typeof showToast === 'function') showToast("Error loading data: " + error.message, "error");
             });
-
 
             // --- HELPER TO FIX DATE ISSUES ---
             function getSafeDate(rawDate) {
@@ -3245,10 +3117,6 @@
                 document.getElementById('statGirlsOld').innerText = girlsOld;
             }
 
-
-
-
-
             function renderHistory() {
                 const tbody = document.getElementById('recentHistoryBody');
                 tbody.innerHTML = "";
@@ -3281,7 +3149,6 @@
                     filterStudents();
                 }, 300);
             }
-
 
             function filterStudents() {
                 // 1. Inputs Check
@@ -3324,7 +3191,6 @@
                     // ✅ 2️⃣ YAHAN PASTE KAREIN (Ye nayi logic line)
                     const matchAdmCat = admCategory ? (s.admissionCategory || "Regular") === admCategory : true;
 
-
                     return matchText && matchClass && matchSec && matchHouse && matchGender && matchType && matchStatus && matchYear && matchRoute && matchAdmCat;
 
                 });
@@ -3346,8 +3212,6 @@
                 // Render
                 renderTable(filtered);
             }
-
-
 
             // ✅ 1. Populate Year Dropdown Automatically
             function populateYearFilter() {
@@ -3392,8 +3256,6 @@
                 }).catch(err => console.error("Error loading routes for filter:", err));
             }
 
-
-
             // ✅ 2. Reset All Filters Function
             function resetFilters() {
                 // Saare inputs khali karo
@@ -3407,7 +3269,6 @@
                 document.getElementById('filterStatus').value = "Active";
                 document.getElementById('filterAdmCategory').value = ""; // ✅ YE LINE ADD KAREIN
 
-
                 document.getElementById('filterYear').value = "";
                 // ✅ NEW: Route Filter Reset
                 document.getElementById('filterRoute').value = "";
@@ -3418,9 +3279,6 @@
                 // Optional: Toast dikhao
                 if (typeof showToast === "function") showToast("Filters Reset", "success");
             }
-
-
-
 
             // ==========================================
             // OPTIMIZED TABLE RENDER (BATCH RENDERING)
@@ -3472,7 +3330,7 @@
                 <img src="${photoUrl}" loading="lazy" onclick="openLightbox('${photoUrl}')" 
                      style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer;">
             </td>
-            
+
             <td style="padding:15px;">
                 <div style="font-weight:700; color:var(--text); font-size:14px;">${s.name}</div>
                 <div style="font-size:11px; color:var(--primary); font-weight:600;">${s.stesID}</div>
@@ -3493,9 +3351,9 @@
             <td style="padding:15px;">
                 <span style="font-weight:600; color:${getHouseColor(s.house)}">${s.house || '-'}</span>
             </td>
-            
+
             <td style="padding:15px;">${transStatus}</td>
-            
+
             <td style="padding:15px; text-align:center;">
                 <button class="btn btn-outline" style="padding:4px 8px;" onclick="openDocList('${s.id}')"><i class="fas fa-folder"></i></button>
             </td>
@@ -3513,10 +3371,8 @@
         </tr>`;
                 }).join('');
 
-
                 tbody.innerHTML = allRowsHTML;
             }
-
 
             // ==========================================
             // 6. UTILITIES: EXPORT, PRINT, IMPORT
@@ -3558,9 +3414,6 @@
                 };
             }
 
-
-
-
             // 3. Restore (Wapas Active Karna)
             function restoreStudent(id) {
                 const s = allStudents.find(x => x.id === id);
@@ -3584,7 +3437,6 @@
                     });
                 }
             }
-
 
             // Docs List Modal
             function openDocList(id) {
@@ -3629,8 +3481,6 @@
                 const modal = document.getElementById('imgModal');
                 modal.style.display = 'flex';
             }
-
-
 
             // Modal Helpers
             function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -3727,7 +3577,6 @@
                 }
             }
 
-
             // ==========================================
             // UNDO PROMOTION LOGIC (SAFETY FEATURE)
             // ==========================================
@@ -3778,8 +3627,6 @@
                     alert("Error reversing: " + e.message);
                 }
             }
-
-
 
             // Export History
             function exportHistoryExcel() {
@@ -3850,7 +3697,6 @@
                 win.print();
             }
 
-
             // GLOBAL VARIABLE TO STORE CURRENT IMAGE URL
             let currentImageUrl = "";
 
@@ -3902,7 +3748,6 @@
                     window.open(currentImageUrl, '_blank');
                 }
             }
-
 
             // ==========================================
             // 🎂 BIRTHDAY REMINDER LOGIC
@@ -3959,10 +3804,14 @@
                     list.innerHTML = `
             <div style="text-align:center; padding:20px; color:#9ca3af;">
                 <i class="fas fa-mug-hot" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i>
-                <p style="margin:0;">No birthdays today! 🎈</p>
+                <p style="margin:0;">No birthdays today!</p>
             </div>`;
+                    document.getElementById('waBdayAllBtn').style.display = 'none';
                     return;
                 }
+                // Show Send All button and store birthday data globally
+                document.getElementById('waBdayAllBtn').style.display = 'inline-block';
+                window.currentBirthdayKids = birthdayKids;
 
                 let html = '';
                 birthdayKids.forEach(s => {
@@ -4002,7 +3851,6 @@
                 });
                 list.innerHTML = html;
             }
-
 
             function sendBirthdayWish(id, name, mobile, className, section, btnElement) {
                 if (!mobile) {
@@ -4070,10 +3918,6 @@
 
                 window.open(url, '_blank');
             }
-
-
-
-
 
             // ==========================================
             // ✅ SMART AUTO ROLL GENERATOR (Gaps + Next)
@@ -4157,12 +4001,6 @@
                 setTimeout(() => input.style.backgroundColor = "#f9fafb", 300);
             }
 
-
-
-
-
-
-
         </script>
 
         <div id="imgModal"
@@ -4189,9 +4027,6 @@
 
         <script>
 
-
-
-
             // ==========================================
             // 2. JAVASCRIPT LOGIC (Inside Script Tag)
             // ==========================================
@@ -4207,17 +4042,17 @@
 
                 el.innerHTML = `
         <div style="margin-top:8px; display:flex; gap:10px; align-items:center; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-            
+
             <button type="button" onclick="openLightbox('${url}')" style="background:#3b82f6; color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;">
                 <i class="fas fa-eye"></i> View
             </button>
-            
+
             <button type="button" onclick="editSavedImage('${url}', '${inputId}')" style="background:#f59e0b; color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;">
                 <i class="fas fa-crop-alt"></i> Edit
             </button>
 
             <span style="color:#cbd5e1;">|</span>
-            
+
             <button type="button" onclick="deleteDocField('${fieldName}')" style="background:#fee2e2; color:#ef4444; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;">
                 <i class="fas fa-trash"></i>
             </button>
@@ -4305,7 +4140,6 @@
                 XLSX.utils.book_append_sheet(wb, ws, "Admission_Template");
                 XLSX.writeFile(wb, "STES_Import_Template.xlsx");
             }
-
 
             // ==========================================
             // 3. FULLY SMART BULK IMPORT (ALL FIELDS FIXED)
@@ -4424,7 +4258,6 @@
                     return "";
                 };
 
-
                 const reader = new FileReader();
                 reader.onload = async function (e) {
                     try {
@@ -4476,8 +4309,6 @@
                                     admissionDate: parseDate(getVal(["Admission Date", "Adm Date"])) || new Date().toISOString().split('T')[0],
 
                                     admissionCategory: safeStr(getVal(["Admission Category", "Category Type"])) || "Regular",
-
-
 
                                     dob: parseDate(getVal(["DOB", "Date of Birth"])) || "",
                                     name: safeStr(getVal(["Student Name", "Name"])).toUpperCase(),
@@ -4549,7 +4380,6 @@
                 reader.readAsArrayBuffer(fileInput.files[0]);
             }
 
-
             // ==========================================
             // 3. EXPORT ALL STUDENTS TO EXCEL (FIXED)
             // ==========================================
@@ -4620,7 +4450,6 @@
                 if (btn) btn.innerHTML = originalText;
                 showToast(`Exported ${dataToExport.length} Records!`, "success");
             }
-
 
             // ==========================================
             // 8. ULTIMATE KEYBOARD NAVIGATION (DESKTOP FEEL)
@@ -4761,9 +4590,6 @@
                 }
             }
 
-
-
-
             // ==========================================
             // RECYCLE BIN LOGIC
             // ==========================================
@@ -4824,8 +4650,6 @@
                 openModal('trashModal');
             }
 
-
-
             // 1. Restore (Wapas Active Karna)
             function restoreStudent(id) {
                 const s = allStudents.find(x => x.id === id);
@@ -4850,7 +4674,6 @@
                     });
                 }
             }
-
 
             // Script ke sabse last mein  tag se pehle) ye function jodein:
             function getHouseColor(house) {
@@ -4944,7 +4767,6 @@
                 }
             }
 
-
             // ==========================================
             // ✅ RECYCLE BIN BULK ACTIONS
             // ==========================================
@@ -5010,7 +4832,6 @@
                 }
             }
 
-
             // ✅ VIEW PROFILE FUNCTION (Populate Data)
             function viewStudent(id) {
                 const s = allStudents.find(x => x.id === id);
@@ -5046,8 +4867,6 @@
                 // 3. Modal open karein
                 openModal('viewProfileModal');
             }
-
-
 
             // ==========================================
             // RANGE REPORT LOGIC (Added Feature)
@@ -5104,8 +4923,6 @@
                 }
                 openModal('rangeListModal');
             }
-
-
 
             // --- EXPORT EXCEL (Exact Format Requested) ---
             function exportRangeExcel() {
@@ -5205,10 +5022,6 @@
                 showToast("PDF Downloaded Successfully!", "success");
             }
 
-
-
-
-
             // ==========================================
             // MULTI-INPUT CAMERA LOGIC
             // ==========================================
@@ -5218,7 +5031,6 @@
             let flashMode = 'off';  // Current mode yaad rakhne ke liye
             // Global Variables ke section mein ye add karein
             let currentFacingMode = 'environment'; // Default: Back Camera
-
 
             let targetInputId = null;   // Konsa input bharna hai (e.g., 'aadharScan')
             let targetPreviewId = null; // Uska preview kahan dikhana hai (e.g., 'link-aadharScan')
@@ -5264,10 +5076,6 @@
                 toggleFlash(mode);
                 if (mode === 'auto' && typeof showToast === 'function') showToast("Flash will fire on capture", "success");
             }
-
-
-
-
 
             // 1. OPEN CAMERA MODAL (Updated)
             async function openCameraModal(inputId, previewId) {
@@ -5338,7 +5146,6 @@
                 }
             }
 
-
             // 3. SWITCH CAMERA FUNCTION (New Function)
             function switchCamera() {
                 // Mode toggle karein
@@ -5354,10 +5161,6 @@
                 startCameraStream();
             }
 
-
-
-
-
             // 2. Close Camera
             function closeCameraModal() {
                 const modal = document.getElementById('cameraModal');
@@ -5372,7 +5175,6 @@
                 }
                 modal.style.display = 'none';
             }
-
 
             // ==================== CROPPER JS LOGIC ====================
 
@@ -5471,9 +5273,6 @@
                 }, 'image/jpeg', 0.90); // JPEG Quality 90%
             }
 
-
-
-
             // 3. Capture & Assign to Correct Input
             // 3. Capture with Smart Ratio (1:1 for Photo, 9:16 for Docs)
             // 3. Capture with Smart Ratio (1:1 for Photo, A4 for Docs)
@@ -5553,11 +5352,6 @@
                 }, 'image/jpeg', 0.95);
             }
 
-
-
-
-
-
             // FIX: Updated Preview with Edit Button
             function showLocalPreview(file, containerId) {
                 const container = document.getElementById(containerId);
@@ -5597,13 +5391,7 @@
                 reader.readAsDataURL(file);
             }
 
-
-
             // --- ADD THIS AT THE END OF editStudent FUNCTION ---
-
-
-
-
 
             // ==========================================
             // FINAL PROMOTION LOGIC (Session + Ledger)
@@ -5871,14 +5659,6 @@
                 }
             }
 
-
-
-
-
-
-
-
-
             // ==========================================
             // SIBLING AUTO-FILL LOGIC (IMPROVED & ROBUST)
             // ==========================================
@@ -5946,17 +5726,11 @@
                 }
             }
 
-
-
-
-
-
             // ==========================================
             // ✅ SAFE BULK UPDATE LOGIC (Paste this at the bottom of script)
             // ==========================================
 
             // 1. Template Download
-
 
             // ==========================================
             // ✅ FIXED: BULK UPDATE LOGIC (ROBUST)
@@ -6058,7 +5832,6 @@
                         return null;
                     };
 
-
                     const reader = new FileReader();
                     reader.onload = async function (e) {
                         try {
@@ -6098,13 +5871,10 @@
                                         if (cleanRow['dob']) { const d = parseDateFixed(cleanRow['dob']); if (d) updates.dob = d; }
                                         if (cleanRow['admissiondate'] || cleanRow['admdate']) { const d = parseDateFixed(cleanRow['admissiondate'] || cleanRow['admdate']); if (d) updates.admissionDate = d; }
 
-
-
                                         // Add this line for Admission Category Update via Excel
                                         if (cleanRow['admissioncategory'] || cleanRow['admcategory']) {
                                             updates.admissionCategory = String(cleanRow['admissioncategory'] || cleanRow['admcategory']);
                                         }
-
 
                                         // Text Logic
                                         if (cleanRow['name']) updates.name = String(cleanRow['name']).toUpperCase();
@@ -6166,12 +5936,6 @@
                     btn.disabled = false;
                 }
             }
-
-
-
-
-
-
 
             // ✅ NEW FUNCTION: Saved URL ko Crop Modal me load karne ke liye
             // ==========================================
@@ -6259,15 +6023,7 @@
                 };
             }
 
-
-
-
-
-
-
-
         </script>
-
 
         <div id="trashModal" class="modal-overlay"
             onclick="if(event.target.id === 'trashModal') closeModal('trashModal')">
@@ -6314,7 +6070,6 @@
                     items found.</div>
             </div>
         </div>
-
 
         <div id="successModal" class="modal-overlay" style="z-index: 9999;">
             <div class="modal-box" style="text-align:center; max-width:400px; padding:30px;">
@@ -6480,7 +6235,6 @@
             </div>
         </div>
 
-
         <div id="rangeListModal" class="modal-overlay"
             onclick="if(event.target.id === 'rangeListModal') closeModal('rangeListModal')">
             <div class="modal-box" style="max-width: 900px; width: 95%;">
@@ -6535,8 +6289,6 @@
             </div>
         </div>
 
-
-
         <div id="cameraModal" class="modal-overlay" style="z-index: 10000;">
             <div class="modal-box" style="max-width: 500px; text-align: center; padding: 20px;">
                 <h3 style="margin-top: 0; color: var(--primary);"><i class="fas fa-camera"></i> Take Snapshot</h3>
@@ -6567,11 +6319,7 @@
                         <i class="fas fa-sync-alt"></i> Switch Cam
                     </button>
 
-
-
-
                 </div>
-
 
                 <div style="display:flex; justify-content: center; gap:15px; padding-top: 10px;">
 
@@ -6589,9 +6337,6 @@
 
             </div>
         </div>
-
-
-
 
         <div id="cropperModal"
             style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center;">
@@ -6625,11 +6370,6 @@
             </div>
         </div>
 
-
-
-
-
-
         <div id="updateModal" class="modal-overlay"
             onclick="if(event.target.id === 'updateModal') closeModal('updateModal')">
             <div class="modal-box">
@@ -6656,6 +6396,266 @@
                 </button>
             </div>
         </div>
+
+        <!-- WhatsApp Progress Modal -->
+        <style>
+            .wa-modal {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 9999;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(4px);
+            }
+
+            .wa-modal.active {
+                display: flex;
+            }
+
+            .wa-modal-box {
+                background: white;
+                width: 90%;
+                max-width: 400px;
+                border-radius: 20px;
+                padding: 25px;
+                text-align: center;
+            }
+
+            .wa-progress-bar {
+                width: 100%;
+                height: 12px;
+                background: #e2e8f0;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 15px 0;
+            }
+
+            .wa-progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #25d366, #128c7e);
+                border-radius: 10px;
+                transition: width 0.3s;
+                width: 0%;
+            }
+
+            .wa-stat {
+                display: inline-block;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 700;
+                margin: 4px;
+            }
+
+            .wa-btn-stop {
+                margin-top: 15px;
+                padding: 10px 25px;
+                background: #ef4444;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .wa-btn-close {
+                margin-top: 10px;
+                padding: 10px 25px;
+                background: #4f46e5;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: none;
+            }
+
+            .wa-fallback-list {
+                max-height: 200px;
+                overflow-y: auto;
+                text-align: left;
+                margin-top: 10px;
+                display: none;
+            }
+
+            .wa-fallback-list a {
+                display: block;
+                padding: 8px 12px;
+                color: #25d366;
+                text-decoration: none;
+                font-size: 13px;
+                font-weight: 600;
+                border-bottom: 1px solid #f1f5f9;
+            }
+        </style>
+        <div class="wa-modal" id="waModal">
+            <div class="wa-modal-box">
+                <div style="font-size:40px; margin-bottom:10px;">🎂</div>
+                <h3 style="margin:0 0 5px; font-size:18px; color:#1e293b;" id="waTitle">Birthday Wishes</h3>
+                <p style="font-size:13px; color:#64748b; margin:0 0 10px;" id="waSubtitle">WhatsApp Birthday Greetings
+                </p>
+                <div class="wa-progress-bar">
+                    <div class="wa-progress-fill" id="waProgressFill"></div>
+                </div>
+                <p style="font-size:14px; font-weight:700; color:#334155;" id="waProgressText">0 / 0</p>
+                <div id="waCurrentStudent"
+                    style="background:#fffbeb; padding:10px; border-radius:10px; margin:10px 0; display:none; border:1px solid #fcd34d;">
+                    <p style="margin:0; font-size:13px; color:#92400e; font-weight:700;" id="waCurrentName">-</p>
+                    <p style="margin:2px 0 0; font-size:11px; color:#64748b;" id="waCurrentPhone">-</p>
+                </div>
+                <div id="waStats" style="margin-top:10px;">
+                    <span class="wa-stat" style="background:#dcfce7; color:#166534;">✅ Sent: <b id="waSent">0</b></span>
+                    <span class="wa-stat" style="background:#fef9c3; color:#92400e;">⚠️ Skipped: <b
+                            id="waSkipped">0</b></span>
+                </div>
+                <div class="wa-fallback-list" id="waFallbackList"></div>
+                <div id="waActionBtns"
+                    style="margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                    <button class="wa-btn-stop" id="waBtnNext" onclick="waNextStep()"
+                        style="background:#25d366; display:none;"><i class="fab fa-whatsapp"></i> Sent ✅ Next
+                        ➡️</button>
+                    <button class="wa-btn-stop" id="waBtnSkipOne" onclick="waSkipOne()"
+                        style="background:#f59e0b; display:none; font-size:12px;"><i class="fas fa-forward"></i>
+                        Skip</button>
+                    <button class="wa-btn-stop" id="waBtnStop" onclick="stopWhatsAppQueue()"><i
+                            class="fas fa-stop-circle"></i> Stop</button>
+                    <button class="wa-btn-close" id="waBtnClose"
+                        onclick="document.getElementById('waModal').classList.remove('active')"><i
+                            class="fas fa-check-circle"></i> Done</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ===== WHATSAPP STEP-BY-STEP BIRTHDAY SEND ENGINE =====
+            let waQueueList = [];
+            let waQueueIndex = 0;
+            let waSentCount = 0;
+            let waSkippedCount = 0;
+            let waStopRequested = false;
+
+            function startWhatsAppBirthdays() {
+                const kids = window.currentBirthdayKids || [];
+                if (kids.length === 0) return alert('No birthdays today!');
+
+                waQueueList = kids.map(s => {
+                    let phone = String(s.mobile || '').trim().replace(/\s+/g, '');
+                    if (phone.startsWith('+91')) phone = phone.slice(3);
+                    if (phone.startsWith('91') && phone.length === 12) phone = phone.slice(2);
+
+                    const msg = `\u{1F38A}\u{1F382} *WISHING YOU A VERY HAPPY BIRTHDAY!* \u{1F382}\u{1F38A}\n\n` +
+                        `\u{1F31F} *Dear ${s.name},* \u{1F31F}\n` +
+                        `_(Class: ${s.class} - ${s.section})_\n\n` +
+                        `On your special day, the entire STES family sends you the warmest wishes! \u{1F388}\n\n` +
+                        `May your day be filled with:\n` +
+                        `\u{1F36C} Sweet moments\n` +
+                        `\u{1F381} Wonderful surprises\n` +
+                        `\u{1F4DA} And a year full of success!\n\n` +
+                        `*Keep Shining Bright! \u2728*\n\n` +
+                        `--------------------------------\n` +
+                        `WARM REGARDS,\n` +
+                        `*Principal & Teachers*\n` +
+                        `\u{1F3DB}\uFE0F *St. Teresa English School*`;
+                    return { name: s.name, phone, message: msg, id: s.id };
+                });
+
+                waQueueIndex = 0;
+                waSentCount = 0;
+                waSkippedCount = 0;
+                waStopRequested = false;
+
+                const modal = document.getElementById('waModal');
+                document.getElementById('waTitle').innerText = '🎂 Birthday Wishes';
+                document.getElementById('waSubtitle').innerText = `${waQueueList.length} birthday kids to wish`;
+                document.getElementById('waProgressFill').style.width = '0%';
+                document.getElementById('waProgressText').innerText = `0 / ${waQueueList.length}`;
+                document.getElementById('waSent').innerText = '0';
+                document.getElementById('waSkipped').innerText = '0';
+                document.getElementById('waBtnNext').style.display = 'inline-block';
+                document.getElementById('waBtnSkipOne').style.display = 'inline-block';
+                document.getElementById('waBtnStop').style.display = 'inline-block';
+                document.getElementById('waBtnClose').style.display = 'none';
+                document.getElementById('waCurrentStudent').style.display = 'none';
+                modal.classList.add('active');
+
+                waProcessCurrent();
+            }
+
+            function waProcessCurrent() {
+                if (waStopRequested || waQueueIndex >= waQueueList.length) {
+                    waFinish();
+                    return;
+                }
+
+                const item = waQueueList[waQueueIndex];
+                const phone = item.phone;
+
+                document.getElementById('waCurrentStudent').style.display = 'block';
+                document.getElementById('waCurrentName').innerText = `🎂 ${item.name}`;
+
+                if (!phone || phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+                    document.getElementById('waCurrentPhone').innerText = '❌ No valid number — auto skipping...';
+                    waSkippedCount++;
+                    document.getElementById('waSkipped').innerText = waSkippedCount;
+                    waQueueIndex++;
+                    waUpdateProgress();
+                    setTimeout(() => waProcessCurrent(), 500);
+                    return;
+                }
+
+                document.getElementById('waCurrentPhone').innerText = `📱 ${phone} — WhatsApp mein Send karein, fir 'Sent ✅ Next' dabayein`;
+
+                const waUrl = `https://wa.me/91${phone}?text=${encodeURIComponent(item.message)}`;
+                window.open(waUrl, '_blank');
+            }
+
+            function waNextStep() {
+                // Mark as sent in Firebase
+                const item = waQueueList[waQueueIndex];
+                if (item && item.id) {
+                    db.collection('students').doc(item.id).update({ lastWishYear: new Date().getFullYear() }).catch(e => { });
+                }
+
+                waSentCount++;
+                document.getElementById('waSent').innerText = waSentCount;
+                waQueueIndex++;
+                waUpdateProgress();
+                waProcessCurrent();
+            }
+
+            function waSkipOne() {
+                waSkippedCount++;
+                document.getElementById('waSkipped').innerText = waSkippedCount;
+                waQueueIndex++;
+                waUpdateProgress();
+                waProcessCurrent();
+            }
+
+            function waUpdateProgress() {
+                const progress = Math.round((waQueueIndex / waQueueList.length) * 100);
+                document.getElementById('waProgressFill').style.width = progress + '%';
+                document.getElementById('waProgressText').innerText = `${waQueueIndex} / ${waQueueList.length}`;
+            }
+
+            function waFinish() {
+                document.getElementById('waTitle').innerText = waStopRequested ? '⏹️ Stopped!' : '✅ All Wished!';
+                document.getElementById('waSubtitle').innerText = `${waSentCount} sent, ${waSkippedCount} skipped`;
+                document.getElementById('waBtnNext').style.display = 'none';
+                document.getElementById('waBtnSkipOne').style.display = 'none';
+                document.getElementById('waBtnStop').style.display = 'none';
+                document.getElementById('waBtnClose').style.display = 'inline-block';
+                document.getElementById('waCurrentStudent').style.display = 'none';
+                // Refresh birthday list to show updated wish status
+                checkBirthdays();
+            }
+
+            function stopWhatsAppQueue() {
+                waStopRequested = true;
+                waFinish();
+            }
+        </script>
 
 </body>
 

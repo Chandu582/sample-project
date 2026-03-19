@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -509,7 +510,6 @@
             display: none;
         }
 
-
         /* --- PROFILE CARD STYLING --- */
         .profile-card {
             background: linear-gradient(135deg, var(--primary), #818cf8);
@@ -644,7 +644,6 @@
             <img id="fullSizeImg" src="" onclick="event.stopPropagation()">
         </div>
 
-
         <div class="grid-menu">
             <div class="menu-item active" onclick="showSection('attendance')">
                 <span class="menu-icon" style="background:#dbeafe; color:#2563eb;"><i
@@ -740,7 +739,6 @@
                 <div id="pCreditList"></div>
             </div>
 
-
             <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;">
                 <div
                     style="background:#f8fafc; padding:10px; border-radius:10px; text-align:center; border:1px solid #e2e8f0;">
@@ -811,7 +809,6 @@
                     <div class="sec-head">Transport Fee</div>
                     <div class="month-grid" id="transGrid"></div>
                 </div>
-
 
                 <div class="sec-head">Annual & Other Fees</div>
                 <div class="annual-grid" id="annualSection"></div>
@@ -885,17 +882,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         // --- GLOBAL VARIABLES ---
         let user = JSON.parse(sessionStorage.getItem("userData"));
@@ -920,23 +906,7 @@
             initDashboard();
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // --- 1. LOAD DATA SEQUENCE ---
-
 
         // --- 1. LOAD DATA SEQUENCE (FIXED) ---
         async function initDashboard() {
@@ -966,7 +936,6 @@
                 // --- YE LINE ADD KAREIN (Isse ID show hone lagega) ---
                 document.getElementById('dId').innerText = fullStudentData.stesID || "";
 
-
                 // --- YAHAN PASTE KAREIN (Part 1) ---
 
                 // Photo Logic
@@ -984,9 +953,6 @@
                 }
 
                 // --- YAHAN KHATAM ---
-
-
-
 
                 // C. Load Fee Config (Rules)
                 const configDoc = await db.collection('masterSettings').doc(`feeConfig_${currentSession}`).get();
@@ -1054,17 +1020,6 @@
                 console.error("Init Error:", e);
             }
         }
-
-
-
-
-
-
-
-
-
-
-
 
         // --- 2. HISTORY & DASHBOARD STATS ---
         function loadMyHistory() {
@@ -1136,7 +1091,6 @@
                 }
             }
         }
-
 
         // --- 3. PAY MODAL & CALCULATOR (THE CORE LOGIC) ---
         function openPayModal() {
@@ -1250,7 +1204,6 @@
                         // click variable ko empty NAHI karenge, taaki parent advance pay kar sake
                     }
 
-
                     if (rate === 0) return; // Don't show 0 fees
 
                     aContainer.innerHTML += `<div class="${cls}" ${click}>
@@ -1309,7 +1262,6 @@
             } else {
                 document.getElementById('transportSection').style.display = 'none';
             }
-
 
             document.getElementById('loadingFee').style.display = 'none';
             document.getElementById('feeBody').style.display = 'block';
@@ -1500,7 +1452,6 @@
             }
         }
 
-
         // --- 7. UTILITIES ---
         // 🟢 NAYA SECURE PASSWORD CHANGE
         // 🔑 PARENT PASSWORD CHANGE FUNCTION (Secure Sync)
@@ -1549,8 +1500,6 @@
             }
         }
 
-
-
         function logout() { sessionStorage.clear(); window.location.href = "admin-login.html"; }
         function showSection(id) {
             document.querySelectorAll('.section-card').forEach(e => e.classList.remove('show'));
@@ -1585,25 +1534,13 @@
             XLSX.writeFile(wb, `${user.name}_Fee_Statement.xlsx`);
         }
 
-
-
-
         // --- UPDATED INIT DASHBOARD (WITH DEBUGGING LOGS) ---
-
-
-
-
-
-
-
 
         // Photo Modal Functions
         function openPhotoModal() { document.getElementById('photoViewer').style.display = 'flex'; }
         function closePhotoModal() { document.getElementById('photoViewer').style.display = 'none'; }
 
         // --- YAHAN KHATAM ---
-
-
 
         // 🟢 SECURE INITIALIZATION FOR PARENT 🟢
         // 🟢 SECURE INITIALIZATION FOR PARENT 🟢
@@ -1620,16 +1557,6 @@
             // Agar user Parent hai, toh usko rokne ki zaroorat nahi hai.
             // Aapka upar likha hua data loading code apne aap chal jayega!
         });
-
-
-
-
-
-
-
-
-
-
 
     </script>
     <!-- AI Chatbot Integration -->

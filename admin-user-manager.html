@@ -3,7 +3,6 @@
 
 <head>
 
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STES ERP | Universal User Manager</title>
@@ -11,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
         rel="stylesheet">
@@ -312,17 +312,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let allUsers = [];
         let staffList = []; // To hold staff for dropdown
@@ -572,7 +561,8 @@
                     }
 
                     // Background mein ek temporary Firebase app banayein
-                    const secondaryApp = firebase.initializeApp(firebaseConfig, "UpdateApp_" + Date.now());
+                    const appName2 = "Secondary_" + Date.now();
+                    const secondaryApp = firebase.initializeApp(firebaseConfig, appName2);
                     const secAuth = secondaryApp.auth();
 
                     try {
@@ -607,7 +597,6 @@
             }
         }
 
-
         // admin-fees.html aur baaki data wale pages ke liye
         firebase.auth().onAuthStateChanged((user) => {
             const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -628,7 +617,6 @@
                 window.location.replace("admin-login.html");
             }
         });
-
 
     </script>
 </body>

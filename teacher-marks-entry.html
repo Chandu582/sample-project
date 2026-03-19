@@ -1,23 +1,20 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Class Result | Teacher Portal</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    
+
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    
-    
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-bundle.min.js"></script>
 
-
-
-
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,7 +28,7 @@
         }
 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 20px; }
-        
+
         .container { max-width: 1400px; margin: 0 auto; }
 
         /* HEADER */
@@ -58,7 +55,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px; border: 1px solid var(--border);
         }
         .control-grid { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-        
+
         .input-group { flex: 1; min-width: 200px; }
         .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-light); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-field { 
@@ -88,10 +85,10 @@
             background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border);
             overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); margin-bottom: 80px; /* Space for floating bar */
         }
-        
+
         .table-responsive { overflow-x: auto; width: 100%; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        
+
         th { 
             background: #f8fafc; padding: 15px; text-align: center; 
             font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase;
@@ -109,12 +106,12 @@
             border-radius: 8px; font-weight: 600; font-size: 14px; transition: 0.2s; 
         }
         .mark-input:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
-        
+
         .badge-grade { 
             display: inline-block; padding: 4px 10px; border-radius: 20px; 
             font-size: 11px; font-weight: 700; background: #f3f4f6; color: var(--text-light); margin-top: 4px;
         }
-        
+
         /* Floating Save Bar */
         .floating-save {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -140,7 +137,7 @@
         .toast.success { border-color: var(--success); color: #065f46; }
         .toast.error { border-color: var(--danger); color: #991b1b; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
+
         .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .pill-pass { background: #dcfce7; color: #166534; }
         .pill-fail { background: #fee2e2; color: #991b1b; }
@@ -162,11 +159,7 @@
         .btn-absent-all.active { background: #dc2626; }
         /* --- ABSENT ALL ROW --- */
         .row-absent-all { background: #fffbeb !important; }
-        
-        
-        
-        
-        
+
                 /* --- NEW: COMPACT NAME COLUMN STYLES --- */
         /* यह कोड दूसरे कॉलम (Student Name) की चौड़ाई कम करता है */
         #marksTable th:nth-child(2),
@@ -186,14 +179,7 @@
              overflow: hidden;
              text-overflow: ellipsis;
         }
-        
-        
-        
-        
-        
-        
-        
-        
+
         /* --- FREEZE / STICKY MODE STYLES --- */
 .sticky-mode th:nth-child(1), 
 .sticky-mode td:nth-child(1) {
@@ -216,10 +202,6 @@
 }
 .sticky-mode tbody td:nth-child(2) { background: #fff; }
 
-        
-        
-        
-        
     </style>
 </head>
 <body>
@@ -283,7 +265,6 @@
     </div>
 </div>
 
-
         <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
             <button class="btn-action btn-success" onclick="exportToExcel()" style="padding: 10px 20px; font-size: 13px;">
                 <i class="fas fa-file-excel"></i> Export Excel
@@ -311,17 +292,6 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
     let teacherProfile = null;
     let currentSession = ""; // ✅ Global session — same as admin
@@ -339,7 +309,7 @@
     // --- 1. Auth Check (FIXED: NO ALERT, NO LOCALHOST) ---
     function checkAuth() {
         let dataStr = sessionStorage.getItem("userData");
-        
+
         if (!dataStr) {
             // Show custom red toast instead of browser alert
             showToast("Session Expired. Redirecting...", "error");
@@ -349,10 +319,10 @@
             }, 1500);
             return;
         }
-        
+
         let rawData = JSON.parse(dataStr);
         let classParts = (rawData.class || "").split("-");
-        
+
         teacherProfile = {
             name: rawData.name,
             assignedClass: classParts[0] || "",
@@ -363,7 +333,7 @@
             showToast("Error: Class not assigned to this teacher.", "error");
             return;
         }
-        
+
         document.getElementById('tName').innerText = teacherProfile.name;
         document.getElementById('tClass').innerText = `${teacherProfile.assignedClass} - ${teacherProfile.assignedSection}`;
         loadExams();
@@ -423,7 +393,7 @@
                 showToast("No subjects found for this Class", "error");
                 btn.innerHTML = originalText; btn.disabled = false; return;
             }
-            
+
             // Smart Subject Logic
             currentSubjects = subDoc.data().list;
             currentSubjects.forEach(s => {
@@ -432,7 +402,7 @@
 
             // B. Get Students
             const stuSnap = await db.collection('students').where('class', '==', teacherProfile.assignedClass).get();
-            
+
             // Local Filter for Section
             currentStudents = stuSnap.docs.map(d => ({id: d.id, ...d.data()}))
                 .filter(s => String(s.section).trim().toUpperCase() === String(teacherProfile.assignedSection).trim().toUpperCase());
@@ -502,7 +472,7 @@
             document.getElementById('workingArea').style.display = 'block';
 
         } catch(e) { showToast("Error: " + e.message, "error"); }
-        
+
         btn.innerHTML = originalText; btn.disabled = false;
     }
 
@@ -562,7 +532,6 @@
     document.querySelector('#marksTable tbody').innerHTML = body;
 }
 
-
     // --- Absent-All Tracking ---
     const absentAllSet = new Set();
 
@@ -613,7 +582,7 @@
             const badge = document.getElementById(`g_${inputId}`);
             if(!el) return;
             const valStr = el.value.trim();
-            
+
             if(/drawing/i.test(sub.name)) {
                 badge.innerText = valStr.toUpperCase() || "-";
                 return;
@@ -634,7 +603,7 @@
                     setTimeout(() => el.classList.remove('input-error'), 500);
                     showToast(`Max for ${sub.name} is ${subjectMax}`, "error");
                     el.value = ""; badge.innerText = "-";
-                    
+
                     // Error case me wapas minus kar do
                     maxTotal -= subjectMax;
                     return;
@@ -646,7 +615,7 @@
 
                 badge.innerText = getGrade(Math.round(calcPercent));
                 obtained += marks;
-                
+
             } else {
                 // Handle AB or Text
                 badge.innerText = valStr.toUpperCase() || "-";
@@ -676,7 +645,6 @@
         window.rankTimeout = setTimeout(calculateRanks, 300);
     }
 
-
     function calculateRanks() {
         let scores = [];
         currentStudents.forEach(stu => {
@@ -684,9 +652,9 @@
             const isPass = p >= 32.5; 
             scores.push({ id: stu.id, p: p, passed: isPass });
         });
-        
+
         scores.sort((a,b) => b.p - a.p);
-        
+
         let rank = 1;
         for(let i=0; i<scores.length; i++) {
             if(i > 0 && scores[i].p < scores[i-1].p) rank++;
@@ -722,7 +690,7 @@
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`; btn.disabled = true;
 
         const batch = db.batch();
-        
+
         currentStudents.forEach(stu => {
             // ✅ Inactive students ka result NAHI save karna
             if (stu.status === 'Inactive') return;
@@ -737,13 +705,12 @@
             const percTxt = document.getElementById(`perc_${stu.id}`).innerText;
             const att = document.getElementById(`att_${stu.id}`).value;
             const rank = document.getElementById(`rank_${stu.id}`).innerText;
-            
+
             let pVal = parseFloat(percTxt) || 0;
             let resStatus = pVal >= 32.5 ? "PASS" : "N.I"; 
             let ovGrade = getGrade(pVal);
             // --- NAYA LOGIC ---
             let finalPromoted = resStatus === "PASS" ? promo : "------";
-
 
             // ✅ SAME DOC ID as admin: session_examId_studentId
             const ref = db.collection('results').doc(`${currentSession}_${examId}_${stu.id}`);
@@ -760,16 +727,16 @@
                 class: teacherProfile.assignedClass,
                 session: currentSession,   // ✅ Session field
                 classTeacher: teacherProfile.name,
-                
+
                 marks: marksObj,
                 total: totTxt,
                 percentage: percTxt,
                 attendance: att,
-                
+
                 overallGrade: ovGrade,
                 resultStatus: resStatus,
                 classRank: rank,
-                
+
                 totalWorkingDays: wDays,
                 schoolReopens: reopen,
                 promotedTo: finalPromoted,
@@ -783,18 +750,16 @@
             await batch.commit();
             showToast("Results Saved Successfully!", "success");
         } catch(e) { showToast("Save failed: " + e.message, "error"); }
-        
+
         btn.innerHTML = originalText; btn.disabled = false;
     }
-    
-    
-    
+
             // --- 1. FREEZE TOGGLE LOGIC ---
     let isFrozen = false;
     function toggleFreezeCols() {
         const table = document.getElementById('marksTable');
         const btn = document.getElementById('btnFreeze');
-        
+
         table.classList.toggle('sticky-mode');
         isFrozen = !isFrozen;
 
@@ -841,7 +806,7 @@
             else {
                 const firstRow = tbody.firstElementChild;
                 const nextCellIndex = cellIndex + 1;
-                
+
                 if (firstRow && firstRow.children[nextCellIndex]) {
                     const targetCell = firstRow.children[nextCellIndex];
                     const nextColInput = targetCell.querySelector('input');
@@ -859,14 +824,6 @@
         }
     }
 
-
-
-        
-        
-        
-        
-        
-        
         function exportToExcel() {
     const btn = document.querySelector('.btn-success');
     const oldText = btn.innerHTML;
@@ -884,7 +841,7 @@
             // 2. टेबल का क्लोन बनाएं
             let originalTable = document.getElementById("marksTable");
             let tableClone = originalTable.cloneNode(true);
-            
+
             // इनपुट बॉक्स को टेक्स्ट में बदलें
             let inputs = tableClone.querySelectorAll('input');
             inputs.forEach(input => {
@@ -895,7 +852,7 @@
             // हम हेडर में Attendance ढूंढेंगे
             let headers = tableClone.querySelectorAll('th');
             let attIndex = -1;
-            
+
             headers.forEach((th, index) => {
                 if (th.innerText.includes("Attendance")) attIndex = index;
             });
@@ -924,7 +881,7 @@
             for (let C = range.s.c; C <= range.e.c; ++C) {
                 let addr = XLSX.utils.encode_cell({ r: 0, c: C });
                 let val = ws[addr] ? String(ws[addr].v).trim() : "";
-                
+
                 if (val === "%") colMap.perc = C;
                 if (val === "Result") colMap.result = C;
             }
@@ -966,7 +923,7 @@
                                 // अगर 0.xx है तो 100 से गुणा करें, अगर 42 है तो सीधे % लगाएं
                                 if (num <= 1 && num > 0) val = (num * 100).toFixed(2) + "%";
                                 else val = num + "%";
-                                
+
                                 ws[cellAddress].v = val;
                                 ws[cellAddress].t = 's'; // Force Text
                             }
@@ -1003,7 +960,7 @@
             XLSX.utils.book_append_sheet(wb, ws, "Result");
             let fileName = `Result_${teacherProfile?.assignedClass || 'Class'}_${teacherProfile?.assignedSection || 'Sec'}.xlsx`;
             XLSX.writeFile(wb, fileName);
-            
+
             showToast("Excel Downloaded Successfully!", "success");
 
         } catch (err) {
@@ -1015,8 +972,6 @@
     }, 500);
 }
 
-    
-    
         // 🟢 SECURE INITIALIZATION FOR TEACHER 🟢
     firebase.auth().onAuthStateChanged((user) => {
         const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -1033,12 +988,6 @@
     });
 </script>
 
-    
-
-    
-
-
-    
 </script>
 </body>
 </html>

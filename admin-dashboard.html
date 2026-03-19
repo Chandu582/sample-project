@@ -3,7 +3,6 @@
 
 <head>
 
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - St. Teresa School</title>
@@ -11,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -224,27 +224,12 @@
             <h4>Admissions</h4>
         </a>
 
-
-
-
-
-
-
-
-
-
-
-
-
         <a href="admin-results.html" class="action-card">
             <div class="icon-box" style="background: #ffedd5; color: #c2410c; width:40px; height:40px; font-size:18px;">
                 <i class="fas fa-poll"></i>
             </div>
             <h4>Result Manager</h4>
         </a>
-
-
-
 
         <a href="admin-erp-dashboard.html" class="action-card">
             <div class="icon-box" style="background: #e0e7ff; color: #6366f1; height:40px;width:40px">
@@ -262,14 +247,12 @@
             <small style="font-size: 10px; color: #ea580c;">Create Teacher/Parent</small>
         </a>
 
-
         <a href="admin-bulk-print.html" class="action-card">
             <div class="icon-box" style="background: #e0f2fe; color: #0284c7; width:40px; height:40px; font-size:18px;">
                 <i class="fas fa-print"></i>
             </div>
             <h4>Print Reports</h4>
         </a>
-
 
         <div class="action-card" onclick="window.location.href='admin-print-demand-bill.html'">
             <div class="icon-box" style="background: #e0e7ff; color: #4338ca; height:40px; width:40px; font-size:18px">
@@ -280,12 +263,6 @@
             </div>
         </div>
 
-
-
-
-
-
-
         <div class="action-card" onclick="window.location.href='admin-certificates.html'" style="cursor:pointer;">
             <div class="icon-box" style="background:#e0f2fe; color:#0369a1;width:40px; height:40px">
                 <i class="fas fa-certificate"></i>
@@ -293,17 +270,12 @@
             <h4>Certificates</h4>
         </div>
 
-
-
-
         <a href="admin-attendance.html" class="action-card">
             <div class="icon-box" style="background: #e3f2fd; color: #1565c0; width:40px; height:40px; font-size:18px;">
                 <i class="fas fa-fingerprint"></i>
             </div>
             <h4>Attendance</h4>
         </a>
-
-
 
         <a href="admin-enquiries.html" class="action-card">
             <i class="fas fa-comment-dots ac-icon ac-msg"></i>
@@ -330,16 +302,12 @@
             <h4>Student Manager</h4>
         </a>
 
-
-
         <a href="admin-student-promotion.html" class="action-card">
             <div class="icon-box" style="background: #dcfce7; color: #16a34a; width:40px; height:40px; font-size:18px;">
                 <i class="fas fa-sort-amount-up"></i>
             </div>
             <h4>Session Manager</h4>
         </a>
-
-
 
         <a href="admin-exam-seating.html" class="action-card">
             <div class="icon-box" style="background: #f3e8ff; color: #9333ea; width:40px; height:40px; font-size:18px;">
@@ -348,32 +316,12 @@
             <h4>Exam Seating</h4>
         </a>
 
-
-
-
-
-
-
-
         <a href="admin-admit-card.html" class="action-card">
             <div class="icon-box" style="background: #f3e8ff; color: #7c3aed; width:40px; height:40px; font-size:18px;">
                 <i class="fas fa-address-card"></i>
             </div>
             <h4>Admit Cards</h4>
         </a>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <a href="admin-website-content.html" class="action-card">
             <div class="icon-box" style="background: #f3e8ff; color: #f472b6; width:40px; height:40px; font-size:18px;">
@@ -382,14 +330,6 @@
             <h4>Website content</h4>
         </a>
 
-
-
-
-
-
-
-
-
         <a href="admin-chatbot-manager.html" class="action-card">
             <div class="icon-box" style="background: #e0e7ff; color: #8b5cf6; width:40px; height:40px; font-size:18px;">
                 <i class="fas fa-robot"></i>
@@ -397,13 +337,10 @@
             <h4>AI Chatbot</h4>
         </a>
 
-
         <a href="admin-hero-manager.html" class="action-card">
             <i class="fas fa-image ac-icon ac-banner"></i>
             <h4>Change Banner</h4>
         </a>
-
-
 
         <a href="https://chandu582.github.io/B-day-Reminder/" class="action-card">
             <div class="icon-box" style="background: #f7e8f1; color: #ff4081; width:40px; height:40px; font-size:18px;">
@@ -411,9 +348,6 @@
             </div>
             <h4>B-day Reminder</h4>
         </a>
-
-
-
 
         <div class="action-card" style="background:#fff; border: 2px solid #fff;" onclick="generateSecureAccounts()">
             <div class="ac-icon" style="background:#ef4444; color:white; width:40px; height:40px; font-size:18px;">
@@ -423,24 +357,11 @@
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
         <a href="index.html" target="_blank" class="action-card" style="background:#f9fafb;">
             <i class="fas fa-external-link-alt ac-icon" style="color:#666;"></i>
             <h4>View Website</h4>
         </a>
     </div>
-
-
-
 
     <style>
         .toast-box {
@@ -477,18 +398,6 @@
     </style>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-            authDomain: "sample-school-13ca4.firebaseapp.com",
-            projectId: "sample-school-13ca4",
-            storageBucket: "sample-school-13ca4.firebasestorage.app",
-            messagingSenderId: "198448853287",
-            appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
 
         // --- CUSTOM TOAST FUNCTION ---
         function showToast(msg, type = "error") {
@@ -547,21 +456,6 @@
             }
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // --- SILENT BACKGROUND BIRTHDAY SYNC ---
         async function autoSyncBirthdays() {
             const today = new Date();
@@ -581,8 +475,21 @@
                 snap.forEach(doc => {
                     const data = doc.data();
                     if (data.dob) {
-                        const dob = new Date(data.dob);
-                        if (dob.getDate() === currentDay && (dob.getMonth() + 1) === currentMonth) {
+                        let dobMonth = -1, dobDay = -1;
+                        // Handle standard YYYY-MM-DD to avoid timezone shift
+                        if (data.dob.includes('-') && data.dob.split('-')[0].length === 4) {
+                            const parts = data.dob.split('-');
+                            dobMonth = parseInt(parts[1], 10);
+                            dobDay = parseInt(parts[2], 10);
+                        } else {
+                            const dob = new Date(data.dob);
+                            if (!isNaN(dob)) {
+                                dobMonth = dob.getMonth() + 1;
+                                dobDay = dob.getDate();
+                            }
+                        }
+
+                        if (dobDay === currentDay && dobMonth === currentMonth) {
                             todaysBdays.push({
                                 name: data.name,
                                 class: data.class,
@@ -666,12 +573,6 @@
             }
         }
     </script>
-
-
-
-
-
-
 
 </body>
 

@@ -1,21 +1,22 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Admission - St. Teresa English School</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root { --primary: #002D62; --secondary: #0056b3; --accent: #d32f2f; --gold: #D4AF37; --bg: #f0f2f5; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        
+
         .container {
             max-width: 850px; margin: 0 auto; background: white; 
             border-radius: 15px; overflow: hidden;
@@ -37,7 +38,7 @@
 
         /* FORM */
         .form-body { padding: 30px; }
-        
+
         /* PHOTO UPLOAD */
         .photo-section { display: flex; justify-content: center; margin-bottom: 25px; }
         .photo-box {
@@ -46,7 +47,7 @@
             cursor: pointer; background: #f8fafc; overflow: hidden; position: relative;
         }
         .photo-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        
+
         /* SECTIONS */
         .section-header {
             font-size: 15px; font-weight: 600; color: var(--primary); margin: 25px 0 15px;
@@ -55,7 +56,7 @@
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full-width { grid-column: span 2; }
-        
+
         @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
 
         label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; display: block; }
@@ -99,7 +100,7 @@
     </div>
 
     <div class="form-body">
-        
+
         <div class="photo-section">
             <div class="photo-box" onclick="document.getElementById('photoInput').click()">
                 <div id="uploadPlaceholder" style="text-align: center;">
@@ -119,13 +120,13 @@
                 <input type="text" id="sName" placeholder="e.g. ROHIT KUMAR" oninput="this.value = this.value.toUpperCase()">
                 <div id="err-name" class="error-text">Name is required</div>
             </div>
-            
+
             <div>
                 <label>Date of Birth *</label>
                 <input type="date" id="sDob">
                 <div id="err-dob" class="error-text">DOB is required</div>
             </div>
-            
+
             <div>
                 <label>Gender *</label>
                 <select id="sGender">
@@ -185,7 +186,7 @@
                 </select>
                 <div id="err-class" class="error-text">Class selection is required</div>
             </div>
-            
+
             <div>
                 <label>Previous School Name</label>
                 <input type="text" id="sPrevSchool" placeholder="Leave blank if new student">
@@ -207,7 +208,7 @@
                 <input type="text" id="sFather" placeholder="Mr. Name">
                 <div id="err-father" class="error-text">Required</div>
             </div>
-            
+
             <div>
                 <label>Father's Occupation</label>
                 <input type="text" id="sFatherOcc" placeholder="e.g. Farmer, Business">
@@ -247,17 +248,17 @@
     <div style="font-size: 60px; color: #16a34a; margin-bottom: 20px;"><i class="fas fa-check-circle"></i></div>
     <h2 style="color: var(--primary);">Application Submitted!</h2>
     <p style="color: #64748b;">Your admission request has been sent to the administration.</p>
-    
+
     <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; display: inline-block; margin: 20px 0;">
         <small style="color: #64748b;">REGISTRATION ID</small><br>
         <b style="font-size: 20px; color: var(--primary);" id="displayAppId">---</b>
     </div>
-    
+
     <br>
     <button onclick="downloadReceipt()" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
         <i class="fas fa-file-pdf"></i> Download Receipt
     </button>
-    
+
     <p style="margin-top: 20px; font-size: 13px; color: #94a3b8;">You will receive a confirmation on WhatsApp soon.</p>
 </div>
 
@@ -265,7 +266,7 @@
     <div id="receiptHTML" class="receipt-box">
         <div class="r-title">St. Teresa English School</div>
         <div style="text-align: center; margin-bottom: 20px; font-size: 14px;">Admission Application Receipt</div>
-        
+
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
             <div>
                 <div class="r-row"><div class="r-key">Reg ID:</div><div class="r-val" id="rAppId"></div></div>
@@ -280,12 +281,12 @@
         <div class="r-row"><div class="r-key">Class:</div><div class="r-val" id="rClass"></div></div>
         <div class="r-row"><div class="r-key">Gender/DOB:</div><div class="r-val"><span id="rGender"></span> / <span id="rDob"></span></div></div>
         <div class="r-row"><div class="r-key">Category:</div><div class="r-val" id="rCategory"></div></div>
-        
+
         <div class="r-row"><div class="r-key">Father's Name:</div><div class="r-val" id="rFather"></div></div>
         <div class="r-row"><div class="r-key">Mother's Name:</div><div class="r-val" id="rMother"></div></div>
         <div class="r-row"><div class="r-key">Mobile:</div><div class="r-val" id="rMobile"></div></div>
         <div class="r-row"><div class="r-key">Address:</div><div class="r-val" id="rAddress"></div></div>
-        
+
         <div style="margin-top: 40px; text-align: right; font-size: 12px;">
             <b>(Signature)</b><br>Authorized Signatory
         </div>
@@ -294,17 +295,6 @@
 
 <script>
     // 1. FIREBASE INIT
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
     // 2. CLOUDINARY CONFIG (Image Upload)
     const cloudName = "dngejhffd"; 
@@ -329,7 +319,7 @@
         // IDs
         const ids = ['sName', 'sDob', 'sGender', 'sClass', 'sFather', 'sMother', 'sMobile', 'sAddress', 'photoInput'];
         const errs = ['err-name', 'err-dob', 'err-gender', 'err-class', 'err-father', 'err-mother', 'err-mobile', 'err-address', 'err-photo'];
-        
+
         // Reset Errors
         errs.forEach(e => document.getElementById(e).style.display = 'none');
         document.querySelectorAll('input, select, textarea').forEach(e => e.classList.remove('input-err'));
@@ -341,7 +331,7 @@
         const religion = document.getElementById('sReligion').value;
         const category = document.getElementById('sCategory').value;
         const aadhar = document.getElementById('sAadhar').value;
-        
+
         const admClass = document.getElementById('sClass').value;
         const prevSchool = document.getElementById('sPrevSchool').value;
         const transportOpted = document.getElementById('sTransport').value === "Yes";
@@ -382,7 +372,7 @@
             const formData = new FormData();
             formData.append('file', photoFile);
             formData.append('upload_preset', uploadPreset);
-            
+
             const imgReq = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: formData });
             const imgData = await imgReq.json();
             const photoUrl = imgData.secure_url;
@@ -396,7 +386,7 @@
                 appId: appId,
                 status: 'Pending',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                
+
                 // Student Fields
                 name: name.toUpperCase(),
                 dob: dob,
@@ -404,23 +394,23 @@
                 religion: religion,
                 category: category,
                 aadhar: aadhar,
-                
+
                 // Academic
                 admissionClass: admClass, // Will be mapped to 'class'
                 prevSchool: prevSchool,
                 transportOpted: transportOpted,
-                
+
                 // Parents
                 fatherName: father,
                 fatherOcc: fatherOcc,
                 motherName: mother,
                 guardianIncome: income,
                 mobile: mobile,
-                
+
                 // Address (Mapping to both Permanent and Temp for start)
                 addressPerm: address,
                 addressTemp: address,
-                
+
                 // Photo
                 photoUrl: photoUrl
             };

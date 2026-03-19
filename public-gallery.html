@@ -1,13 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>St. Teresa School Gallery | Perfect Zoom</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
+    <script src="config.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -15,7 +16,7 @@
         body { font-family: 'Poppins', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .header { text-align: center; margin-bottom: 25px; }
         h1 { color: #333; font-size: 24px; margin-bottom: 15px; }
-        
+
         .filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .filters button { background: white; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.3s; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
         .filters button:hover, .filters button.active { background: #1a73e8; color: white; border-color: #1a73e8; box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); }
@@ -72,17 +73,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         let allMedia = [], currentMedia = [], currentIndex = 0;
 

@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Result | STES</title>
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -43,7 +44,7 @@
 
         .school-header { text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 25px; position: relative; }
         .logo { width: 90px; height: 90px; position: absolute; left: 0; top: 0; object-fit: contain; }
-        
+
         /* QR Code Style */
         .qr-code {
             position: absolute; right: 0; top: 5px;
@@ -73,10 +74,10 @@
         /* Tables */
         .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; border: 1px solid #000; }
         .marks-table th { background: var(--primary); color: white; padding: 6px; font-weight: 800; text-transform: uppercase; text-align: center; border: 1px solid #000; font-size: 11px; letter-spacing: 0.5px; }
-        
+
         .marks-table td { border: 1px solid #000; padding: 6px; text-align: center; font-weight: 800; color: #334155; }
         .sub-col { text-align: center !important; padding-left: 0px !important; font-weight: 900 !important; color: #0f172a; }
-        
+
         .row-fail { background-color: #fee2e2 !important; color: #991b1b !important; }
 
         .summary-section { display: flex; gap: 15px; margin-bottom: 25px; }
@@ -93,7 +94,7 @@
         .status-item { flex: 1; padding: 10px; text-align: center; border-right: 1px solid #cbd5e1; background: var(--bg-gray); display: flex; flex-direction: column; justify-content: center; }
         .status-item:last-child { border-right: none; }
         .status-lbl { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #000; margin-bottom: 3px; letter-spacing: 0.5px; }
-        
+
         .status-val { font-size: 14px; font-weight: 900; color: var(--primary); text-transform: uppercase; }
         .res-pass { color: #15803d; } .res-fail { color: #b91c1c; }
 
@@ -112,7 +113,7 @@
         .quote-box { margin-top: 30px; padding: 15px 20px; border: 2px solid #000; border-radius: 12px; text-align: center; position: relative; background: transparent; }
         .quote-box::before { content: '❝'; font-size: 30px; position: absolute; top: -20px; left: 20px; background: white; padding: 0 10px; color: #000; }
         .quote-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; color: #000; font-weight: 600; letter-spacing: 0.5px; }
-        
+
         .footer-note { text-align:center; font-size:10px; color:#272B30; margin-top: 5px; font-style: italic; }
 
         /* PRINT SETTINGS - MATCHED TO ADMIN BULK PRINT */
@@ -179,30 +180,19 @@
 
     <div class="controls">
         <a href="parent-portal.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
-        
+
         <select id="examSelect" onchange="loadResultData()" style="padding:10px; border:1px solid #ccc; border-radius:6px; font-family:inherit; min-width: 250px; font-weight:600; font-size: 13px;">
             <option value="">-- Select Exam --</option>
         </select>
-        
+
         <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Print Report</button>
     </div>
 
     <div id="cardContainer"></div>
-    
+
     <div id="noData" style="text-align:center; padding:80px; display:none; color:#666;"><h3>Please select an exam to view result.</h3></div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         // Global Settings
         let globalLogo = "1000084138-removebg-preview.png";
@@ -275,11 +265,11 @@
                 async function loadResultData() {
             const resId = document.getElementById('examSelect').value;
             const container = document.getElementById('cardContainer');
-            
+
             if(!resId) { container.innerHTML = ""; document.getElementById('noData').style.display = 'block'; return; }
-            
+
             container.innerHTML = "<div style='text-align:center; padding:50px;'><i class='fas fa-spinner fa-spin fa-2x'></i><br><br>Checking Result Status...</div>";
-            
+
             try {
                 // 1. Fetch Result Document
                 const doc = await db.collection('results').doc(resId).get();
@@ -291,7 +281,7 @@
                 // --- NEW: PUBLISH CHECK ---
                 // Check if Admin has published this specific Exam for this Class
                 const pubDoc = await db.collection('publish_status').doc(`${res.examId}_${res.class}`).get();
-                
+
                 // Agar document nahi hai, ya published false hai -> BLOCK KARO
                 if (!pubDoc.exists || !pubDoc.data().published) {
                     container.innerHTML = `
@@ -347,7 +337,7 @@ Marks: ${totalStr}
 %: ${perc}%
 Rank: ${res.classRank || '-'}
 Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
-                        
+
                         new QRCode(qrBox, {
                             text: qrText,
                             width: 85,
@@ -362,7 +352,6 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                 container.innerHTML = `<div style="text-align:center; color:red; padding:30px;">Error: ${e.message}</div>`;
             }
         }
-
 
         // --- GENERATOR LOGIC (EXACT COPY FROM ADMIN BULK) ---
         // REPLACE THIS FUNCTION in admin-bulk-print.html
@@ -381,7 +370,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         // --- STEP 1: Calculate Correct Max Total (On the Fly Fix) ---
         // Ye logic ensure karega ki chahe 'AB' ho, Max Marks count ho.
         let calculatedMaxTotal = 0;
-        
+
         // Agar subjectsConfig khali hai to marks keys se bana lo (Fallback)
         const subjectList = subjectsConfig.length ? subjectsConfig : Object.keys(res.marks).map(m => ({name: m, is50: false}));
 
@@ -395,32 +384,27 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
             let sMax = examMax;
             // Agar exam 100 marks ka hai aur subject GK/Sanskrit hai (is50 true), to 50 marks lo
             if(examMax === 100 && sub.is50) sMax = 50;
-            
+
             calculatedMaxTotal += sMax;
         });
         // -------------------------------------------------------------
 
         let rowsHtml = "";
-        
+
         subjectList.forEach(sub => {
             const marks = res.marks[sub.name];
             if(marks !== undefined) {
                 let displayMax = examMax; 
                 if(examMax === 100 && sub.is50) displayMax = 50;
-                
-                
+
                 // --- FIX START: Drawing ke liye Max Marks Blank ---
                 if(/drawing/i.test(sub.name)) displayMax = ""; 
                 // --- FIX END ---
 
-                
-                
-                
-                
                 let gradeObj = { grade: marks, remark: "-" };
                 let isFail = false;
                 const mVal = parseFloat(marks); // Agar 'AB' hai to NaN ayega
-                
+
                 if(isNaN(mVal)) {
                     // Agar Number nahi hai (AB, Medical etc)
                     gradeObj.grade = marks; 
@@ -430,12 +414,12 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                     let p = 0; 
                     if(examMax === 25) p = mVal * 4; 
                     else p = sub.is50 ? mVal * 2 : mVal * 1;
-                    
+
                     gradeObj = getGradeDetails(Math.round(p));
                     if(gradeObj.grade.includes("N.I")) isFail = true;
                 }
                 const rowClass = isFail ? "row-fail" : "";
-                
+
                 rowsHtml += `<tr class="${rowClass}">
                     <td class="sub-col">${sub.name} ${sub.is50 ? '*' : ''}</td>
                     <td><b>${displayMax}</b></td>
@@ -450,20 +434,19 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         let totalStr = res.total || "0/0";
         let tParts = totalStr.split('/');
         let obtainedMarks = parseFloat(tParts[0]) || 0; // Numerator Database se uthao
-        
+
         // Denominator humara naya calculated wala use karo
         let finalMax = calculatedMaxTotal > 0 ? calculatedMaxTotal : (parseFloat(tParts[1]) || 0);
 
         let perc = finalMax > 0 ? ((obtainedMarks / finalMax) * 100).toFixed(2) : "0.00";
         // ----------------------------------------------------
-        
+
         let finalStatus = parseFloat(perc) < 32.5 ? "N.I" : "PASS";
         let statusClass = finalStatus === "PASS" ? "res-pass" : "res-fail";
         let finalGrade = parseFloat(perc) < 32.5 ? "N.I" : (res.overallGrade || "-");
         // --- NAYA LOGIC ---
         let displayPromoted = finalStatus === "PASS" ? (res.promotedTo || "------") : "------";
 
-        
         let quote = getPremiumQuote(parseFloat(perc), finalStatus);
 
         let photoHtml = "";
@@ -474,7 +457,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         return `
         <div class="report-card">
             <img src="${globalLogo}" class="watermark" alt="Watermark">
-            
+
             <div class="school-header">
                 <img src="${globalLogo}" class="logo" alt="Logo"> 
                 <div id="qr-${stu.id}" class="qr-code"></div>
@@ -491,7 +474,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
                     <div class="info-row"><span class="lbl">Class & Sec:</span> <span class="val">${res.class} - ${stu.section}</span></div>
                     <div class="info-row"><span class="lbl">Roll No:</span> <span class="val">${stu.roll}</span></div>
                 </div>
-                
+
                 <div class="info-col">
                     <div class="info-row"><span class="lbl">Father Name:</span> <span class="val">${stu.fatherName || "-"}</span></div>
                     <div class="info-row"><span class="lbl">Exam Name:</span> <span class="val">${res.examId}</span></div>
@@ -555,7 +538,6 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         `;
     }
 
-
         function getGradeDetails(p) {
             if(p >= 91) return { grade: "O ", remark: "Outstanding" };
             if(p >= 81) return { grade: "A+ ", remark: "Excellent" };
@@ -577,8 +559,7 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
         }
 
         // Trigger Data Loading
-        
-        
+
             // 🟢 SECURE INITIALIZATION FOR PARENT RESULT 🟢
     firebase.auth().onAuthStateChanged((user) => {
         const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -593,11 +574,6 @@ Attn: ${res.attendance || '0'}/${res.totalWorkingDays || '0'}`;
             window.location.replace("admin-login.html"); 
         }
     });
-
-        
-        
-        
-        
 
     </script>
 </body>

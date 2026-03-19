@@ -27,8 +27,8 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 
 // 3. Global Variables Export (Taaki har file me direct use ho sakein)
 // Ab aap puri website me kahin bhi 'db' ya 'storage' likhoge to chalega
-const db = firebase.firestore();
-const storage = firebase.storage(); 
+const db = typeof firebase.firestore === 'function' ? firebase.firestore() : null;
+const storage = typeof firebase.storage === 'function' ? firebase.storage() : null; 
 
 // (Optional) Agar Auth use karna ho to ise uncomment kar dena:
-// const auth = firebase.auth();
+const auth = typeof firebase.auth === 'function' ? firebase.auth() : null;

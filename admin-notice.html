@@ -1,44 +1,39 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    
-    
-    
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Notices - Admin</title>
-    
-    
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f3f4f6; padding: 20px; max-width: 900px; margin: auto; }
-        
+
         .header { background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .header h2 { margin: 0; color: #f59e0b; display: flex; align-items: center; gap: 10px; }
         .back-btn { text-decoration: none; color: #555; font-weight: 500; display: flex; align-items: center; gap: 5px; }
 
         /* COMMON CARD STYLE */
         .admin-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; position: relative; }
-        
+
         /* 1. MARQUEE SECTION (Blue Theme) */
         .marquee-card { border-top: 5px solid #2563eb; }
         .marquee-title { font-size: 18px; font-weight: 700; color: #1e3a8a; margin-top: 0; display: flex; align-items: center; gap: 10px; }
-        
+
         .marquee-input-group { display: flex; gap: 10px; margin-top: 15px; }
         .marquee-input { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 15px; outline: none; }
         .marquee-input:focus { border-color: #2563eb; }
 
         .btn-update { background: #2563eb; color: white; border: none; padding: 0 25px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-update:hover { background: #1d4ed8; }
-        
+
         .btn-clear { background: #fee2e2; color: #dc2626; border: none; padding: 0 15px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; }
         .btn-clear:hover { background: #fca5a5; }
 
@@ -50,10 +45,10 @@
         label { font-weight: 600; color: #444; display: block; margin-bottom: 8px; font-size: 14px; }
         .title-input { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border: 1px solid #ddd; border-radius: 8px; outline: none; box-sizing: border-box; }
         textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 100px; box-sizing: border-box; }
-        
+
         .file-upload-box { border: 2px dashed #ccc; padding: 15px; text-align: center; border-radius: 8px; cursor: pointer; background: #fafafa; transition: 0.3s; }
         .file-upload-box:hover { border-color: #f59e0b; background: #fffcf5; }
-        
+
         .btn-publish { width: 100%; background: #f59e0b; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .btn-publish:hover { background: #d97706; }
         .btn-publish:disabled { background: #ccc; cursor: not-allowed; }
@@ -79,7 +74,7 @@
             <i class="fas fa-bolt"></i> Flash / Marquee Notice (Home Page)
         </h3>
         <p style="font-size:13px; color:#666; margin:0;">Ye text home page par chalti hui patti (scroll) mein dikhega.</p>
-        
+
         <div class="marquee-input-group">
             <input type="text" id="marqueeText" class="marquee-input" placeholder="Example: Admission Open for 2025-26...">
             <button onclick="updateMarquee()" class="btn-update">Update</button>
@@ -89,10 +84,10 @@
 
     <div class="admin-card notice-card">
         <h3 class="notice-head"><i class="fas fa-clipboard-list"></i> Add to Notice Board</h3>
-        
+
         <div class="form-group"><input type="text" id="nTitle" class="title-input" placeholder="Notice Title (e.g. Holiday Announcement)"></div>
         <div class="form-group"><textarea id="nBody" placeholder="Write full details here..."></textarea></div>
-        
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div>
                 <label>Notice Date</label>
@@ -113,17 +108,6 @@
     <div id="noticeListArea"><p style="text-align:center; color:#999;">Loading...</p></div>
 
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         const cloudName = "dngejhffd";       
         const uploadPreset = "school_gallery"; 
@@ -189,7 +173,7 @@
                         method: 'POST', body: formData
                     });
                     const data = await res.json();
-                    
+
                     if(data.error) throw new Error(data.error.message);
                     fileUrl = data.secure_url;
                 }
@@ -237,9 +221,7 @@
                 db.collection('notices').doc(id).delete();
             }
         }
-        
-        
-        
+
         // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -249,9 +231,9 @@ firebase.auth().onAuthStateChanged((user) => {
         // Asli test
         db.collection('admins').doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().role === 'SuperAdmin') {
-                
+
                 loadNotices(); // <-- Yahan page ka main function call hoga
-                
+
             } else {
                 auth.signOut().then(() => window.location.replace("admin-login.html"));
             }
@@ -260,11 +242,7 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.replace("admin-login.html");
     }
 });
-     
-        
-        
-        
-        
+
     </script>
 </body>
 </html>
