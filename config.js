@@ -4,14 +4,15 @@
 
 
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA2xmYtteRPlX8sa9p9VRE36dP2cnQnJ8k",
-  authDomain: "sample-school-13ca4.firebaseapp.com",
-  projectId: "sample-school-13ca4",
-  storageBucket: "sample-school-13ca4.firebasestorage.app",
-  messagingSenderId: "198448853287",
-  appId: "1:198448853287:web:778646f4cb56a9ba7ff902"
-};
+// Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD_E3sVBKxA4z5nhFazs5X9Rcz7S1ila-o",
+    authDomain: "st-teresa-school-9db80.firebaseapp.com",
+    projectId: "st-teresa-school-9db80",
+    storageBucket: "st-teresa-school-9db80.firebasestorage.app",
+    messagingSenderId: "304381643274",
+    appId: "1:304381643274:web:fac3182e3e1ecb8f24adf3"
+  };
 
 
 
