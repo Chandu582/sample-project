@@ -2601,6 +2601,14 @@
                         // ✅ NAYI LINES: Bache ko current session me assign karne ke liye
                         session: document.getElementById('admSessionSelect').value,
                         activeSessions: [document.getElementById('admSessionSelect').value],
+
+                        // ✅ NAYI LINE: Admission ke time pehla session freeze kardo
+                        [`sessionMeta_${document.getElementById('admSessionSelect').value}`]: {
+                            class: document.getElementById('classSelect').value,
+                            section: document.getElementById('sectionSelect').value,
+                            roll: document.getElementById('rollNo').value,
+                            status: document.getElementById('studentStatus').value
+                        },
                         // ✅ NAYI LINES END
 
                         photo: photo || existing.photo || "",
@@ -3316,7 +3324,27 @@
                 const currentMonth = new Date().toLocaleString('en-US', { month: 'long' });
 
                 const allRowsHTML = data.map(s => {
-                    const statusStyle = s.status === 'Active' ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;';
+                    // ✅ LATEST SESSION AUR CLASS FETCH KARNE KA LOGIC
+                    let displaySession = s.session || 'N/A';
+                    let displayClass = s.class || 'N/A';
+                    let displaySection = s.section || '';
+                    let displayRoll = s.roll || '-';
+                    let displayStatus = s.status || 'Active';
+
+                    // Agar bache ke paas activeSessions hai, to sabse naya session nikalo
+                    if (s.activeSessions && Array.isArray(s.activeSessions) && s.activeSessions.length > 0) {
+                        let sortedSessions = [...s.activeSessions].sort().reverse();
+                        displaySession = sortedSessions[0]; // e.g., "2026-2027"
+
+                        if (s[`sessionMeta_${displaySession}`]) {
+                            displayClass = s[`sessionMeta_${displaySession}`].class || displayClass;
+                            displaySection = s[`sessionMeta_${displaySession}`].section || displaySection;
+                            displayRoll = s[`sessionMeta_${displaySession}`].roll || displayRoll;
+                            displayStatus = s[`sessionMeta_${displaySession}`].status || displayStatus;
+                        }
+                    }
+
+                    const statusStyle = displayStatus === 'Active' ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;';
                     const photoUrl = s.photo || 'https://via.placeholder.com/40';
 
                     // --- 🟢 SMART TRANSPORT STATUS LOGIC ---
@@ -3342,7 +3370,7 @@
                 <input type="checkbox" class="row-checkbox" value="${s.id}" onclick="checkSelection()" style="width: 16px; height: 16px; cursor: pointer;">
             </td>
 
-            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">${s.session || 'N/A'}</span></td>
+            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">${displaySession}</span></td>
 
             <td style="padding:15px; text-align:center;">
                 <img src="${photoUrl}" loading="lazy" onclick="openLightbox('${photoUrl}')" 
@@ -3355,8 +3383,8 @@
             </td>
 
             <td style="padding:15px;">
-                <div style="font-weight:600; color:#4b5563;">${s.class} (${s.section})</div>
-                <div style="font-size:11px; color:#9ca3af;">Roll: ${s.roll}</div>
+                <div style="font-weight:600; color:#4b5563;">${displayClass} (${displaySection})</div>
+                <div style="font-size:11px; color:#9ca3af;">Roll: ${displayRoll}</div>
             </td>
 
             <td style="padding:15px;">
@@ -3377,7 +3405,7 @@
             </td>
 
             <td style="padding:15px; text-align:center;">
-                <span onclick="toggleStatus('${s.id}')" style="cursor:pointer; ${statusStyle} padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;">${s.status}</span>
+                <span onclick="toggleStatus('${s.id}')" style="cursor:pointer; ${statusStyle} padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;">${displayStatus}</span>
             </td>
 
             <td style="padding:15px; text-align:center; display:flex; gap:5px; justify-content:center;">
@@ -4425,34 +4453,56 @@
                 };
 
                 // Data Mapping (Columns Define Karo)
-                const exportData = dataToExport.map(s => ({
-                    "STES ID": s.stesID,
-                    "Status": s.status,
-                    "Admission Date": fmtDate(s.admissionDate),
-                    "Admission Category": s.admissionCategory || "Regular",
+                // Data Mapping (Columns Define Karo)
+                const exportData = dataToExport.map(s => {
+                    // ✅ LATEST DATA FETCH FOR EXCEL
+                    let expSession = s.session || 'N/A';
+                    let expClass = s.class || 'N/A';
+                    let expSection = s.section || '';
+                    let expRoll = s.roll || '-';
+                    let expStatus = s.status || 'Active';
 
-                    "Name": s.name,
-                    "Class": s.class,
-                    "Section": s.section,
-                    "Roll No": s.roll,
-                    "Gender": s.gender,
-                    "DOB": fmtDate(s.dob),
-                    "Category": s.category,
-                    "Father Name": s.fatherName,
-                    "Father Occupation": s.fatherOcc,
-                    "Mother Name": s.motherName,
-                    "Mobile No": s.mobile,
-                    "Address": s.addressPerm,
-                    "Aadhar No": s.aadhar,
-                    "PEN No": s.pen,
+                    if (s.activeSessions && Array.isArray(s.activeSessions) && s.activeSessions.length > 0) {
+                        let sortedSessions = [...s.activeSessions].sort().reverse();
+                        expSession = sortedSessions[0];
+                        if (s[`sessionMeta_${expSession}`]) {
+                            expClass = s[`sessionMeta_${expSession}`].class || expClass;
+                            expSection = s[`sessionMeta_${expSession}`].section || expSection;
+                            expRoll = s[`sessionMeta_${expSession}`].roll || expRoll;
+                            expStatus = s[`sessionMeta_${expSession}`].status || expStatus;
+                        }
+                    }
 
-                    // ✅ Transport Columns Update Kiye
-                    "Transport Opted": s.transportOpted ? "Yes" : "No",
-                    "Transport Route": s.transportRoute || "-",
-                    "Transport Start Date": fmtDate(s.transportStart) || "-", // ✅ NEW COLUMN ADDED
+                    return {
+                        "STES ID": s.stesID,
+                        "Status": expStatus,
+                        "Current Session": expSession,
+                        "Admission Date": fmtDate(s.admissionDate),
+                        "Admission Category": s.admissionCategory || "Regular",
 
-                    "House": s.house || "-"
-                }));
+                        "Name": s.name,
+                        "Class": expClass,
+                        "Section": expSection,
+                        "Roll No": expRoll,
+                        "Gender": s.gender,
+                        "DOB": fmtDate(s.dob),
+                        "Category": s.category,
+                        "Father Name": s.fatherName,
+                        "Father Occupation": s.fatherOcc,
+                        "Mother Name": s.motherName,
+                        "Mobile No": s.mobile,
+                        "Address": s.addressPerm,
+                        "Aadhar No": s.aadhar,
+                        "PEN No": s.pen,
+
+                        // ✅ Transport Columns Update Kiye
+                        "Transport Opted": s.transportOpted ? "Yes" : "No",
+                        "Transport Route": s.transportRoute || "-",
+                        "Transport Start Date": fmtDate(s.transportStart) || "-", // ✅ NEW COLUMN ADDED
+
+                        "House": s.house || "-"
+                    };
+                });
 
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.json_to_sheet(exportData);

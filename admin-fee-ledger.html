@@ -1133,10 +1133,30 @@
                 const todayIdx = (new Date().getMonth() >= 3) ? new Date().getMonth() - 3 : new Date().getMonth() + 9;
                 const currentDay = new Date().getDate();
 
+                // 6. PROCESS STUDENTS (MAIN LOGIC)
                 rawData = stds.docs.map(doc => {
-                    const s = { id: doc.id, ...doc.data() };
+                    let sData = doc.data();
+
+                    // ✅ 1. SESSION VISIBILITY CHECK (Agar bacha is session me active nahi hai to hatao)
+                    if (sData.activeSessions && Array.isArray(sData.activeSessions)) {
+                        if (!sData.activeSessions.includes(currentSession)) return null;
+                    } else {
+                        if (currentSession !== "2025-2026") return null;
+                    }
+
+                    let s = { id: doc.id, ...sData };
+
+                    // ✅ 2. SESSION META OVERRIDE (Pichle session ki class, roll no aur status uthayega)
+                    if (s[`sessionMeta_${currentSession}`]) {
+                        s.class = s[`sessionMeta_${currentSession}`].class || s.class;
+                        s.section = s[`sessionMeta_${currentSession}`].section || s.section;
+                        s.roll = s[`sessionMeta_${currentSession}`].roll || s.roll;
+                        s.status = s[`sessionMeta_${currentSession}`].status || s.status;
+                    }
+
                     const myFees = feesByStudent[s.id] || [];
-                    const clsFees = globalFeeMap[s.class] || {};
+                    const clsFees = globalFeeMap[s.class] || {}; // Ab ye nayi overriden class ka fee structure dhundhega
+
 
                     // --- 1. WALLET & CREDIT CALCULATION (NEW) ---
                     const walletBalance = Number(s.walletBalance) || 0;
@@ -1353,7 +1373,7 @@
                         totalDisc, discHistory,
                         walletBalance, creditDue, creditItems // <--- New Fields Added
                     };
-                });
+                }).filter(s => s !== null); // ✅ HIDDEN STUDENTS KO REMOVE KARO
 
                 buildHeader();
                 renderTable();

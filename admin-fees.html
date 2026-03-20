@@ -1248,13 +1248,45 @@
             const r = document.getElementById('srchRoll').value;
             const c = document.getElementById('srchClass').value;
 
-            // Filter Logic
-            const list = students.filter(s =>
-                s.status === 'Active' &&
-                s.name.toLowerCase().includes(n) &&
-                (r === '' || s.roll == r) &&
-                (c === '' || s.class === c)
-            );
+            // ✅ SMART FILTER & SESSION METADATA APPLY
+            const list = students.filter(s => {
+                // 1. Session Visibility Check (Agar bacha naye session me nahi gaya to hatao)
+                if (s.activeSessions && Array.isArray(s.activeSessions)) {
+                    if (!s.activeSessions.includes(currentSession)) return false;
+                } else {
+                    if (currentSession !== "2025-2026") return false;
+                }
+                
+                // 2. Override Class & Roll for searching in old sessions
+                let searchClass = s.class;
+                let searchRoll = s.roll;
+                if (s[`sessionMeta_${currentSession}`]) {
+                    searchClass = s[`sessionMeta_${currentSession}`].class || s.class;
+                    searchRoll = s[`sessionMeta_${currentSession}`].roll || s.roll;
+                }
+
+                // 3. Status check
+                let searchStatus = s.status;
+                if (s[`sessionMeta_${currentSession}`]) {
+                    searchStatus = s[`sessionMeta_${currentSession}`].status || s.status;
+                }
+
+                return searchStatus === 'Active' &&
+                       s.name.toLowerCase().includes(n) &&
+                       (r === '' || searchRoll == r) &&
+                       (c === '' || searchClass === c);
+            }).map(s => {
+                // Return mapped student with overridden values for UI
+                let displayClass = s.class;
+                let displaySection = s.section;
+                let displayRoll = s.roll;
+                if (s[`sessionMeta_${currentSession}`]) {
+                    displayClass = s[`sessionMeta_${currentSession}`].class || displayClass;
+                    displaySection = s[`sessionMeta_${currentSession}`].section || displaySection;
+                    displayRoll = s[`sessionMeta_${currentSession}`].roll || displayRoll;
+                }
+                return {...s, class: displayClass, section: displaySection, roll: displayRoll};
+            });
 
             // HTML Generation with Category Badge
             document.getElementById('results').innerHTML = list.map(s => {
@@ -1300,12 +1332,23 @@
         async function openModal(sid) {
             try {
                 // A. Basic Setup
-                activeStu = students.find(x => x.id === sid);
-                if (!activeStu) return alert("Student not found!");
+                let foundStu = students.find(x => x.id === sid);
+                if (!foundStu) return alert("Student not found!");
+                
+                // Clone object taaki original data change na ho
+                activeStu = JSON.parse(JSON.stringify(foundStu));
 
-                // 👇👇👇 YAHAN PASTE KAREIN (Ye Naya Code Hai) 👇👇👇
+                // ✅ OVERRIDE CLASS/SECTION/ROLL FROM SESSION META (Very Important)
+                if (activeStu[`sessionMeta_${currentSession}`]) {
+                    activeStu.class = activeStu[`sessionMeta_${currentSession}`].class || activeStu.class;
+                    activeStu.section = activeStu[`sessionMeta_${currentSession}`].section || activeStu.section;
+                    activeStu.roll = activeStu[`sessionMeta_${currentSession}`].roll || activeStu.roll;
+                    activeStu.status = activeStu[`sessionMeta_${currentSession}`].status || activeStu.status;
+                }
 
-                // 🟢 FIX: Load Fees ONLY for this student & Current Session
+                
+
+                // FIX: Load Fees ONLY for this student & Current Session
                 // Isse app fast ho jayega aur purana data clash nahi karega
                 const feeSnap = await db.collection('fees')
                     .where('sid', '==', sid)

@@ -598,11 +598,11 @@
     </div>
 
     <script>
-        
 
-        
 
-         // FIX: Auth variable added
+
+
+        // FIX: Auth variable added
 
         const classOrder = ["Nursery", "LKG", "UKG", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "Passout"];
         let fetchedStudents = [];
@@ -959,11 +959,21 @@
                     updateData['previousDue'] = 0;
 
                     updateData.studentType = 'Old Student';
-                    updateData.studentStatus = 'Old Student'; // 'Old' ki jagah 'Old Student' kar diya
+                    updateData.studentStatus = 'Old Student'; 
                     updateData.isNew = false;
-                    updateData.admissionType = 'Old Student'; // Yahan bhi 'Old' ki jagah 'Old Student' kar diya
+                    updateData.admissionType = 'Old Student'; 
+
+                    // ✅ FREEZE OLD SESSION DATA (Pichla session freeze karo)
+                    updateData[`sessionMeta_${closeSession}`] = {
+                        class: s.class,
+                        section: s.section || 'A',
+                        roll: s.roll || '',
+                        status: s.status || 'Active'
+                    };
 
                     let finalAssignedClass = s.class;
+                    let newStatus = s.status || 'Active';
+
                     if (action === 'PROMOTE') {
                         updateData.class = targetClass;
                         finalAssignedClass = targetClass;
@@ -972,7 +982,19 @@
                         finalAssignedClass = currentClass;
                     } else if (action === 'LEFT') {
                         updateData.status = 'Left';
+                        newStatus = 'Left';
                     }
+
+                    // ✅ SAVE NEW SESSION DATA (Naya session freeze)
+                    updateData[`sessionMeta_${newSession}`] = {
+                        class: finalAssignedClass,
+                        section: s.section || 'A',
+                        roll: s.roll || '',
+                        status: newStatus
+                    };
+
+                    // ✅ ADD TO ACTIVE SESSIONS (Taaki naye session me sirf yahi bache dikhe)
+                    updateData['activeSessions'] = firebase.firestore.FieldValue.arrayUnion(newSession);
 
                     historyRecords.push({
                         id: s.id,
