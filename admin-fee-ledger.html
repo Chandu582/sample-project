@@ -849,9 +849,7 @@
                     <span style="font-size:11px; color:#64748b;" id="sessionDisplay">Loading...</span>
                 </div>
             </div>
-            <select id="sessionSelect" class="inp" style="width:auto;" onchange="loadData()">
-                <option value="2025-2026">2025-2026</option>
-            </select>
+            <select id="sessionSelect" class="inp" style="width:auto;" onchange="loadData()"></select>
         </div>
 
         <div class="filters">
@@ -985,7 +983,7 @@
     <script>
         // FIREBASE CONFIGURATION
 
-        let currentSession = "2025-2026";
+        let currentSession = "";
         let rawData = [];
         let dynamicHeads = [];
 
@@ -1012,7 +1010,7 @@
                     if (!isNaN(d2.getTime())) return d2.toLocaleDateString(locale);
                     return raw;
                 }
-            } catch(e) {}
+            } catch (e) { }
             return "-";
         }
 
@@ -1025,12 +1023,29 @@
             try {
                 const doc = await db.collection('masterSettings').doc('sessions').get();
                 const sel = document.getElementById('sessionSelect');
-                if (doc.exists && doc.data().list) {
-                    sel.innerHTML = doc.data().list.sort().reverse().map(s => `<option value="${s}">${s}</option>`).join('');
-                    currentSession = doc.data().list[0];
+
+                if (doc.exists && doc.data().list && doc.data().list.length > 0) {
+                    // Sort array in descending order to get the latest session first (e.g., 2026-2027 then 2025-2026)
+                    const list = doc.data().list.sort().reverse();
+                    sel.innerHTML = list.map(s => `<option value="${s}">${s}</option>`).join('');
+
+                    currentSession = list[0]; // Automatically set to latest
                     sel.value = currentSession;
+                } else {
+                    // Fallback: Agar database mein koi session nahi hai, to auto-create karega
+                    const today = new Date();
+                    const y = today.getMonth() < 3 ? today.getFullYear() - 1 : today.getFullYear();
+                    const autoSession = `${y}-${y + 1}`;
+
+                    sel.innerHTML = `<option value="${autoSession}">${autoSession}</option>`;
+                    currentSession = autoSession;
+
+                    // Database mein save bhi kar dega
+                    db.collection('masterSettings').doc('sessions').set({ list: [autoSession] }, { merge: true });
                 }
-            } catch (e) { console.log(e); }
+            } catch (e) {
+                console.error("Session Load Error:", e);
+            }
         }
 
         async function loadData() {
@@ -1232,13 +1247,13 @@
                     let rhMap = {};
                     myFees.forEach(f => {
                         let rNo = f.receiptNo || ("N/A-" + Math.random());
-                        if(!rhMap[rNo]) rhMap[rNo] = { cash: 0, itemDisc: 0, explicitDisc: 0 };
+                        if (!rhMap[rNo]) rhMap[rNo] = { cash: 0, itemDisc: 0, explicitDisc: 0 };
 
                         let fHead = (f.headName || f.otherHead || "").toLowerCase();
 
-                        if (f.type === 'ITEM') { 
-                            extraPaid += (Number(f.paidAmount) || 0); 
-                            itemHistory.push(f); 
+                        if (f.type === 'ITEM') {
+                            extraPaid += (Number(f.paidAmount) || 0);
+                            itemHistory.push(f);
                             rhMap[rNo].cash += (Number(f.paidAmount) || 0);
                         }
                         else if (f.type === 'LATE' || fHead === 'late fee') {
@@ -1252,13 +1267,13 @@
                             // To avoid double-pushing into discHistory if a document already exists for this receipt
                             if (Number(f.paidAmount) > 0) {
                                 const existIdx = discHistory.findIndex(x => x.receiptNo === rNo);
-                                if(existIdx === -1) {
+                                if (existIdx === -1) {
                                     discHistory.push(f);
                                 } else {
                                     discHistory[existIdx].paidAmount = Number(discHistory[existIdx].paidAmount) + Number(f.paidAmount);
                                 }
                             }
-                        } 
+                        }
                         else {
                             let cashVal = Number(f.paidAmount) || 0;
                             // Discount logic updated to not double-count if explicit DISCOUNT doc exists
@@ -1269,7 +1284,7 @@
                             if (discVal > 0 && f.discount && Number(f.discount) > 0) {
                                 // Push legacy discount if we haven't already captured an explicit one
                                 const existIdx = discHistory.findIndex(x => x.receiptNo === rNo);
-                                if(existIdx === -1) {
+                                if (existIdx === -1) {
                                     discHistory.push({ ...f, headName: 'Concession', paidAmount: Number(f.discount) });
                                 }
                             }
@@ -1713,7 +1728,7 @@
                     let extras = [];
                     if (h.months && h.months.length > 0) {
                         let mStr = h.months.join(', ');
-                        if(!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
+                        if (!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
                     }
                     if (h.transportMonths && h.transportMonths.length > 0) extras.push(`Trans: ${h.transportMonths.join(', ')}`);
 
@@ -1894,7 +1909,7 @@
                     // Check for Monthly Fee Data
                     if (item.months && Array.isArray(item.months) && item.months.length > 0) {
                         let mStr = item.months.join(', ');
-                        if(!desc.includes(mStr)) details = `<br><span style="font-size:10px; color:#059669; font-weight:bold;">(${mStr})</span>`;
+                        if (!desc.includes(mStr)) details = `<br><span style="font-size:10px; color:#059669; font-weight:bold;">(${mStr})</span>`;
                     }
                     // Check for Transport Fee Data
                     if (item.transportMonths && Array.isArray(item.transportMonths) && item.transportMonths.length > 0) {
@@ -2285,7 +2300,7 @@
                     if (desc.length > 40) desc = desc.substring(0, 40) + "...";
                     if (h.months && h.months.length > 0) {
                         let mStr = h.months.join(', ');
-                        if(!desc.includes(mStr)) desc += ` (${mStr})`;
+                        if (!desc.includes(mStr)) desc += ` (${mStr})`;
                     }
                     groupedHistory[rNo].descriptions.push(desc);
 
@@ -2433,7 +2448,7 @@
                     let extras = [];
                     if (h.months && h.months.length > 0) {
                         let mStr = h.months.join(', ');
-                        if(!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
+                        if (!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
                     }
                     if (h.transportMonths && h.transportMonths.length > 0) extras.push(`Trans: ${h.transportMonths.join(', ')}`);
 

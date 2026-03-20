@@ -925,6 +925,12 @@
                             </div>
 
                             <div class="form-group">
+                                <label>Session <span class="text-danger">*</span></label>
+                                <select id="admSessionSelect" class="inp required-field">
+                                </select>
+                            </div>
+
+                            <div class="form-group">
                                 <label>Admission Category</label>
                                 <select id="admissionCategory"
                                     style="border-left: 4px solid var(--primary); font-weight: 600;">
@@ -1550,6 +1556,13 @@
                                 style="padding: 12px 35px; font-size: 15px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
                                 <i class="fas fa-save"></i> Submit Admission
                             </button>
+
+                            <button onclick="fixOldStudentsData()"
+                                style="background: red; color: white; padding: 10px; margin: 10px; border-radius: 5px; cursor: pointer;">
+                                Fix Old Students Data
+                            </button>
+
+
                         </div>
                     </div>
 
@@ -1692,7 +1705,7 @@
                                         <input type="checkbox" id="selectAll" onclick="toggleSelectAll()"
                                             style="width: 18px; height: 18px; cursor: pointer;">
                                     </th>
-
+                                    <th>Session</th>
                                     <th style="padding: 15px;">Photo</th>
                                     <th style="padding: 15px; text-align: left;">Identity</th>
                                     <th style="padding: 15px; text-align: left;">Academic</th>
@@ -2585,6 +2598,11 @@
                         transportStart: document.getElementById('transportStart').value,
                         transportMonths: tMonths,  // <--- YE LINE ADD KARNI HAI
 
+                        // ✅ NAYI LINES: Bache ko current session me assign karne ke liye
+                        session: document.getElementById('admSessionSelect').value,
+                        activeSessions: [document.getElementById('admSessionSelect').value],
+                        // ✅ NAYI LINES END
+
                         photo: photo || existing.photo || "",
                         docAadhar: aadhar || existing.docAadhar || "",
                         docBirth: birth || existing.docBirth || "",
@@ -2640,9 +2658,7 @@
 
             // --- SUCCESS POPUP & WHATSAPP ---
             // --- SUCCESS POPUP & WHATSAPP (RECEIPT STYLE MESSAGE) ---
-            // --- SUCCESS POPUP & WHATSAPP (FIXED: SINGLE TAB FOR LAPTOP) ---
-            // --- SUCCESS POPUP & WHATSAPP (FINAL: WINDOW FIX + BOTH ID & MOBILE) ---
-            // --- SUCCESS POPUP & WHATSAPP (FINAL FIX: LINK & CUTOFF SOLVED) ---
+
             function openSuccessPopup(data) {
                 document.getElementById('successName').innerText = data.name;
                 document.getElementById('successID').innerText = data.stesID;
@@ -3325,6 +3341,8 @@
             <td style="padding:15px; text-align:center;">
                 <input type="checkbox" class="row-checkbox" value="${s.id}" onclick="checkSelection()" style="width: 16px; height: 16px; cursor: pointer;">
             </td>
+
+            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">${s.session || 'N/A'}</span></td>
 
             <td style="padding:15px; text-align:center;">
                 <img src="${photoUrl}" loading="lazy" onclick="openLightbox('${photoUrl}')" 
@@ -6655,6 +6673,94 @@
                 waStopRequested = true;
                 waFinish();
             }
+
+
+
+
+
+
+            async function loadAdmissionSessions() {
+                try {
+                    const doc = await db.collection('masterSettings').doc('sessions').get();
+                    const sel = document.getElementById('admSessionSelect');
+
+                    if (doc.exists && doc.data().list && doc.data().list.length > 0) {
+                        // Latest session ko sabse upar laane ke liye reverse()
+                        const list = doc.data().list.sort().reverse();
+                        sel.innerHTML = list.map(s => `<option value="${s}">${s}</option>`).join('');
+
+                        // Default latest session select ho jayega
+                        sel.value = list[0];
+                    } else {
+                        // Agar database me koi session nahi hai to default option
+                        sel.innerHTML = `<option value="2025-2026">2025-2026</option>`;
+                    }
+                } catch (e) {
+                    console.log("Error loading sessions for admission form:", e);
+                }
+            }
+
+            // Is function ko page load hone par chalana zaroori hai
+            // Apna window.onload dhoondhein aur usme loadAdmissionSessions(); add kar dein.
+            // Ya fir direct aise call kar lijiye:
+            setTimeout(() => { loadAdmissionSessions(); }, 1500);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            async function fixOldStudentsData() {
+                // Ye confirm karega taaki galti se click na ho jaye
+                if (!confirm("Are you sure you want to update old students with the current session?")) return;
+
+                try {
+                    console.log("Fetching old students...");
+                    const snapshot = await db.collection('students').get();
+                    let batch = db.batch(); // Batch use kar rahe hain taaki fast ho aur Firebase hang na kare
+                    let count = 0;
+
+                    // Yahan '2025-2026' apka default session maan kar chal rahe hain. 
+                    // Agar aapke variable ka naam currentSession hai, to aap currentSession bhi likh sakte hain.
+                    let defaultSession = typeof currentSession !== 'undefined' && currentSession !== "" ? currentSession : "2025-2026";
+
+                    snapshot.forEach(doc => {
+                        let data = doc.data();
+
+                        // Check kar rahe hain ki kya is bache me pehle se activeSessions hai ya nahi
+                        if (!data.activeSessions || !data.session) {
+                            let studentRef = db.collection('students').doc(doc.id);
+
+                            batch.update(studentRef, {
+                                session: data.session || defaultSession, // Agar purana session tha to wo, nahi to default
+                                activeSessions: [data.session || defaultSession]
+                            });
+                            count++;
+                        }
+                    });
+
+                    if (count > 0) {
+                        await batch.commit();
+                        alert(`Success! Successfully updated ${count} old students.`);
+                        console.log(`${count} students updated.`);
+                    } else {
+                        alert("All students are already up to date! No changes needed.");
+                    }
+
+                } catch (error) {
+                    console.error("Error updating students:", error);
+                    alert("Error: " + error.message);
+                }
+            }  
         </script>
 
 </body>
