@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -23,9 +23,11 @@
         /* --- ADMIN LAYOUT --- */
         .app-container { display: flex; width: 100%; height: 100%; }
 
-        .sidebar { width: 260px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px; z-index: 10; transition: 0.3s; }
-        .nav-item { padding: 12px; color: #cbd5e1; text-decoration: none; display: block; border-radius: 6px; margin-bottom: 5px; font-family: sans-serif; font-size: 14px; }
-        .nav-item.active, .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .sidebar { width: 260px; background: #111827; color: white; display: flex; flex-direction: column; padding: 20px; z-index: 10; transition: 0.3s; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+        .nav-link { padding: 12px 16px; color: #9ca3af; text-decoration: none; display: flex; align-items: center; gap: 12px; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s ease; font-weight: 500; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 14px; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .nav-link.active-link { background: #4338ca; color: white; box-shadow: 0 4px 12px rgba(67, 56, 202, 0.4); }
+        .nav-link i { width: 20px; text-align: center; }
 
         .main { flex: 1; padding: 20px; overflow-y: auto; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
@@ -112,7 +114,7 @@
 
         .val { 
             font-weight: 900; color: #000; text-transform: uppercase; 
-            border-bottom: 1px dotted #333; padding: 0 5px; display: inline-block;
+            border-bottom: 1px dotted #333; padding: 0 2px; display: inline;
             font-family: 'Noto Serif', serif; font-size: 16px;
         }
 
@@ -129,12 +131,23 @@
 
     <div class="app-container">
         <div class="sidebar">
-            <h3 style="margin-top:0; font-family:'Cinzel', serif; color:#fbbf24;"><i class="fas fa-university"></i> STES ADMIN</h3>
-            <nav>
-                <a href="admin-students.html" class="nav-item"><i class="fas fa-user-graduate"></i> Students</a>
-                <a href="admin-tc.html" class="nav-item"><i class="fas fa-file-alt"></i> TC Generator</a>
-                <a href="admin-bonafide.html" class="nav-item active"><i class="fas fa-certificate"></i> Bonafide Cert.</a>
+            <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #374151;">
+                <h2 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 12px; color: white; font-family: 'Outfit', sans-serif;">
+                    <i class="fas fa-university" style="color: #818cf8;"></i> St. Teresa
+                </h2>
+                <div style="font-size: 11px; color: #9ca3af; margin-top: 5px; margin-left: 36px; font-family: 'Outfit', sans-serif;">Admin ERP v7.0</div>
+            </div>
+            <nav style="flex: 1;">
+                <a href="admin-dashboard.html" class="nav-link"><i class="fas fa-home"></i> Main Dashboard</a>
+                <a href="admin-students.html" class="nav-link"><i class="fas fa-user-graduate"></i> Students</a>
+                <a href="admin-fees.html" class="nav-link"><i class="fas fa-wallet"></i> Fee Collection</a>
+                <a href="admin-fee-ledger.html" class="nav-link"><i class="fas fa-book"></i> Fee Ledger</a>
+                <a href="admin-fee-structure.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <div style="border-top:1px dashed #374151; margin:12px 0;"></div>
+                <a href="admin-tc.html" class="nav-link"><i class="fas fa-file-alt"></i> TC Generator</a>
+                <a href="admin-bonafide.html" class="nav-link active-link"><i class="fas fa-certificate"></i> Bonafide Cert.</a>
             </nav>
+            <div style="font-size: 11px; color: #4b5563; text-align: center; font-family: 'Outfit', sans-serif;">&copy; 2026 St. Teresa School</div>
         </div>
 
         <div class="main">
@@ -241,8 +254,9 @@
 
     <div id="printModal">
         <div class="no-print" style="text-align:center; padding:15px; position:absolute; top:0; width:100%; z-index:2000;">
-            <button onclick="savePrint()" class="btn">Save & Print</button>
-            <button onclick="document.getElementById('printModal').style.display='none'" class="btn btn-outline" style="background:white;">Close</button>
+            <button id="savePrintBtn" onclick="savePrint()" class="btn">Save & Print</button>
+            <button id="viewPrintBtn" onclick="viewPrint()" class="btn" style="display:none; background:#16a34a;"><i class="fas fa-print"></i> Print</button>
+            <button onclick="closePrintModal()" class="btn btn-outline" style="background:white;">Close</button>
         </div>
 
         <div class="a4-sheet">
@@ -297,8 +311,9 @@
     <script>
 
         let students = [], school = {}, saveData = null;
+        let isViewingHistory = false; // New history flag
 
-            // 🟢 SECURE INITIALIZATION 🟢
+            //  SECURE INITIALIZATION 
     // admin-fees.html aur baaki data wale pages ke liye
 firebase.auth().onAuthStateChanged((user) => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
@@ -430,7 +445,7 @@ firebase.auth().onAuthStateChanged((user) => {
                 const addrShort = (val('address') || "").substring(0, 25);
 
                 // Labels ko single letter kar diya (N=Name, F=Father etc)
-                const qrStr = `N:${val('sName')}|ID:${val('admNo')}|F:${val('fName')}|M:${val('mName')}|D:${fmt(val('dob'))}|A:${addrShort}|I:${fmt(val('issueDate'))}|S:Valid|UD:${val('aadhar')}|P:${val('pen')}|AP:${val('apaar')}`;
+                const qrStr = `N:${val('sName')}|Ref:${val('refNo')}|ID:${val('admNo')}|F:${val('fName')}|D:${fmt(val('dob'))}|I:${fmt(val('issueDate'))}|S:Valid`;
 
                 document.getElementById('qrCode').innerHTML = "";
 
@@ -448,18 +463,36 @@ firebase.auth().onAuthStateChanged((user) => {
                     dobWords = d.toLocaleDateString('en-IN', {year:'numeric', month:'long', day:'numeric'});
                 }
 
-                let html = `<p style="margin-top:40px;">This is to certify that Master/Miss <span class="val">${val('sName')}</span>, 
-                Son/Daughter of Mr. <span class="val">${val('fName')}</span> and Mrs. <span class="val">${val('mName')}</span>, Admission No <span class="val">${val('admNo')}</span>, 
-                is a bonafide student of this school studying in Class <span class="val">${val('class')}</span> 
-                during the academic session <span class="val">${val('session')}</span>.</p>`;
+                // SMART SENTENCE CONSTRUCTION — empty fields cleanly skip
+                let html = '';
 
-                html += `<p>His/Her Date of Birth as per school records is <span class="val">${fmt(val('dob'))}</span> 
-                (In words: <span style="font-style:italic;">${dobWords}</span>).</p>`;
+                // Para 1: Main sentence
+                html += `<p style="margin-top:40px;">This is to certify that Master/Miss <span class="val">${val('sName')}</span>`;
 
+                const fN = val('fName'), mN = val('mName');
+                if(fN && mN) html += `, Son/Daughter of Mr. <span class="val">${fN}</span> and Mrs. <span class="val">${mN}</span>`;
+                else if(fN) html += `, Son/Daughter of Mr. <span class="val">${fN}</span>`;
+                else if(mN) html += `, Son/Daughter of Mrs. <span class="val">${mN}</span>`;
+
+                if(val('admNo')) html += `, Admission No <span class="val">${val('admNo')}</span>`;
+
+                html += `, is a bonafide student of this school`;
+
+                if(val('class')) html += ` studying in Class <span class="val">${val('class')}</span>`;
+                if(val('session')) html += ` during the academic session <span class="val">${val('session')}</span>`;
+                html += `.</p>`;
+
+                // DOB (skip if empty)
+                if(val('dob') && dobWords) {
+                    html += `<p>His/Her Date of Birth as per school records is <span class="val">${fmt(val('dob'))}</span> (In words: <span style="font-style:italic;">${dobWords}</span>).</p>`;
+                }
+
+                // Address (skip if empty)
                 if(val('address')) {
                     html += `<p>Resident of: <span class="val">${val('address')}</span>.</p>`;
                 }
 
+                // Character
                 html += `<p>He/She bears a good moral character.</p>`;
 
                 const purpose = val('purpose');
@@ -487,8 +520,15 @@ if(note) {
 
                 saveData = { 
                     type: 'Bonafide', refNo: val('refNo'), name: val('sName'), purpose: purpose,
-                    issueDate: fmt(val('issueDate')), createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                    fatherName: val('fName'), motherName: val('mName'),
+                    admNo: val('admNo'), className: val('class'), dob: val('dob'),
+                    address: val('address'), aadhar: val('aadhar'), pen: val('pen'), apaar: val('apaar'),
+                    session: val('session'), conduct: val('conduct'), customNote: val('customNote'),
+                    issueDate: fmt(val('issueDate')),
+                    bodyHtml: html,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp() 
                 };
+                document.getElementById('savePrintBtn').style.display = 'inline-block';
                 document.getElementById('printModal').style.display = 'block';
 
             } catch(e) {
@@ -558,6 +598,7 @@ async function loadHistory() {
                 <td>${x.purpose || '-'}</td>
                 <td>${dateStr}</td>
                 <td style="text-align:center;">
+                    ${x.bodyHtml ? `<i class="fas fa-eye" style="color:#2563eb; cursor:pointer; margin-right:12px; font-size:15px;" title="View Certificate" onclick="viewBonafide('${id}')"></i>` : ''}
                     <button onclick="deleteCert('${id}')" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -589,6 +630,51 @@ async function deleteCert(id) {
             alert("Error deleting: " + e.message);
         }
     }
+}
+
+// --- VIEW BONAFIDE FROM HISTORY ---
+async function viewBonafide(docId) {
+    try {
+        const doc = await db.collection('certRecords').doc(docId).get();
+        if(!doc.exists) { alert('Record not found!'); return; }
+        const data = doc.data();
+
+        // Fill print template
+        document.getElementById('pRef').innerText = data.refNo || '-';
+        document.getElementById('pDate').innerText = data.issueDate || '-';
+
+        // Photo hide (history me photo nahi save karte)
+        document.getElementById('pPhotoBox').style.display = 'none';
+
+        // QR Code regenerate
+        const addrShort = (data.address || "").substring(0, 25);
+        const qrStr = `N:${data.name}|Ref:${data.refNo}|ID:${data.admNo}|F:${data.fatherName}|I:${data.issueDate}|S:Valid`;
+        document.getElementById('qrCode').innerHTML = "";
+        new QRCode(document.getElementById('qrCode'), { 
+            text: qrStr, width: 85, height: 85, correctLevel: QRCode.CorrectLevel.L
+        });
+
+        // Body HTML directly load karo
+        document.getElementById('pBody').innerHTML = data.bodyHtml || '<p>Certificate body not saved for this record.</p>';
+
+        // Save button hide, Print button show (view-only mode)
+        document.getElementById('savePrintBtn').style.display = 'none';
+        document.getElementById('viewPrintBtn').style.display = 'inline-block';
+        document.getElementById('printModal').style.display = 'block';
+    } catch(e) {
+        alert('Error loading certificate: ' + e.message);
+        console.error(e);
+    }
+}
+
+function viewPrint() {
+    window.print();
+}
+
+function closePrintModal() {
+    document.getElementById('printModal').style.display = 'none';
+    document.getElementById('savePrintBtn').style.display = 'inline-block';
+    document.getElementById('viewPrintBtn').style.display = 'none';
 }
 
     </script>

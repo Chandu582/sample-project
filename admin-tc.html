@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -24,9 +24,11 @@
         /* --- ADMIN LAYOUT --- */
         .app-container { display: flex; width: 100%; height: 100%; }
 
-        .sidebar { width: 260px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px; z-index: 10; overflow-y: auto; transition: 0.3s; }
-        .nav-item { padding: 12px; color: #cbd5e1; text-decoration: none; display: block; border-radius: 6px; margin-bottom: 5px; font-family: sans-serif; font-size: 14px; }
-        .nav-item.active, .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .sidebar { width: 260px; background: #111827; color: white; display: flex; flex-direction: column; padding: 20px; z-index: 10; overflow-y: auto; transition: 0.3s; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+        .nav-link { padding: 12px 16px; color: #9ca3af; text-decoration: none; display: flex; align-items: center; gap: 12px; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s ease; font-weight: 500; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 14px; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .nav-link.active-link { background: #4338ca; color: white; box-shadow: 0 4px 12px rgba(67, 56, 202, 0.4); }
+        .nav-link i { width: 20px; text-align: center; }
 
         .main { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
@@ -70,7 +72,7 @@
 
         .border-fancy { border: 3px double #0f172a; height: 100%; padding: 4px; box-sizing: border-box; }
         .border-inner {
-            border: 2px solid #b45309; height: 100%; padding: 15mm 12mm; 
+            border: 2px solid #b45309; height: 100%; padding: 10mm 12mm; 
             background: radial-gradient(#f8fafc 1px, transparent 1px) 0 0 / 20px 20px;
             position: relative; box-sizing: border-box; display: flex; flex-direction: column;
         }
@@ -78,46 +80,42 @@
         .watermark { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); width: 380px; opacity: 0.05; filter: grayscale(100%); pointer-events: none; }
 
         /* --- HEADER LAYOUT (LOGO LEFT, NAME CENTER) --- */
-        .header-layout { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 2px solid #b45309; padding-bottom: 10px; }
+        .header-layout { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; border-bottom: 2px solid #b45309; padding-bottom: 5px; }
         .header-left { width: 110px; display: flex; justify-content: flex-start; }
         .header-center { flex: 1; text-align: center; }
         .header-right { width: 110px; } /* Spacer for balance */
 
-        .logo { width: 90px; height: 90px; object-fit: contain; }
+        .logo { width: 75px; height: 75px; object-fit: contain; }
 
         .s-name { 
-    font-family: 'Playfair Display', serif; 
-    font-size: 30px; /* Size adjust kiya hai taaki 1 line me aaye */
-    color: rgba(0, 0, 0, 1); 
-    margin:0; 
-    text-transform: uppercase; 
-    font-weight: 900; 
-    line-height: 1.1;
-    white-space: nowrap; /* Ye school name ko tutne nahi dega */
-    letter-spacing: 1px; 
-}
+            font-family: 'Playfair Display', serif; 
+            font-size: 26px; color: rgba(0, 0, 0, 1); 
+            margin:0; text-transform: uppercase; 
+            font-weight: 900; line-height: 1.1;
+            white-space: nowrap; letter-spacing: 1px; 
+        }
 
         .s-addr { font-size: 13px; color: #444; margin-top: 5px; font-family: sans-serif; font-weight: 600; }
         .s-meta { font-size: 11px; margin-top: 3px; font-style: italic; }
 
         /* TITLES */
         .doc-title {
-            font-family: 'Great Vibes', cursive; font-size: 56px; color: #000000; 
-            text-align: center; margin: 10px 0 5px 0; line-height: 1; 
+            font-family: 'Great Vibes', cursive; font-size: 46px; color: #000000; 
+            text-align: center; margin: 5px 0 2px 0; line-height: 1; 
             text-shadow: 0px 0px 1px rgba(0,0,0,0.1);
         }
-        .sub-title { text-align: center; font-family: 'Merriweather', serif; font-size: 12px; font-style: italic; color: #434040; margin-bottom: 25px; }
+        .sub-title { text-align: center; font-family: 'Merriweather', serif; font-size: 11px; font-style: italic; color: #434040; margin-bottom: 15px; }
 
         /* META DATA */
-        .meta-bar { display: flex; justify-content: space-between; font-weight: bold; font-family: sans-serif; margin-bottom: 25px; font-size: 12px; padding: 0 10px; }
+        .meta-bar { display: flex; justify-content: space-between; font-weight: bold; font-family: sans-serif; margin-bottom: 15px; font-size: 12px; padding: 0 10px; }
 
         /* CONTENT BODY */
-        .content { font-size: 16px; line-height: 2.0; text-align: justify; font-family: 'Merriweather', serif; flex-grow: 1; }
-        .content p { margin-bottom: 12px; margin-top: 0; }
+        .content { font-size: 15px; line-height: 1.9; text-align: justify; font-family: 'Merriweather', serif; flex-grow: 1; }
+        .content p { margin-bottom: 8px; margin-top: 0; }
 
         .val { 
             font-weight: 900; color: #000; text-transform: uppercase; 
-            border-bottom: 1px dotted #333; padding: 0 5px; display: inline-block;
+            border-bottom: 1px dotted #333; padding: 0 2px; display: inline;
             font-family: 'Noto Serif', serif; font-size: 15px;
         }
 
@@ -126,8 +124,8 @@
 
         /* CLOSING WISH */
         .closing-msg {
-            text-align: center; font-family: 'Great Vibes', cursive; font-size: 26px; color: #BD6420;
-            margin-top: 30px; margin-bottom: 30px; font-weight: bold; letter-spacing: px;
+            text-align: center; font-family: 'Great Vibes', cursive; font-size: 22px; color: #BD6420;
+            margin-top: 15px; margin-bottom: 15px; font-weight: bold;
         }
 
         /* FOOTER */
@@ -142,12 +140,23 @@
 
     <div class="app-container">
         <div class="sidebar">
-            <h3 style="margin-top:0; font-family:'Cinzel', serif; color:#fbbf24;"><i class="fas fa-scroll"></i> STES ADMIN</h3>
-            <nav>
-                <a href="admin-students.html" class="nav-item"><i class="fas fa-user-graduate"></i> Students</a>
-                <a href="admin-fee-structure.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
-                <a href="admin-tc.html" class="nav-item active"><i class="fas fa-file-alt"></i> TC Generator</a>
+            <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #374151;">
+                <h2 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 12px; color: white; font-family: 'Outfit', sans-serif;">
+                    <i class="fas fa-university" style="color: #818cf8;"></i> St. Teresa
+                </h2>
+                <div style="font-size: 11px; color: #9ca3af; margin-top: 5px; margin-left: 36px; font-family: 'Outfit', sans-serif;">Admin ERP v7.0</div>
+            </div>
+            <nav style="flex: 1;">
+                <a href="admin-dashboard.html" class="nav-link"><i class="fas fa-home"></i> Main Dashboard</a>
+                <a href="admin-students.html" class="nav-link"><i class="fas fa-user-graduate"></i> Students</a>
+                <a href="admin-fees.html" class="nav-link"><i class="fas fa-wallet"></i> Fee Collection</a>
+                <a href="admin-fee-ledger.html" class="nav-link"><i class="fas fa-book"></i> Fee Ledger</a>
+                <a href="admin-fee-structure.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <div style="border-top:1px dashed #374151; margin:12px 0;"></div>
+                <a href="admin-tc.html" class="nav-link active-link"><i class="fas fa-file-alt"></i> TC Generator</a>
+                <a href="admin-bonafide.html" class="nav-link"><i class="fas fa-certificate"></i> Bonafide Cert.</a>
             </nav>
+            <div style="font-size: 11px; color: #4b5563; text-align: center; font-family: 'Outfit', sans-serif;">&copy; 2026 St. Teresa School</div>
         </div>
 
         <div class="main">
@@ -211,6 +220,7 @@
 
                     <div class="input-group"><label>Reason</label><input type="text" id="reason" class="input-box" value="Parents Request"></div>
                     <div class="input-group"><label>Conduct</label><select id="conduct" class="input-box"><option>Excellent</option><option>Very Good</option><option>Good</option></select></div>
+                    <div class="input-group"><label>Attendance (Working Days Present)</label><input type="text" id="attendance" class="input-box" placeholder="e.g. 220 out of 230 days (Optional)"></div>
                 </div>
 
                 <div style="margin-top:20px; display:flex; gap:10px;">
@@ -228,7 +238,7 @@
                 <div style="overflow-x:auto;">
                     <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
                         <thead style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
-                            <tr><th style="padding:10px;">TC No</th><th>Name</th><th>Class</th><th>Date</th><th>Action</th></tr>
+                            <tr><th style="padding:10px;">TC No</th><th>Name</th><th>Class</th><th>Date</th><th style="text-align:center;">Action</th></tr>
                         </thead>
                         <tbody id="histBody"></tbody>
                     </table>
@@ -239,8 +249,9 @@
 
     <div id="printModal">
         <div class="no-print" style="text-align:center; padding:15px; position:absolute; top:0; width:100%; z-index:2000;">
-            <button onclick="savePrint()" class="btn">Save & Print</button>
-            <button onclick="document.getElementById('printModal').style.display='none'" class="btn btn-outline" style="background:white;">Close</button>
+            <button id="savePrintBtn" onclick="savePrint()" class="btn">Save & Print</button>
+            <button id="viewPrintBtn" onclick="viewPrint()" class="btn" style="display:none; background:#16a34a;"><i class="fas fa-print"></i> Print</button>
+            <button onclick="closePrintModal()" class="btn btn-outline" style="background:white;">Close</button>
         </div>
 
         <div class="a4-sheet">
@@ -267,7 +278,6 @@
 
                     <div class="meta-bar">
                         <span id="pTcNo">TC No: -</span>
-                        <span id="pBook">Book No: 1</span>
                         <span id="pAdm">Adm No: -</span>
                     </div>
 
@@ -393,15 +403,20 @@ firebase.auth().onAuthStateChanged((user) => {
 
             for(let k in idMap) { if(document.getElementById(k)) document.getElementById(k).value = idMap[k] || ""; }
 
-            // Auto TC Number
+            // Auto TC Number — sirf TC records dekho, bonafide skip karo
             const y = new Date().getFullYear();
-            const last = await db.collection('certRecords').orderBy('createdAt','desc').limit(1).get();
-            let n = 1;
-            if(!last.empty) {
-                const parts = last.docs[0].data().tcNo.split('/');
-                if(parts.length===3) n = parseInt(parts[2])+1;
+            try {
+                const last = await db.collection('certRecords').orderBy('createdAt','desc').limit(20).get();
+                let n = 1;
+                const lastTC = last.docs.find(d => d.data().tcNo && d.data().tcNo.startsWith('TC/'));
+                if(lastTC) {
+                    const parts = lastTC.data().tcNo.split('/');
+                    if(parts.length === 3) n = parseInt(parts[2]) + 1;
+                }
+                document.getElementById('tcNo').value = `TC/${y}/${String(n).padStart(3,'0')}`;
+            } catch(e) {
+                document.getElementById('tcNo').value = `TC/${y}/001`;
             }
-            document.getElementById('tcNo').value = `TC/${y}/${String(n).padStart(3,'0')}`;
         }
 
         function generate() {
@@ -418,45 +433,66 @@ firebase.auth().onAuthStateChanged((user) => {
             document.getElementById('qrCode').innerHTML = "";
             new QRCode(document.getElementById('qrCode'), { text: qrData, width:80, height:80 });
 
-            // SMART SENTENCE CONSTRUCTION
+            // SMART SENTENCE CONSTRUCTION — har field check hoga, empty ho to skip
             let html = "";
 
-            // Para 1: Bio
-            html += `<p>This is to certify that <span class="val">${val('sName')}</span>, `;
+            // Para 1: Bio (fully smart)
+            html += `<p>This is to certify that <span class="val">${val('sName')}</span>`;
 
-            // Parents (Smart Logic)
             const f = val('fName'), m = val('mName');
-            if(f && m) html += `Son/Daughter of Mr. <span class="val">${f}</span> and Mrs. <span class="val">${m}</span>, `;
-            else if(f) html += `Son/Daughter of Mr. <span class="val">${f}</span>, `;
+            if(f && m) html += `, Son/Daughter of Mr. <span class="val">${f}</span> and Mrs. <span class="val">${m}</span>`;
+            else if(f) html += `, Son/Daughter of Mr. <span class="val">${f}</span>`;
+            else if(m) html += `, Son/Daughter of Mrs. <span class="val">${m}</span>`;
 
-            // Address & Nationality (Smart Hide)
             const addr = val('address');
-            if(addr) html += `resident of <span class="val">${addr}</span>, `;
+            if(addr) html += `, resident of <span class="val">${addr}</span>`;
 
-            html += `is a bonafide student of this school. He/She bears <span class="val">${val('nation')}</span> Nationality`;
+            html += `, is a bonafide student of this school.`;
 
-            if(val('cat')) html += ` and belongs to <span class="val">${val('cat')}</span> Category`;
-            html += `.</p>`;
+            const nation = val('nation');
+            if(nation) {
+                html += ` He/She bears <span class="val">${nation}</span> Nationality`;
+                if(val('cat')) html += ` and belongs to <span class="val">${val('cat')}</span> Category`;
+                html += `.`;
+            } else if(val('cat')) {
+                html += ` He/She belongs to <span class="val">${val('cat')}</span> Category.`;
+            }
+            html += `</p>`;
 
-            // Para 2: Admission & DOB
-            html += `<p>He/She was admitted to this school on <span class="val">${fmt(val('admDate'))}</span>`;
-            if(val('firstCls')) html += ` in Class <span class="val">${val('firstCls')}</span>`;
-            html += `.</p>`;
+            // Para 2: Admission (smart — skip if no date)
+            if(val('admDate') || val('firstCls')) {
+                html += `<p>He/She was admitted to this school`;
+                if(val('admDate')) html += ` on <span class="val">${fmt(val('admDate'))}</span>`;
+                if(val('firstCls')) html += ` in Class <span class="val">${val('firstCls')}</span>`;
+                html += `.</p>`;
+            }
 
+            // DOB (smart — skip if empty)
             if(val('dob')) {
                 const d = new Date(val('dob'));
                 const words = d.toLocaleDateString('en-IN', {year:'numeric', month:'long', day:'numeric'});
                 html += `<p>His/Her Date of Birth according to the Admission Register is <span class="val">${fmt(val('dob'))}</span> (In Words: <span style="font-style:italic;">${words}</span>).</p>`;
             }
 
-            // Para 3: Leaving Info
-            html += `<p>He/She left the school on <span class="val">${fmt(val('leaveDate'))}</span> while studying in Class <span class="val">${val('lastCls')}</span>.</p>`;
+            // Para 3: Leaving Info (smart — skip if both empty)
+            if(val('leaveDate') || val('lastCls')) {
+                html += `<p>He/She left the school`;
+                if(val('leaveDate')) html += ` on <span class="val">${fmt(val('leaveDate'))}</span>`;
+                if(val('lastCls')) html += ` while studying in Class <span class="val">${val('lastCls')}</span>`;
+                html += `.</p>`;
+            }
 
             if(val('result')) html += `<p><b>Academic Status:</b> <span class="val">${val('result')}</span>.</p>`;
 
-            // Para 4: Conduct & Reason
-            html += `<p>During his/her stay in the school, his/her character and conduct have been <span class="val">${val('conduct').toUpperCase()}</span>.</p>`;
-            html += `<p>Reason for leaving: <span class="val">${val('reason')}</span>.</p>`;
+            // Attendance (smart hide)
+            const attendanceVal = val('attendance');
+            if(attendanceVal && attendanceVal.trim() !== '') {
+                html += `<p>Total Working Days Present: <span class="val">${attendanceVal}</span>.</p>`;
+            }
+
+            // Conduct & Reason (smart)
+            if(val('conduct')) html += `<p>During his/her stay in the school, his/her character and conduct have been <span class="val">${val('conduct').toUpperCase()}</span>.</p>`;
+            if(val('reason')) html += `<p>Reason for leaving: <span class="val">${val('reason')}</span>.</p>`;
 
             // Para 5: IDs (Stacked Smartly)
             let idBlock = "";
@@ -473,8 +509,18 @@ firebase.auth().onAuthStateChanged((user) => {
 
             saveData = { 
                 tcNo: tcNo, name: val('sName'), className: val('lastCls'), 
-                issueDate: fmt(val('issueDate')), createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                fatherName: val('fName'), motherName: val('mName'),
+                address: val('address'), nationality: val('nation'), category: val('cat'),
+                aadhar: val('aadhar'), pen: val('pen'), apaar: val('apaar'),
+                admNo: val('admNo'), dob: val('dob'), admDate: val('admDate'),
+                firstCls: val('firstCls'), result: val('result'),
+                reason: val('reason'), conduct: val('conduct'),
+                leaveDate: val('leaveDate'), attendance: val('attendance'),
+                issueDate: fmt(val('issueDate')), 
+                bodyHtml: html,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp() 
             };
+            document.getElementById('savePrintBtn').style.display = 'inline-block';
             document.getElementById('printModal').style.display = 'block';
         }
 
@@ -503,7 +549,7 @@ firebase.auth().onAuthStateChanged((user) => {
                     loadHistory();
 
                     // Note: Title wapis purana nahi kar rahe taaki phone par glitch na ho
-                }, 000);
+                }, 0);
             }
         }
 
@@ -522,13 +568,17 @@ firebase.auth().onAuthStateChanged((user) => {
                 const data = d.data();
                 const match = (data.tcNo||"").toLowerCase().includes(search) || (data.name||"").toLowerCase().includes(search);
                 if(match) {
+                    const hasBody = data.bodyHtml ? true : false;
                     tbody.innerHTML += `
                     <tr style="border-bottom:1px solid #eee;">
                         <td style="padding:10px;"><b>${data.tcNo}</b></td>
                         <td>${data.name}</td>
                         <td>${data.className || '-'}</td>
                         <td>${data.issueDate}</td>
-                        <td><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="deleteTC('${d.id}')"></i></td>
+                        <td style="text-align:center;">
+                            ${hasBody ? `<i class="fas fa-eye" style="color:#2563eb; cursor:pointer; margin-right:12px; font-size:15px;" title="View TC" onclick="viewTC('${d.id}')"></i>` : ''}
+                            <i class="fas fa-trash" style="color:red; cursor:pointer; font-size:14px;" title="Delete" onclick="deleteTC('${d.id}')"></i>
+                        </td>
                     </tr>`;
                 }
             });
@@ -539,6 +589,47 @@ firebase.auth().onAuthStateChanged((user) => {
                 await db.collection('certRecords').doc(id).delete();
                 loadHistory();
             }
+        }
+
+        // --- VIEW TC FROM HISTORY ---
+        async function viewTC(docId) {
+            try {
+                const doc = await db.collection('certRecords').doc(docId).get();
+                if(!doc.exists) { alert('Record not found!'); return; }
+                const data = doc.data();
+
+                // Fill print template with saved data
+                document.getElementById('pTcNo').innerText = "TC No: " + (data.tcNo || '-');
+                document.getElementById('pAdm').innerText = "Adm No: " + (data.admNo || '-');
+
+                // QR Code regenerate
+                const qrData = `Name:${data.name}|ID:${data.admNo}|F:${data.fatherName}|TC:${data.tcNo}|Date:${data.issueDate}|Valid`;
+                document.getElementById('qrCode').innerHTML = "";
+                new QRCode(document.getElementById('qrCode'), { text: qrData, width:80, height:80 });
+
+                // Body HTML directly use karo
+                document.getElementById('pBody').innerHTML = data.bodyHtml || '<p>Certificate body not saved for this record.</p>';
+
+                // Save button hide karo (view-only mode)
+                // Save button hide, Print button show (view-only mode)
+                document.getElementById('savePrintBtn').style.display = 'none';
+                document.getElementById('viewPrintBtn').style.display = 'inline-block';
+                document.getElementById('printModal').style.display = 'block';
+            } catch(e) {
+                alert('Error loading TC: ' + e.message);
+                console.error(e);
+            }
+        }
+
+        function viewPrint() {
+            window.print();
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').style.display = 'none';
+            // Reset buttons for new TCs
+            document.getElementById('savePrintBtn').style.display = 'inline-block';
+            document.getElementById('viewPrintBtn').style.display = 'none';
         }
     </script>
 </body>

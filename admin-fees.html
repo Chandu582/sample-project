@@ -42,7 +42,7 @@
         /* 2. SIDEBAR STYLES (Fixed) */
         .sidebar {
             width: 260px;
-            background: var(--side);
+            background: #111827;
             color: white;
             display: flex;
             flex-direction: column;
@@ -77,28 +77,29 @@
 
         .nav-item {
             padding: 12px 16px;
-            border-radius: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            color: #94a3b8;
+            color: #9ca3af;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 12px;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 14px;
-            transition: 0.3s;
-            margin-bottom: 0;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
         }
 
         .nav-item:hover {
             color: white;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
         }
 
         .nav-item.active {
-            background: var(--brand);
+            background: #4338ca;
             color: white;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.4);
         }
 
         /* 3. MOBILE OVERLAY (Blur) */
@@ -540,31 +541,37 @@
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
     <div class="sidebar" id="sidebar">
-        <a href="#" class="sidebar-brand"><i class="fas fa-university"></i> STES ERP</a>
+        <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #374151;">
+            <div style="font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: white;">
+                <i class="fas fa-university" style="color: #818cf8;"></i> St. Teresa
+            </div>
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 5px; margin-left: 30px;">Admin ERP v7.0</div>
+        </div>
 
         <div class="nav-group">
+            <a href="admin-dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i> Main Dashboard
+            </a>
             <a href="admin-erp-dashboard.html" class="nav-item">
-                <i class="fas fa-th-large"></i> Overview..🏦
+                <i class="fas fa-th-large"></i> Overview
             </a>
             <a href="admin-students.html" class="nav-item">
-                <i class="fas fa-user-graduate"></i> Students..🎓
+                <i class="fas fa-user-graduate"></i> Students
             </a>
 
             <a href="admin-fees.html" class="nav-item active">
-                <i class="fas fa-wallet"></i> Fee Collection..💸
+                <i class="fas fa-wallet"></i> Fee Collection
             </a>
 
             <a href="admin-fee-ledger.html" class="nav-item">
-                <i class="fas fa-book"></i> Fee Ledger..📊
+                <i class="fas fa-book"></i> Fee Ledger
             </a>
             <a href="admin-fee-structure.html" class="nav-item">
-                <i class="fas fa-cog"></i> Settings..⚙️
+                <i class="fas fa-cog"></i> Settings
             </a>
         </div>
 
-        <a href="admin-dashboard.html" class="nav-item" style="background: rgba(255,255,255,0.05); color: white;">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+        <div style="font-size: 11px; color: #4b5563; text-align: center; margin-top:15px;">&copy; 2026 St. Teresa School</div>
     </div>
 
     <div class="content-wrapper">

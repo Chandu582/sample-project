@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="config.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -23,448 +25,1239 @@
             --text-secondary: #94a3b8;
         }
 
-        body.theme-admin { --primary-glow: #4f46e5; --secondary-glow: #8b5cf6; }
-        body.theme-teacher { --primary-glow: #d946ef; --secondary-glow: #f43f5e; }
-        body.theme-parent { --primary-glow: #10b981; --secondary-glow: #0ea5e9; }
+        body.theme-admin {
+            --primary-glow: #4f46e5;
+            --secondary-glow: #8b5cf6;
+        }
 
-        * { transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-sizing: border-box; }
+        body.theme-teacher {
+            --primary-glow: #d946ef;
+            --secondary-glow: #f43f5e;
+        }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            margin: 0; height: 100vh; 
-            display: flex; justify-content: center; align-items: center; 
-            overflow: hidden; background: #0b1120; /* Deep cinematic black */
+        body.theme-parent {
+            --primary-glow: #10b981;
+            --secondary-glow: #0ea5e9;
+        }
+
+        * {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: #0b1120;
+            /* Deep cinematic black */
         }
 
         /* --- LIVE BACKGROUND ANIMATIONS (OPTIMIZED) --- */
-        .bg-animation-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
-        .bg-blob {
-            position: absolute; filter: blur(55px); opacity: 0.35; border-radius: 50%;
-            animation: blobMovement 22s infinite ease-in-out alternate;
-            will-change: transform; 
+        .bg-animation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
         }
-        .blob-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: var(--primary-glow); animation-delay: 0s; }
-        .blob-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: var(--secondary-glow); animation-delay: -5s; }
-        .blob-3 { top: 30%; left: 50%; width: 350px; height: 350px; background: var(--accent-glow); animation-delay: -10s; }
+
+        .bg-blob {
+            position: absolute;
+            filter: blur(55px);
+            opacity: 0.35;
+            border-radius: 50%;
+            animation: blobMovement 22s infinite ease-in-out alternate;
+            will-change: transform;
+        }
+
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: var(--primary-glow);
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: var(--secondary-glow);
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            top: 30%;
+            left: 50%;
+            width: 350px;
+            height: 350px;
+            background: var(--accent-glow);
+            animation-delay: -10s;
+        }
 
         @keyframes blobMovement {
-            0% { transform: translate3d(0, 0, 0) scale(1); }
-            50% { transform: translate3d(60px, 30px, 0) scale(1.1); }
-            100% { transform: translate3d(-30px, 60px, 0) scale(0.9); }
+            0% {
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate3d(60px, 30px, 0) scale(1.1);
+            }
+
+            100% {
+                transform: translate3d(-30px, 60px, 0) scale(0.9);
+            }
         }
 
         /* --- ✨ NEW: FLOATING GLASS BUBBLES ✨ --- */
-        .particles { position: absolute; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .particle {
-            position: absolute; bottom: -100px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
-            border: 1px solid rgba(255,255,255,0.1);
+            position: absolute;
+            bottom: -100px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(2px);
             border-radius: 50%;
             box-shadow: 0 0 15px rgba(var(--primary-glow), 0.2);
             animation: floatUp linear infinite;
             will-change: transform, opacity;
         }
+
         @keyframes floatUp {
-            0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 0.8; }
-            100% { transform: translate3d(0, -120vh, 0) rotate(360deg); opacity: 0; }
+            0% {
+                transform: translate3d(0, 0, 0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translate3d(0, -120vh, 0) rotate(360deg);
+                opacity: 0;
+            }
         }
+
         /* Particle Sizes & Positions */
-        .p1 { left: 10%; width: 40px; height: 40px; animation-duration: 12s; animation-delay: 0s; }
-        .p2 { left: 30%; width: 80px; height: 80px; animation-duration: 18s; animation-delay: 2s; }
-        .p3 { left: 60%; width: 30px; height: 30px; animation-duration: 10s; animation-delay: 5s; }
-        .p4 { left: 80%; width: 60px; height: 60px; animation-duration: 15s; animation-delay: 1s; }
-        .p5 { left: 45%; width: 20px; height: 20px; animation-duration: 8s; animation-delay: 7s; }
+        .p1 {
+            left: 10%;
+            width: 40px;
+            height: 40px;
+            animation-duration: 12s;
+            animation-delay: 0s;
+        }
+
+        .p2 {
+            left: 30%;
+            width: 80px;
+            height: 80px;
+            animation-duration: 18s;
+            animation-delay: 2s;
+        }
+
+        .p3 {
+            left: 60%;
+            width: 30px;
+            height: 30px;
+            animation-duration: 10s;
+            animation-delay: 5s;
+        }
+
+        .p4 {
+            left: 80%;
+            width: 60px;
+            height: 60px;
+            animation-duration: 15s;
+            animation-delay: 1s;
+        }
+
+        .p5 {
+            left: 45%;
+            width: 20px;
+            height: 20px;
+            animation-duration: 8s;
+            animation-delay: 7s;
+        }
 
         /* --- XEVIONBYTE WATERMARK --- */
         .xb-watermark {
-            position: absolute; top: 50%; left: 50%; 
+            position: absolute;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%) rotate(-12deg);
-            font-size: clamp(3rem, 14vw, 8rem); 
-            font-weight: 900; text-transform: uppercase;
-            color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,0.04);
-            z-index: 0; white-space: nowrap; letter-spacing: 10px;
+            font-size: clamp(3rem, 14vw, 8rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: transparent;
+            -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.04);
+            z-index: 0;
+            white-space: nowrap;
+            letter-spacing: 10px;
             animation: breatheText 8s ease-in-out infinite;
             will-change: text-shadow;
         }
+
         @keyframes breatheText {
-            0%, 100% { text-shadow: 0 0 10px rgba(var(--primary-glow), 0.2); }
-            50% { text-shadow: 0 0 25px rgba(var(--secondary-glow), 0.5); letter-spacing: 12px; }
+
+            0%,
+            100% {
+                text-shadow: 0 0 10px rgba(var(--primary-glow), 0.2);
+            }
+
+            50% {
+                text-shadow: 0 0 25px rgba(var(--secondary-glow), 0.5);
+                letter-spacing: 12px;
+            }
         }
 
         /* --- ULTRA PREMIUM GLASS CARD WITH GLARE EFFECT --- */
-        .login-container { position: relative; z-index: 10; width: 90%; max-width: 420px; }
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 420px;
+        }
 
-        .login-card { 
-            position: relative; overflow: hidden; /* For Glare Effect */
+        .login-card {
+            position: relative;
+            overflow: hidden;
+            /* For Glare Effect */
             background: var(--glass-bg);
             backdrop-filter: blur(16px) saturate(140%);
             -webkit-backdrop-filter: blur(16px) saturate(140%);
-            padding: 45px 40px; border-radius: 35px; 
-            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.03);
+            padding: 45px 40px;
+            border-radius: 35px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
-            text-align: center; 
+            text-align: center;
             animation: cardEntrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            transform: translateY(30px); opacity: 0;
+            transform: translateY(30px);
+            opacity: 0;
             will-change: transform, opacity;
         }
 
         /* ✨ NEW: GLASS GLARE SWEEP ✨ */
         .login-card::before {
-            content: ''; position: absolute; top: 0; left: -150%; width: 50%; height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0) 100%);
             transform: skewX(-25deg);
             animation: glassGlare 7s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
-            pointer-events: none; z-index: 20;
+            pointer-events: none;
+            z-index: 20;
         }
-        @keyframes glassGlare { 0%, 50% { left: -150%; } 100% { left: 200%; } }
 
-        @keyframes cardEntrance { to { transform: translateY(0); opacity: 1; } }
+        @keyframes glassGlare {
+
+            0%,
+            50% {
+                left: -150%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        @keyframes cardEntrance {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
 
         /* --- DYNAMIC ICON --- */
-        .icon-box-wrapper { position: relative; width: 80px; height: 80px; margin: 0 auto 25px; z-index: 2; }
-        .icon-box-glow {
-            position: absolute; inset: 0; border-radius: 24px;
-            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
-            filter: blur(15px); opacity: 0.6; animation: pulseGlow 3s infinite;
+        .icon-box-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            z-index: 2;
         }
-        .icon-box {
-            position: relative; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 24px; display: flex; align-items: center; justify-content: center; 
-            color: var(--text-primary); font-size: 32px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        @keyframes pulseGlow { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
 
-        h2 { margin:0 0 8px 0; color: var(--text-primary); font-weight: 800; letter-spacing: -0.5px; position: relative; z-index: 2;}
-        .role-desc { color: var(--text-secondary); font-size: 14px; font-weight: 500; margin-bottom: 25px; line-height: 1.5; position: relative; z-index: 2;}
+        .icon-box-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+            filter: blur(15px);
+            opacity: 0.6;
+            animation: pulseGlow 3s infinite;
+        }
+
+        .icon-box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 32px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+
+        h2 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .role-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 2;
+        }
 
         /* --- FUTURISTIC TABS --- */
-        .tabs { 
-            display: flex; background: rgba(0,0,0,0.4); padding: 6px; 
-            border-radius: 18px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.03);
-            position: relative; z-index: 2;
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px;
+            border-radius: 18px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
+            z-index: 2;
         }
-        .tab { 
-            flex: 1; padding: 12px; cursor: pointer; border-radius: 14px; 
-            font-size: 14px; font-weight: 700; color: var(--text-secondary); 
-            position: relative; overflow: hidden;
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            position: relative;
+            overflow: hidden;
         }
-        .tab.active { 
-            background: rgba(255,255,255,0.1); color: var(--text-primary); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08);
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         /* --- PREMIUM INPUTS WITH PULSE --- */
-        #anim-wrapper { transition: opacity 0.3s ease, transform 0.3s ease; position: relative; z-index: 2;}
-        .input-group { position: relative; margin: 18px 0; }
-        .input-group i {
-            position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
-
-            color: var(--text-secondary); font-size: 18px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2;
+        #anim-wrapper {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            position: relative;
+            z-index: 2;
         }
-        input { 
-            width: 100%; padding: 18px 18px 18px 50px; 
-            background: rgba(0, 0, 0, 0.25); 
-            border: 2px solid rgba(255, 255, 255, 0.05); 
-            border-radius: 18px; outline: none; 
-            font-size: 15px; font-family: inherit; font-weight: 600; color: var(--text-primary);
+
+        .input-group {
+            position: relative;
+            margin: 18px 0;
+        }
+
+        .input-group>i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 18px;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px 45px 18px 50px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            outline: none;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: 600;
+            color: var(--text-primary);
             transition: border 0.3s, box-shadow 0.3s, background 0.3s;
         }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-        input:focus { 
-            border-color: var(--primary-glow); background: rgba(0,0,0,0.4);
-            box-shadow: 0 0 20px rgba(var(--primary-glow), 0.2); 
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
         }
+
+        input:focus {
+            border-color: var(--primary-glow);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 20px rgba(var(--primary-glow), 0.2);
+        }
+
         /* ✨ NEW: Icon Pulse on Focus ✨ */
-        input:focus + i { color: var(--primary-glow); transform: translateY(-50%) scale(1.15); filter: drop-shadow(0 0 5px var(--primary-glow)); }
+        input:focus+i {
+            color: var(--primary-glow);
+            transform: translateY(-50%) scale(1.15);
+            filter: drop-shadow(0 0 5px var(--primary-glow));
+        }
 
         /* --- BROWSER AUTOFILL FIX FOR GLASSMORPHISM --- */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active {
-    transition: background-color 5000s ease-in-out 0s !important;
-    -webkit-text-fill-color: var(--text-primary) !important;
-    caret-color: var(--text-primary) !important;
-}
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            transition: background-color 5000s ease-in-out 0s !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
+            caret-color: var(--text-primary) !important;
+        }
 
         /* --- LIQUID BUTTON --- */
-        .btn-login { 
-            width: 100%; padding: 18px; 
-            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow)); 
-            color: white; border: none; border-radius: 18px; 
-            font-weight: 800; font-size: 16px; cursor: pointer; 
-            margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;
+        .btn-login {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
             box-shadow: 0 10px 30px -10px var(--primary-glow);
-            position: relative; overflow: hidden; z-index: 2;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
         }
+
         .btn-login::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
-            transform: rotate(45deg) translateY(-100%); transition: 0.6s;
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg) translateY(-100%);
+            transition: 0.6s;
         }
-        .btn-login:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px var(--primary-glow); }
-        .btn-login:hover::after { transform: rotate(45deg) translateY(100%); }
-        .btn-login:active { transform: scale(0.98); }
+
+        .btn-login:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px var(--primary-glow);
+        }
+
+        .btn-login:hover::after {
+            transform: rotate(45deg) translateY(100%);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
 
         /* --- RECOVERY & TOAST --- */
-        #recoveryOverlay { display:none; position:fixed; inset:0; background:rgba(0, 0, 0, 0.85); z-index:999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(10px); }
-        .rec-card { background: #1e293b; padding: 35px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .rec-card h3 { color: var(--text-primary); } .rec-card p { color: var(--text-secondary); }
-        .teacher-alert { display:none; color: #fca5a5; background: rgba(239, 68, 68, 0.1); padding: 18px; border-radius: 15px; font-size: 13px; font-weight: 600; line-height: 1.6; margin: 20px 0; border: 1px solid rgba(239, 68, 68, 0.2); }
-        #recUser { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white; }
+        #recoveryOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rec-card {
+            background: #1e293b;
+            padding: 35px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .rec-card h3 {
+            color: var(--text-primary);
+        }
+
+        .rec-card p {
+            color: var(--text-secondary);
+        }
+
+        .teacher-alert {
+            display: none;
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin: 20px 0;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        #recUser {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
 
         .toast-box {
-            visibility: hidden; min-width: 250px; background-color: rgba(220, 38, 38, 0.95); color: #fff;
-            text-align: center; border-radius: 14px; padding: 16px; position: fixed;
-            z-index: 9999; top: 20px; left: 50%; transform: translateX(-50%);
-            font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 12px;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0;
+            visibility: hidden;
+            min-width: 250px;
+            background-color: rgba(220, 38, 38, 0.95);
+            color: #fff;
+            text-align: center;
+            border-radius: 14px;
+            padding: 16px;
+            position: fixed;
+            z-index: 9999;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
         }
-        .toast-box.show { visibility: visible; top: 40px; opacity: 1; }
+
+        .toast-box.show {
+            visibility: visible;
+            top: 40px;
+            opacity: 1;
+        }
+
+        /* --- CUTE OWL CHARACTER --- */
+        .owl-speech-bubble {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px) scale(0.8);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #1e1b4b;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            z-index: 40;
+            width: 200px;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .owl-speech-bubble.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+            animation: floatBubble 3s ease-in-out infinite;
+        }
+
+        @keyframes floatBubble {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-5px) scale(1);
+            }
+        }
+
+        .owl-speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent;
+        }
+
+        .owl-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto -30px;
+            z-index: 30;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        .owl-body {
+            width: 130px;
+            height: 120px;
+            background: linear-gradient(145deg, #6366f1, #4f46e5);
+            border-radius: 50% 50% 45% 45%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .owl-body::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 15px;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 20px solid #6366f1;
+            transform: rotate(-15deg);
+        }
+
+        .owl-body::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            right: 15px;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 20px solid #6366f1;
+            transform: rotate(15deg);
+        }
+
+        .owl-face {
+            display: flex;
+            gap: 12px;
+            margin-top: -10px;
+        }
+
+        .owl-eye {
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .owl-pupil {
+            width: 16px;
+            height: 16px;
+            background: #1e1b4b;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .owl-pupil::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 4px;
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .owl-beak {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-top: 12px solid #fbbf24;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        .owl-belly {
+            position: absolute;
+            bottom: 5px;
+            width: 60px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+        }
+
+        /* Owl Hands (Default: DOWN / Relaxed) */
+        .owl-hand {
+            position: absolute;
+            width: 40px;
+            height: 28px;
+            background: linear-gradient(145deg, #818cf8, #6366f1);
+            border-radius: 50%;
+            top: 55px;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 5;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .owl-hand-left {
+            left: -5px;
+            transform: rotate(30deg);
+        }
+
+        .owl-hand-right {
+            right: -5px;
+            transform: rotate(-30deg);
+        }
+
+        /* State: Covering Eyes (Password Focused) */
+        .owl-body.covering-eyes .owl-hand-left {
+            top: 26px;
+            left: 10px;
+            transform: rotate(10deg);
+        }
+
+        .owl-body.covering-eyes .owl-hand-right {
+            top: 26px;
+            right: 10px;
+            transform: rotate(-10deg);
+        }
+
+        .owl-body.covering-eyes .owl-eye {
+            height: 6px;
+            background: #1e1b4b;
+            margin-top: 15px;
+            box-shadow: none;
+            border-radius: 10px;
+        }
+
+        .owl-body.covering-eyes .owl-pupil {
+            opacity: 0;
+        }
+
+        /* State: Peeking (Password Visible) */
+        .owl-body.peeking .owl-pupil {
+            transform: translateY(6px);
+        }
+
+        /* --- TREE BRANCH --- */
+        .owl-branch {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 14px;
+            background: linear-gradient(to bottom, #78350f, #451a03);
+            border-radius: 10px;
+            z-index: 1;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .owl-leaf {
+            position: absolute;
+            width: 18px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 0 18px 0 18px;
+            box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .left-leaf {
+            top: 10px;
+            left: 20px;
+            transform: rotate(-15deg);
+        }
+
+        .right-leaf {
+            top: -5px;
+            right: 15px;
+            transform: rotate(45deg);
+        }
+
+        /* Blinking animation */
+        @keyframes owlBlink {
+
+            0%,
+            90%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            95% {
+                transform: scaleY(0.1);
+            }
+        }
+
+        .owl-eye {
+            animation: owlBlink 4s infinite;
+        }
+
+        .owl-feet {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: -3px;
+        }
+
+        .owl-foot {
+            width: 22px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* --- PASSWORD TOGGLE EYE --- */
+        .pwd-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 5;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .pwd-toggle:hover {
+            color: var(--primary-glow);
+            filter: drop-shadow(0 0 6px var(--primary-glow));
+        }
+
+        /* --- BACK TO HOME LINK --- */
+        .login-bottom-links {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-bottom-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-bottom-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .login-bottom-links .divider {
+            color: rgba(255, 255, 255, 0.15);
+            font-weight: 300;
+        }
     </style>
 </head>
+
 <body class="theme-admin">
 
-<div class="bg-animation-container">
-    <div class="bg-blob blob-1"></div>
-    <div class="bg-blob blob-2"></div>
-    <div class="bg-blob blob-3"></div>
-</div>
-
-<div class="particles">
-    <div class="particle p1"></div>
-    <div class="particle p2"></div>
-    <div class="particle p3"></div>
-    <div class="particle p4"></div>
-    <div class="particle p5"></div>
-</div>
-
-<div class="xb-watermark">XevionByte</div>
-
-<div class="login-container">
-    <div class="login-card">
-
-        <div class="icon-box-wrapper">
-            <div class="icon-box-glow"></div>
-            <div class="icon-box" id="dynamic-icon">
-                <i class="fas fa-shield-alt" id="role-icon"></i>
-            </div>
-        </div>
-
-        <h2>STES Secure Portal</h2>
-
-        <div class="tabs">
-            <div class="tab active" onclick="setRole('admin', this)">Admin</div>
-            <div class="tab" onclick="setRole('teacher', this)">Teacher</div>
-            <div class="tab" onclick="setRole('parent', this)">Parent</div>
-        </div>
-
-        <div id="anim-wrapper">
-            <p id="roleDescription" class="role-desc">
-                Admin: System Configuration Access 🛂
-            </p>
-
-            <div class="input-group">
-                <input type="text" id="username" placeholder="Admin Email">
-                <i class="fas fa-envelope"></i>
-            </div>
-
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Password">
-                <i class="fas fa-lock"></i>
-            </div>
-
-            <button class="btn-login" onclick="handleLogin()">Access Portal</button>
-
-            <div style="margin-top: 30px; position: relative; z-index: 2;">
-                <a href="javascript:void(0)" onclick="openRecovery()" style="color:var(--text-secondary); text-decoration:none; font-size:14px; font-weight:700; transition:0.3s;">
-                    Forgot Password?
-                </a>
-            </div>
-        </div>
+    <div class="bg-animation-container">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
     </div>
-</div>
 
-<div id="recoveryOverlay">
-    <div class="rec-card">
-        <div id="dynamicHeader">
-            <i id="recIcon" style="font-size:45px; color:var(--primary-glow); margin-bottom:15px; filter: drop-shadow(0 0 10px var(--primary-glow));" class="fas fa-shield-alt"></i>
-            <h3 id="recTitle">Security Verification</h3>
-            <p id="recSub">Identity Check</p>
-        </div>
+    <div class="particles">
+        <div class="particle p1"></div>
+        <div class="particle p2"></div>
+        <div class="particle p3"></div>
+        <div class="particle p4"></div>
+        <div class="particle p5"></div>
+    </div>
 
-        <div id="teacherBlock" class="teacher-alert"></div>
+    <div class="xb-watermark">XevionByte</div>
 
-        <div id="inputSection">
-            <div id="recStep1">
-                <p id="step1Label" style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;"></p>
-                <div class="input-group" style="margin:0;">
-                    <input type="text" id="recUser" placeholder="Enter Admin Email">
-                     <i class="fas fa-at" style="left:15px;"></i>
+    <div class="login-container">
+        <!-- Cute Owl Character -->
+        <div class="owl-container">
+            <div class="owl-speech-bubble" id="owlSpeech">Hey Admin! 👋 Ready to manage?</div>
+            <div class="owl-body" id="owlBody">
+                <div class="owl-face">
+                    <div class="owl-eye">
+                        <div class="owl-pupil"></div>
+                    </div>
+                    <div class="owl-eye">
+                        <div class="owl-pupil"></div>
+                    </div>
                 </div>
-                <button class="btn-login" onclick="checkIdentity()" style="margin-top:25px;">Send Reset Link</button>
+                <div class="owl-beak"></div>
+                <div class="owl-belly"></div>
+                <div class="owl-hand owl-hand-left"></div>
+                <div class="owl-hand owl-hand-right"></div>
+            </div>
+            <div class="owl-feet" style="position:relative; z-index:10;">
+                <div class="owl-foot"></div>
+                <div class="owl-foot"></div>
+            </div>
+            <!-- Tree Branch -->
+            <div class="owl-branch">
+                <div class="owl-leaf left-leaf"></div>
+                <div class="owl-leaf right-leaf"></div>
             </div>
         </div>
 
-        <button onclick="closeRecovery()" style="margin-top:20px; border:none; background:none; color:var(--text-secondary); cursor:pointer; font-weight:700; font-size:14px;">Cancel Request</button>
+        <div class="login-card">
+            <h2>STES Secure Portal</h2>
+
+            <div class="tabs">
+                <div class="tab active" onclick="setRole('admin', this)">Admin</div>
+                <div class="tab" onclick="setRole('teacher', this)">Teacher</div>
+                <div class="tab" onclick="setRole('parent', this)">Parent</div>
+            </div>
+
+            <div id="anim-wrapper">
+                <p id="roleDescription" class="role-desc">
+                    Admin: System Configuration Access 🛂
+                </p>
+
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Admin Email" onfocus="owlFocusUser()"
+                        onblur="owlBlurUser()">
+                    <i class="fas fa-envelope"></i>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Password" onfocus="owlCoverEyes()"
+                        onblur="owlRelax()">
+                    <i class="fas fa-lock"></i>
+                    <button type="button" class="pwd-toggle" onclick="togglePassword()" tabindex="-1">
+                        <i class="fas fa-eye-slash" id="eyeIcon"></i>
+                    </button>
+                </div>
+
+                <button class="btn-login" onclick="handleLogin()">Access Portal</button>
+
+                <div class="login-bottom-links">
+                    <a href="javascript:void(0)" onclick="openRecovery()">
+                        <i class="fas fa-key"></i> Forgot Password?
+                    </a>
+                    <span class="divider">|</span>
+                    <a href="index.html">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    // ---------------------------------------------------------
-    // FIREBASE INITIALIZATION & LOGIC (100% UNTOUCHED)
-    // ---------------------------------------------------------
+    <div id="recoveryOverlay">
+        <div class="rec-card">
+            <div id="dynamicHeader">
+                <i id="recIcon"
+                    style="font-size:45px; color:var(--primary-glow); margin-bottom:15px; filter: drop-shadow(0 0 10px var(--primary-glow));"
+                    class="fas fa-shield-alt"></i>
+                <h3 id="recTitle">Security Verification</h3>
+                <p id="recSub">Identity Check</p>
+            </div>
 
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user && sessionStorage.getItem("isLoggedIn") === "true") {
-            const role = JSON.parse(sessionStorage.getItem("userData"))?.role || sessionStorage.getItem("userRole");
-            if(role === 'admin') window.location.replace("admin-dashboard.html");
-            else if(role === 'teacher') window.location.replace("teacher-portal.html");
-            else if(role === 'parent') window.location.replace("parent-portal.html");
+            <div id="teacherBlock" class="teacher-alert"></div>
+
+            <div id="inputSection">
+                <div id="recStep1">
+                    <p id="step1Label" style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;"></p>
+                    <div class="input-group" style="margin:0;">
+                        <input type="text" id="recUser" placeholder="Enter Admin Email">
+                        <i class="fas fa-at" style="left:15px;"></i>
+                    </div>
+                    <button class="btn-login" onclick="checkIdentity()" style="margin-top:25px;">Send Reset
+                        Link</button>
+                </div>
+            </div>
+
+            <button onclick="closeRecovery()"
+                style="margin-top:20px; border:none; background:none; color:var(--text-secondary); cursor:pointer; font-weight:700; font-size:14px;">Cancel
+                Request</button>
+        </div>
+    </div>
+
+    <script>
+        // --- OWL SPEECH & ANIMATION ENGINE ---
+        let speechTimeout;
+        function owlSpeak(msg, duration = 3000) {
+            const bubble = document.getElementById('owlSpeech');
+            bubble.innerHTML = msg;
+            bubble.classList.add('show');
+            clearTimeout(speechTimeout);
+            if (duration > 0) {
+                speechTimeout = setTimeout(() => {
+                    bubble.classList.remove('show');
+                }, duration);
+            }
         }
-    });
 
-    let currentTab = 'admin';
-
-    function setRole(role, el) {
-        if (currentTab === role) return;
-        currentTab = role;
-
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-
-        const formContent = document.getElementById('anim-wrapper');
-        const iconBox = document.getElementById('dynamic-icon');
-        const userInp = document.getElementById('username');
-        const userIcon = userInp.nextElementSibling;
-
-        formContent.style.opacity = '0';
-        formContent.style.transform = 'translateY(20px) scale(0.95)';
-        iconBox.style.transform = 'rotateY(180deg) scale(0.5)';
-        iconBox.style.opacity = '0';
-
-        document.body.className = `theme-${role}`;
-
-        // Reset Particle Animations smoothly when theme changes
-        const particles = document.querySelectorAll('.particle');
-        particles.forEach(p => {
-            p.style.animation = 'none';
-            p.offsetHeight; /* trigger reflow */
-            p.style.animation = null; 
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                owlSpeak("Welcome back! 👋 Ready to manage?", 3500);
+            }, 500);
         });
 
-        setTimeout(() => {
-            const desc = document.getElementById('roleDescription');
-            const icon = document.getElementById('role-icon');
-
-            if(role === 'admin') { 
-                desc.innerText = "Admin: System Configuration Access 🛂"; 
-                userInp.placeholder = "Admin Email"; 
-                icon.className = "fas fa-shield-alt";
-                userIcon.className = "fas fa-envelope";
-            }
-            else if(role === 'teacher') { 
-                desc.innerText = "Teacher: Management & Attendance Portal 👨‍🏫"; 
-                userInp.placeholder = "Registered Mobile No"; 
-                icon.className = "fas fa-chalkboard-user";
-                userIcon.className = "fas fa-mobile-screen";
-            }
-            else { 
-                desc.innerText = "Parent: Student Growth & Fee Tracking 📊\nPassword format: YYYY-MM-DD"; 
-                userInp.placeholder = "STES ID / Mobile"; 
-                icon.className = "fas fa-hands-holding-child";
-                userIcon.className = "fas fa-fingerprint";
-            }
-
-            formContent.style.opacity = '1';
-            formContent.style.transform = 'translateY(0) scale(1)';
-            iconBox.style.transform = 'rotateY(0deg) scale(1)';
-            iconBox.style.opacity = '1';
-
-            userInp.value = ""; document.getElementById('password').value = "";
-        }, 300);
-    }
-
-    function openRecovery() {
-        document.getElementById('recUser').value = ""; 
-        document.getElementById('recoveryOverlay').style.display = 'flex';
-        const icon = document.getElementById('recIcon'), title = document.getElementById('recTitle'), label = document.getElementById('step1Label'), inputSec = document.getElementById('inputSection'), tBlock = document.getElementById('teacherBlock');
-
-        if(currentTab === 'teacher' || currentTab === 'parent') {
-            icon.className = "fas fa-lock-open"; 
-            title.innerText = "Access Restriction";
-            const roleName = currentTab === 'teacher' ? 'Teachers' : 'Parents';
-            tBlock.innerHTML = `<i class="fas fa-triangle-exclamation"></i> ${roleName} cannot reset passwords directly. Please contact the School Administration.`;
-            tBlock.style.display = 'block'; inputSec.style.display = 'none';
-        } else {
-            tBlock.style.display = 'none'; inputSec.style.display = 'block';
-            icon.className = "fas fa-shield-halved"; title.innerText = "Admin Recovery"; label.innerText = "Verify Admin Email Address";
+        function owlFocusUser() {
+            const owl = document.getElementById('owlBody');
+            owl.classList.add('peeking');
+            owlSpeak("I'm watching you type... 👀", 2500);
         }
-    }
 
-    function closeRecovery() { document.getElementById('recoveryOverlay').style.display = 'none'; }
-
-    async function checkIdentity() {
-        const input = document.getElementById('recUser').value.trim();
-        if(!input) { showToast("Please enter required details!"); return; }
-        if(currentTab === 'admin') {
-            try {
-                await firebase.auth().sendPasswordResetEmail(input);
-                alert("📨 Secure link sent! Check your inbox (and spam folder) for reset instructions.");
-                closeRecovery();
-            } catch (error) { showToast("System Error: " + error.message); }
+        function owlBlurUser() {
+            const owl = document.getElementById('owlBody');
+            owl.classList.remove('peeking');
         }
-    }
 
-    function showToast(msg) {
-        let toast = document.createElement("div");
-        toast.className = `toast-box show`;
-        toast.innerHTML = `<i class="fas fa-circle-xmark"></i> ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
-    }
-
-    async function handleLogin() {
-        const u = document.getElementById('username').value.trim(); const p = document.getElementById('password').value.trim();
-        if(!u || !p) { showToast("Credentials Required."); return; }
-
-        const btn = document.querySelector('.btn-login');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Authenticating..."; btn.disabled = true;
-
-        try {
-            if(currentTab === 'admin') {
-                await firebase.auth().signInWithEmailAndPassword(u, p);
-                saveSession({role:'admin'}, "admin-dashboard.html"); 
-            } else if(currentTab === 'teacher') {
-                await firebase.auth().signInWithEmailAndPassword(u + "@stes.com", p);
-                const snap = await db.collection('staff').where('mobile', '==', u).get();
-                if(!snap.empty) saveSession({...snap.docs[0].data(), role:'teacher', id:snap.docs[0].id}, "teacher-portal.html");
+        function owlCoverEyes() {
+            const owl = document.getElementById('owlBody');
+            const pwdField = document.getElementById('password');
+            if (pwdField.type === 'password') {
+                owl.classList.add('covering-eyes');
+                owl.classList.remove('peeking');
+                owlSpeak("I'm not looking! 🙈", 3000);
             } else {
-                const dummyEmail = u.toLowerCase() + "@stes.com";
-                await firebase.auth().signInWithEmailAndPassword(dummyEmail, p);
-                let snap = await db.collection('students').where('stesID', '==', u).get();
-                if(snap.empty) snap = await db.collection('students').where('mobile', '==', u).get();
-                if(!snap.empty) saveSession({...snap.docs[0].data(), role:'parent', id:snap.docs[0].id}, "parent-portal.html");
+                owl.classList.add('peeking');
             }
-        } catch(e) { 
-            console.error(e); showToast("Authentication Failed. Check credentials."); 
-        } finally {
-            btn.innerHTML = originalText; btn.disabled = false;
         }
-    }
+        function owlRelax() {
+            const owl = document.getElementById('owlBody');
+            owl.classList.remove('covering-eyes');
+            owl.classList.remove('peeking');
+            // speech bubble auto-hides after duration
+        }
 
-    function saveSession(data, target) { 
-        sessionStorage.setItem("isLoggedIn", "true"); sessionStorage.setItem("userData", JSON.stringify(data)); 
-        window.location.replace(target); 
-    }
-</script>
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            const owl = document.getElementById('owlBody');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.className = 'fas fa-eye';
+                owl.classList.remove('covering-eyes');
+                owl.classList.add('peeking');
+                owlSpeak("Oh, so that's your password! 😲", 3000);
+            } else {
+                pwd.type = 'password';
+                icon.className = 'fas fa-eye-slash';
+                if (document.activeElement === pwd) {
+                    owl.classList.add('covering-eyes');
+                    owl.classList.remove('peeking');
+                    owlSpeak("Hidden again! 🙈", 2000);
+                } else {
+                    owl.classList.remove('covering-eyes');
+                    owl.classList.remove('peeking');
+                }
+            }
+            pwd.focus();
+        }
+
+
+        // ---------------------------------------------------------
+        // FIREBASE INITIALIZATION & LOGIC (100% UNTOUCHED)
+        // ---------------------------------------------------------
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user && sessionStorage.getItem("isLoggedIn") === "true") {
+                const role = JSON.parse(sessionStorage.getItem("userData"))?.role || sessionStorage.getItem("userRole");
+                if (role === 'admin') window.location.replace("admin-dashboard.html");
+                else if (role === 'teacher') window.location.replace("teacher-portal.html");
+                else if (role === 'parent') window.location.replace("parent-portal.html");
+            }
+        });
+
+        let currentTab = 'admin';
+
+        function setRole(role, el) {
+            if (currentTab === role) return;
+            currentTab = role;
+
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const formContent = document.getElementById('anim-wrapper');
+            const owlContainer = document.querySelector('.owl-container');
+            const userInp = document.getElementById('username');
+            const userIcon = userInp.nextElementSibling;
+
+            formContent.style.opacity = '0';
+            formContent.style.transform = 'translateY(20px) scale(0.95)';
+            owlContainer.style.transform = 'scale(0.8) rotate(-10deg)';
+
+            document.body.className = `theme-${role}`;
+
+            // Reset Particle Animations smoothly when theme changes
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(p => {
+                p.style.animation = 'none';
+                p.offsetHeight; /* trigger reflow */
+                p.style.animation = null;
+            });
+
+            setTimeout(() => {
+                const desc = document.getElementById('roleDescription');
+
+                if (role === 'admin') {
+                    desc.innerText = "Admin: System Configuration Access 🛂";
+                    userInp.placeholder = "Admin Email";
+                    userIcon.className = "fas fa-envelope";
+                    owlSpeak("Welcome Admin! 👑 System is ready.", 3000);
+                }
+                else if (role === 'teacher') {
+                    desc.innerText = "Teacher: Management & Attendance Portal 👨‍🏫";
+                    userInp.placeholder = "Registered Mobile No";
+                    userIcon.className = "fas fa-mobile-screen";
+                    owlSpeak("Hello Teacher! 📚 Have a great day!", 3000);
+                }
+                else {
+                    desc.innerText = "Parent: Student Growth & Fee Tracking 📊\nPassword format: YYYY-MM-DD";
+                    userInp.placeholder = "STES ID / Mobile";
+                    userIcon.className = "fas fa-fingerprint";
+                    owlSpeak("Hi Parent! 👨‍👩‍👦 Check child's updates!", 3000);
+                }
+
+                formContent.style.opacity = '1';
+                formContent.style.transform = 'translateY(0) scale(1)';
+                owlContainer.style.transform = 'scale(1) rotate(0deg)';
+
+                // Reset password field and owl state
+                userInp.value = "";
+                document.getElementById('password').value = "";
+                document.getElementById('password').type = 'password';
+                document.getElementById('eyeIcon').className = 'fas fa-eye-slash';
+                document.getElementById('owlBody').classList.remove('eyes-open');
+            }, 300);
+        }
+
+        function openRecovery() {
+            document.getElementById('recUser').value = "";
+            document.getElementById('recoveryOverlay').style.display = 'flex';
+            const icon = document.getElementById('recIcon'), title = document.getElementById('recTitle'), label = document.getElementById('step1Label'), inputSec = document.getElementById('inputSection'), tBlock = document.getElementById('teacherBlock');
+
+            if (currentTab === 'teacher' || currentTab === 'parent') {
+                icon.className = "fas fa-lock-open";
+                title.innerText = "Access Restriction";
+                const roleName = currentTab === 'teacher' ? 'Teachers' : 'Parents';
+                tBlock.innerHTML = `<i class="fas fa-triangle-exclamation"></i> ${roleName} cannot reset passwords directly. Please contact the School Administration.`;
+                tBlock.style.display = 'block'; inputSec.style.display = 'none';
+            } else {
+                tBlock.style.display = 'none'; inputSec.style.display = 'block';
+                icon.className = "fas fa-shield-halved"; title.innerText = "Admin Recovery"; label.innerText = "Verify Admin Email Address";
+            }
+        }
+
+        function closeRecovery() { document.getElementById('recoveryOverlay').style.display = 'none'; }
+
+        async function checkIdentity() {
+            const input = document.getElementById('recUser').value.trim();
+            if (!input) { showToast("Please enter required details!"); return; }
+            if (currentTab === 'admin') {
+                try {
+                    await firebase.auth().sendPasswordResetEmail(input);
+                    alert("📨 Secure link sent! Check your inbox (and spam folder) for reset instructions.");
+                    closeRecovery();
+                } catch (error) { showToast("System Error: " + error.message); }
+            }
+        }
+
+        function showToast(msg) {
+            let toast = document.createElement("div");
+            toast.className = `toast-box show`;
+            toast.innerHTML = `<i class="fas fa-circle-xmark"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        async function handleLogin() {
+            const u = document.getElementById('username').value.trim(); const p = document.getElementById('password').value.trim();
+            if (!u || !p) { showToast("Credentials Required."); return; }
+
+            const btn = document.querySelector('.btn-login');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Authenticating..."; btn.disabled = true;
+
+            try {
+                if (currentTab === 'admin') {
+                    await firebase.auth().signInWithEmailAndPassword(u, p);
+                    saveSession({ role: 'admin' }, "admin-dashboard.html");
+                } else if (currentTab === 'teacher') {
+                    await firebase.auth().signInWithEmailAndPassword(u + "@stes.com", p);
+                    const snap = await db.collection('staff').where('mobile', '==', u).get();
+                    if (!snap.empty) saveSession({ ...snap.docs[0].data(), role: 'teacher', id: snap.docs[0].id }, "teacher-portal.html");
+                } else {
+                    const dummyEmail = u.toLowerCase() + "@stes.com";
+                    await firebase.auth().signInWithEmailAndPassword(dummyEmail, p);
+                    let snap = await db.collection('students').where('stesID', '==', u).get();
+                    if (snap.empty) snap = await db.collection('students').where('mobile', '==', u).get();
+                    if (!snap.empty) saveSession({ ...snap.docs[0].data(), role: 'parent', id: snap.docs[0].id }, "parent-portal.html");
+                }
+            } catch (e) {
+                console.error(e); showToast("Authentication Failed. Check credentials.");
+            } finally {
+                btn.innerHTML = originalText; btn.disabled = false;
+            }
+        }
+
+        function saveSession(data, target) {
+            sessionStorage.setItem("isLoggedIn", "true"); sessionStorage.setItem("userData", JSON.stringify(data));
+            window.location.replace(target);
+        }
+    </script>
 </body>
+
 </html>
