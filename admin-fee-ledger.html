@@ -810,7 +810,8 @@
 
     <div class="sidebar" id="sidebar">
         <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #374151;">
-            <div style="font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: white;">
+            <div
+                style="font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: white;">
                 <i class="fas fa-university" style="color: #818cf8;"></i> St. Teresa
             </div>
             <div style="font-size: 11px; color: #9ca3af; margin-top: 5px; margin-left: 30px;">Admin ERP v7.0</div>
@@ -839,7 +840,8 @@
             </a>
         </div>
 
-        <div style="font-size: 11px; color: #4b5563; text-align: center; margin-top:15px;">&copy; 2026 St. Teresa School</div>
+        <div style="font-size: 11px; color: #4b5563; text-align: center; margin-top:15px;">&copy; 2026 St. Teresa School
+        </div>
     </div>
 
     <div class="main" id="main">
@@ -1752,6 +1754,12 @@
                     }
 
                     let desc = h.headName || h.otherHead || h.description || "Fee Payment";
+
+                    // 🟢 NAYA FIX: History me saaf dikhega ki Wallet use hua hai
+                    if (h.paidViaWallet > 0) {
+                        desc += ` <span style="background:#dbeafe; color:#1d4ed8; padding:2px 4px; border-radius:4px; font-size:9px; font-weight:bold; margin-left:5px;">Wallet Used: ₹${h.paidViaWallet}</span>`;
+                    }
+
                     let extras = [];
                     if (h.months && h.months.length > 0) {
                         let mStr = h.months.join(', ');
@@ -2323,8 +2331,14 @@
                     }
 
                     // Clean Description
-                    let desc = h.headName || h.otherHead || h.description || "Fee";
-                    if (desc.length > 40) desc = desc.substring(0, 40) + "...";
+                    let desc = h.headName || h.otherHead || h.description || "Fee Payment";
+
+                    // 🟢 NAYA FIX: History me saaf dikhega ki Wallet use hua hai
+                    if (h.paidViaWallet > 0) {
+                        desc += ` <span style="background:#dbeafe; color:#1d4ed8; padding:2px 4px; border-radius:4px; font-size:9px; font-weight:bold; margin-left:5px;">Wallet Used: ₹${h.paidViaWallet}</span>`;
+                    }
+
+                    let extras = [];
                     if (h.months && h.months.length > 0) {
                         let mStr = h.months.join(', ');
                         if (!desc.includes(mStr)) desc += ` (${mStr})`;
@@ -2472,6 +2486,12 @@
 
                     // Clean Description
                     let desc = h.headName || h.otherHead || h.description || "Fee Payment";
+
+                    // 🟢 NAYA FIX: History me saaf dikhega ki Wallet use hua hai
+                    if (h.paidViaWallet > 0) {
+                        desc += ` <span style="background:#dbeafe; color:#1d4ed8; padding:2px 4px; border-radius:4px; font-size:9px; font-weight:bold; margin-left:5px;">Wallet Used: ₹${h.paidViaWallet}</span>`;
+                    }
+
                     let extras = [];
                     if (h.months && h.months.length > 0) {
                         let mStr = h.months.join(', ');
@@ -2562,8 +2582,8 @@
             closeBtn.style.background = "#0ea5e9";
             title.innerText = `WALLET HISTORY - ${s.name}`;
 
-            // Filter Wallet Transactions
-            const walletTxns = (s.history || []).filter(h => h.type === 'WALLET_DEPOSIT');
+            // 🟢 NAYA FIX: Fee collection 'ADVANCE' save karta hai, dono ko read karega ab
+            const walletTxns = (s.history || []).filter(h => h.type === 'WALLET_DEPOSIT' || h.type === 'ADVANCE' || h.headName === 'Advance');
 
             if (walletTxns.length === 0) {
                 body.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">No wallet deposits found.</div>`;

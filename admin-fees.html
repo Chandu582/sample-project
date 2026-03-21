@@ -2304,75 +2304,83 @@
                     batch.set(db.collection('students').doc(activeStu.id), { walletBalance: firebase.firestore.FieldValue.increment(-walletDeducted) }, { merge: true });
                 }
 
-                let cashAvailable = payingAmount + walletDeducted;
-                let discountAvailable = discVal;
+                // --- 🟢 FIX: Wallet aur Cash ko alag-alag handle karenge ---
+        let actualCashAvailable = payingAmount; // Sirf wo cash jo hath me aaya
+        let walletAvailable = walletDeducted;   // Jo wallet se draw hua
+        let discountAvailable = discVal;
 
-                let receiptBillTotal = 0;
-                let itemsToPrint = [];
-                let docsToPrepare = [];
+        let receiptBillTotal = 0;
+        let itemsToPrint = [];
+        let docsToPrepare = [];
 
-                // Helper to Allocate Cash & Discount
-                const prepareDoc = (type, head, amt, meta = {}) => {
-                    if (amt <= 0) return;
+        // Helper to Allocate Cash, Wallet & Discount
+        const prepareDoc = (type, head, amt, meta = {}) => {
+            if (amt <= 0) return;
 
-                    let paidByCash = 0;
-                    if (cashAvailable >= amt) {
-                        paidByCash = amt;
-                        cashAvailable -= amt;
-                    } else {
-                        paidByCash = Math.max(0, cashAvailable);
-                        cashAvailable = 0;
+            // 1. Sabse pehle Wallet se paise kato
+            let paidByWallet = 0;
+            if (walletAvailable >= amt) {
+                paidByWallet = amt;
+                walletAvailable -= amt;
+            } else {
+                paidByWallet = Math.max(0, walletAvailable);
+                walletAvailable = 0;
+            }
+
+            let remainingNeed = amt - paidByWallet;
+
+            // 2. Fir bacha hua physical Cash se kato
+            let paidByCash = 0;
+            if (actualCashAvailable >= remainingNeed) {
+                paidByCash = remainingNeed;
+                actualCashAvailable -= remainingNeed;
+            } else {
+                paidByCash = Math.max(0, actualCashAvailable);
+                actualCashAvailable = 0;
+            }
+
+            remainingNeed = amt - (paidByWallet + paidByCash);
+
+            // 3. Fir Discount lagao
+            let paidByDisc = 0;
+            if (remainingNeed > 0 && discountAvailable > 0) {
+                if (discountAvailable >= remainingNeed) { paidByDisc = remainingNeed; discountAvailable -= remainingNeed; }
+                else { paidByDisc = Math.max(0, discountAvailable); discountAvailable = 0; }
+            }
+
+            if (paidByCash > 0 || paidByWallet > 0 || paidByDisc > 0) {
+                const totalPaidForHead = paidByCash + paidByWallet + paidByDisc;
+                receiptBillTotal += amt;
+                const monthsData = meta.transportMonths || meta.months || [];
+
+                itemsToPrint.push({
+                    head: head, fullAmt: amt, paid: totalPaidForHead,
+                    isPartial: (totalPaidForHead < amt), months: monthsData
+                });
+
+                const ref = db.collection('fees').doc();
+                docsToPrepare.push({
+                    ref: ref,
+                    data: {
+                        session: currentSession, sid: activeStu.id, name: activeStu.name,
+                        class: activeStu.class || "", section: activeStu.section || "",
+                        roll: activeStu.roll || "", stesID: activeStu.stesID || "",
+                        snap_class: activeStu.class, snap_section: activeStu.section || "",
+                        snap_roll: activeStu.roll || "", snap_stesID: activeStu.stesID || "",
+                        
+                        type, headName: head, otherHead: head,
+                        paidAmount: paidByCash + paidByWallet, // Ledger ke liye pura amount
+                        actualCashReceived: paidByCash,        // 🟢 NAYA: Dashboard ke cash flow ke liye
+                        paidViaWallet: paidByWallet,           // 🟢 NAYA: Tracking ke liye
+                        discountUsed: paidByDisc,
+                        fullHeadAmount: amt,
+                        date, payer, mode, receiptNo,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        ...meta
                     }
-
-                    let paidByDisc = 0;
-                    let remainingNeed = amt - paidByCash;
-
-                    if (remainingNeed > 0 && discountAvailable > 0) {
-                        if (discountAvailable >= remainingNeed) { paidByDisc = remainingNeed; discountAvailable -= remainingNeed; }
-                        else { paidByDisc = Math.max(0, discountAvailable); discountAvailable = 0; }
-                    }
-
-                    if (paidByCash > 0 || paidByDisc > 0) {
-                        const totalPaidForHead = paidByCash + paidByDisc;
-
-                        receiptBillTotal += amt;
-
-                        const monthsData = meta.transportMonths || meta.months || [];
-
-                        itemsToPrint.push({
-                            head: head,
-                            fullAmt: amt,
-                            paid: totalPaidForHead,
-                            isPartial: (totalPaidForHead < amt),
-                            months: monthsData
-                        });
-
-                        const ref = db.collection('fees').doc();
-                        docsToPrepare.push({
-                            ref: ref,
-                            data: {
-                                session: currentSession, sid: activeStu.id, name: activeStu.name,
-
-                                // 🔥 ADDED CLASS/ROLL DIRECTLY HERE FOR DASHBOARD 🔥
-                                class: activeStu.class || "",
-                                section: activeStu.section || "",
-                                roll: activeStu.roll || "", stesID: activeStu.stesID || "", // 🔥 YE NAYI LINE ADD KAREIN
-
-                                // Snapshot Fields (Old Logic)
-                                snap_class: activeStu.class, snap_section: activeStu.section || "",
-                                snap_roll: activeStu.roll || "", snap_stesID: activeStu.stesID || "",
-
-                                type, headName: head, otherHead: head,
-                                paidAmount: paidByCash,
-                                discountUsed: paidByDisc,
-                                fullHeadAmount: amt,
-                                date, payer, mode, receiptNo,
-                                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                                ...meta
-                            }
-                        });
-                    }
-                };
+                });
+            }
+        };
 
                 // --- PRIORITY SEQUENCE ---
                 if (lateVal > 0) prepareDoc('LATE', window.currentLateFeeDesc || 'Late Fee', lateVal);
@@ -2421,30 +2429,26 @@
                 }
 
                 // --- ADVANCE ---
-                if (hasAdvance && advanceAmt > 0) {
-                    const ref = db.collection('fees').doc();
-                    docsToPrepare.push({
-                        ref: ref,
-                        data: {
-                            session: currentSession, sid: activeStu.id, name: activeStu.name,
+        if (hasAdvance && advanceAmt > 0) {
+            const ref = db.collection('fees').doc();
+            docsToPrepare.push({
+                ref: ref,
+                data: {
+                    session: currentSession, sid: activeStu.id, name: activeStu.name,
+                    class: activeStu.class || "", section: activeStu.section || "",
+                    roll: activeStu.roll || "", stesID: activeStu.stesID || "",
+                    snap_class: activeStu.class, snap_section: activeStu.section || "",
+                    snap_roll: activeStu.roll || "", snap_stesID: activeStu.stesID || "",
 
-                            // 🔥 CLASS INFO ADDED HERE TOO 🔥
-                            class: activeStu.class || "",
-                            section: activeStu.section || "",
-                            roll: activeStu.roll || "",
-                            stesID: activeStu.stesID || "", // 🔥 YE LINE ADD KAREIN
-
-                            snap_class: activeStu.class, snap_section: activeStu.section || "",
-                            snap_roll: activeStu.roll || "", snap_stesID: activeStu.stesID || "", // 🔥 YE LINE BHI ADD KAREIN
-
-                            type: 'ADVANCE', headName: 'Advance', otherHead: 'Wallet Balance',
-                            paidAmount: advanceAmt, fullHeadAmount: advanceAmt,
-                            date, payer, mode, receiptNo, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        }
-                    });
-
-                    batch.set(db.collection('students').doc(activeStu.id), { walletBalance: firebase.firestore.FieldValue.increment(advanceAmt) }, { merge: true });
+                    type: 'ADVANCE', headName: 'Advance', otherHead: 'Wallet Balance',
+                    paidAmount: advanceAmt, fullHeadAmount: advanceAmt,
+                    actualCashReceived: advanceAmt,  // 🟢 NAYA: Advance hamesha physically aata hai
+                    paidViaWallet: 0,
+                    date, payer, mode, receiptNo, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 }
+            });
+            batch.set(db.collection('students').doc(activeStu.id), { walletBalance: firebase.firestore.FieldValue.increment(advanceAmt) }, { merge: true });
+        }
 
                 // --- PREVIOUS DUES CLEARANCE RECORD ---
                 const payPrevDueAmt = Number(document.getElementById('payPrevDueAmt').value) || 0;

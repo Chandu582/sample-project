@@ -1181,7 +1181,9 @@
                 snap.forEach(d => {
                     const data = d.data();
                     let isDisc = data.type === 'DISCOUNT' || data.headName === 'Discount';
-                    let amt = Number(data.paidAmount) || 0;
+                    
+                    // 🟢 FIX: Agar naya field available hai, to use karenge (Nahi to purana data fallback hoga)
+                    let amt = data.actualCashReceived !== undefined ? Number(data.actualCashReceived) : (Number(data.paidAmount) || 0);
 
                     const rawClass = data.class || data.className || data.std || data.standard || "";
                     const rawSec = data.section || data.sec || "";
@@ -1191,10 +1193,17 @@
                     if (rawClass) detailsParts.push(`${rawClass}${rawSec ? '-' + rawSec : ''}`);
                     if (rawRoll) detailsParts.push(`Roll: ${rawRoll}`);
 
+                    // 🟢 NAYA: Dashboard list me dikhane ke liye batayega ki wallet se pay hua tha
+                    let descText = isDisc ? 'Discount Given' : (data.type === 'PAYMENT' ? 'Fee Payment' : (data.otherHead || data.type));
+                    if (data.paidViaWallet > 0) {
+                        if (amt === 0) descText += ' (Paid from Wallet)';
+                        else descText += ' (Cash + Wallet)';
+                    }
+
                     feesCache.push({
                         id: d.id, sid: data.sid, dateStr: data.date, name: data.name || 'Unknown',
                         studentDetails: detailsParts.join(' | '), receiptNo: data.receiptNo || '',
-                        desc: isDisc ? 'Discount Given' : (data.type === 'PAYMENT' ? 'Fee Payment' : (data.otherHead || data.type)),
+                        desc: descText,
                         mode: data.mode, amount: amt, isFee: true, isDiscount: isDisc, timestamp: data.timestamp
                     });
                 });
