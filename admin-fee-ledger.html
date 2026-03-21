@@ -1812,6 +1812,54 @@
             }
 
             // --- 6. FINAL HTML ---
+            // 🟢 FIX: Calculate TRUE Expected Bill (Without Wallet Deposits)
+            let trueBilledAmount = 0;
+            for (let k in s.headsData) { trueBilledAmount += s.headsData[k].exp; }
+            trueBilledAmount += (Number(s.prevDue) || 0) + (Number(s.lateFeeExp) || 0) + (Number(s.extraPaid) || 0);
+
+            let walletHtml = "";
+            if (s.walletBalance > 0) {
+                walletHtml = `
+                    <div style="background:#e0f2fe; border:1px solid #bae6fd; padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:10px; color:#0369a1; font-weight:700;">WALLET (ADVANCE)</div>
+                        <div style="font-size:14px; font-weight:800; color:#0284c7;">₹${s.walletBalance.toFixed(2)}</div>
+                    </div>`;
+            }
+
+            let dueHtml = `
+                    <div style="background:#fff1f2; border:1px solid #fecdd3; padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:10px; color:#be123c; font-weight:700;">UNPAID DUE AMOUNT</div>
+                        <div style="font-size:14px; font-weight:800; color:#e11d48;">₹${Math.max(0, s.grandTotalDue).toFixed(2)}</div>
+                    </div>`;
+
+            if (s.grandTotalDue <= 0) {
+                // 🟢 FIX: Dashboard me green box ke andar Advance amount dikhega
+                let advanceText = s.walletBalance > 0 ? `Advance: ₹${s.walletBalance.toFixed(2)} ` : `ALL CLEAR`;
+                dueHtml = `
+                    <div style="background:#dcfce7; border:1px solid #86efac; padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:10px; color:#166534; font-weight:700;">FINAL STATUS</div>
+                        <div style="font-size:14px; font-weight:800; color:#15803d;">${advanceText}</div>
+                    </div>`;
+            }
+
+            let summaryGrid = `
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-bottom:15px;">
+                    <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:10px; color:#64748b; font-weight:700;">EXPECTED BILLED</div>
+                        <div style="font-size:14px; font-weight:800; color:#0f172a;">₹${trueBilledAmount.toFixed(2)}</div>
+                    </div>
+                    <div style="background:#fee2e2; border:1px solid #fca5a5; padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:10px; color:#991b1b; font-weight:700;">TOTAL DISCOUNT</div>
+                        <div style="font-size:14px; font-weight:800; color:#ef4444;">₹${s.totalDisc.toFixed(2)}</div>
+                    </div>
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:10px; color:#166534; font-weight:700;">TOTAL PAID (VALUE)</div>
+                        <div style="font-size:14px; font-weight:800; color:#22c55e;">₹${s.totalPaid.toFixed(2)}</div>
+                    </div>
+                    ${walletHtml}
+                    ${dueHtml}
+                </div>`;
+
             let html = `
                 <div class="dash-card" style="text-align:left;">
                     <div class="dash-title" style="text-align:center; margin-bottom:10px;">${s.name} <span style="font-size:12px; color:#64748b;">(${s.class})</span></div>
@@ -1821,25 +1869,7 @@
 
                     <div style="font-size:11px; font-weight:800; color:#334155; margin:15px 0 5px 0;">RECENT HISTORY</div>
                     ${historyHtml}
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                        <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:10px; color:#64748b; font-weight:700;">TOTAL BILLED AMOUNT</div>
-                            <div style="font-size:14px; font-weight:800; color:#0f172a;">₹${(s.totalPaid + s.totalDisc + Math.max(0, s.grandTotalDue)).toFixed(2)}</div>
-                        </div>
-                        <div style="background:#fee2e2; border:1px solid #fca5a5; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:10px; color:#991b1b; font-weight:700;">TOTAL DISCOUNT</div>
-                            <div style="font-size:14px; font-weight:800; color:#ef4444;">₹${s.totalDisc.toFixed(2)}</div>
-                        </div>
-                        <div style="background:#dcfce7; border:1px solid #86efac; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:10px; color:#166534; font-weight:700;">TOTAL PAID (CASH)</div>
-                            <div style="font-size:14px; font-weight:800; color:#22c55e;">₹${s.totalPaid.toFixed(2)}</div>
-                        </div>
-                        <div style="background:#fff1f2; border:1px solid #fecdd3; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:10px; color:#be123c; font-weight:700;">UNPAID DUE AMOUNT</div>
-                            <div style="font-size:14px; font-weight:800; color:#e11d48;">₹${Math.max(0, s.grandTotalDue).toFixed(2)}</div>
-                        </div>
-                    </div>
+                    ${summaryGrid}
 
                     <div class="dash-actions">
                         <button class="dash-btn" style="background:#334155;" onclick="downloadStudentPDF('${s.id}')">
@@ -1981,12 +2011,22 @@
 
         // Helper function to copy text
         function copyText(text) {
+            // Grab event target synchronously before async operation
+            const evt = window.event;
+            const targetEl = evt ? (evt.target || evt.srcElement) : null;
+            const btn = targetEl ? (targetEl.closest('button') || targetEl.closest('i') || targetEl) : null;
+
             navigator.clipboard.writeText(text).then(() => {
                 // Show a small temporary tooltip or alert
-                const btn = event.target.closest('button');
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => btn.innerHTML = originalHtml, 1500);
+                if (btn) {
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => { btn.innerHTML = originalHtml; }, 1500);
+                } else {
+                    console.log("Copied: " + text);
+                }
+            }).catch(err => {
+                console.error("Failed to copy: ", err);
             });
         }
 
@@ -2335,7 +2375,7 @@
 
                     // 🟢 NAYA FIX: History me saaf dikhega ki Wallet use hua hai
                     if (h.paidViaWallet > 0) {
-                        desc += ` <span style="background:#dbeafe; color:#1d4ed8; padding:2px 4px; border-radius:4px; font-size:9px; font-weight:bold; margin-left:5px;">Wallet Used: ₹${h.paidViaWallet}</span>`;
+                        desc += ` [Wallet Used: Rs. ${h.paidViaWallet}]`;
                     }
 
                     let extras = [];
@@ -2378,6 +2418,29 @@
                 });
             }
 
+            // 🟢 FIX: Calculate TRUE Expected Bill and Dynamic Footer for PDF
+            let trueBilledAmount = 0;
+            for (let k in s.headsData) { trueBilledAmount += s.headsData[k].exp; }
+            trueBilledAmount += (Number(s.prevDue) || 0) + (Number(s.lateFeeExp) || 0) + (Number(s.extraPaid) || 0);
+
+            let footerRows = [
+                ['', '', '', 'Total Expected Billed Amount', '', `Rs. ${trueBilledAmount.toFixed(2)}`],
+                ['', '', '', 'Total Discount Given', '', `Rs. ${s.totalDisc.toFixed(2)}`],
+                ['', '', '', 'Total Paid (Settled Value)', '', `Rs. ${s.totalPaid.toFixed(2)}`]
+            ];
+
+            if (s.walletBalance > 0) {
+                footerRows.push(['', '', '', { content: 'Wallet Balance (Advance)', styles: { textColor: [3, 105, 161] } }, '', { content: `Rs. ${s.walletBalance.toFixed(2)}`, styles: { textColor: [3, 105, 161] } }]);
+            }
+
+            if (s.grandTotalDue > 0) {
+                footerRows.push(['', '', '', { content: 'Unpaid Due Amount', styles: { textColor: [220, 38, 38] } }, '', { content: `Rs. ${s.grandTotalDue.toFixed(2)}`, styles: { textColor: [220, 38, 38] } }]);
+            } else {
+                // 🟢 FIX: Status me clear likha aayega ki kitna Advance hai
+                let statusText = s.walletBalance > 0 ? `ALL CLEAR (Advance: Rs. ${s.walletBalance.toFixed(2)})` : `ALL CLEAR`;
+                footerRows.push(['', '', '', { content: 'Overall Status', styles: { textColor: [22, 101, 52] } }, '', { content: statusText, styles: { textColor: [22, 101, 52] } }]);
+            }
+
             // --- TABLE GENERATION ---
             doc.autoTable({
                 startY: 55,
@@ -2394,12 +2457,7 @@
                     4: { cellWidth: 25, halign: 'center' },
                     5: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }
                 },
-                foot: [
-                    ['', '', '', 'Total Expected Billed Amount', '', `Rs. ${(s.totalPaid + s.totalDisc + Math.max(0, s.grandTotalDue)).toFixed(2)}`],
-                    ['', '', '', 'Total Discount Given', '', `Rs. ${s.totalDisc.toFixed(2)}`],
-                    ['', '', '', 'Total Paid (Cash)', '', `Rs. ${s.totalPaid.toFixed(2)}`],
-                    ['', '', '', { content: 'Unpaid Due Amount', styles: { textColor: [220, 38, 38] } }, '', { content: `Rs. ${Math.max(0, s.grandTotalDue).toFixed(2)}`, styles: { textColor: [220, 38, 38] } }]
-                ],
+                foot: footerRows, // 🟢 Naya Dynamic Footer Yahan Lag Gaya
                 footStyles: { fillColor: [240, 253, 244], textColor: [22, 101, 52], fontStyle: 'bold', halign: 'right' }
             });
 
@@ -2538,11 +2596,27 @@
             }
 
             // --- D. FOOTER (Total) ---
+            // 🟢 FIX: Calculate TRUE Expected Bill for Excel Footer
+            let trueBilledAmount = 0;
+            for (let k in s.headsData) { trueBilledAmount += s.headsData[k].exp; }
+            trueBilledAmount += (Number(s.prevDue) || 0) + (Number(s.lateFeeExp) || 0) + (Number(s.extraPaid) || 0);
+
             data.push([]); // Empty Row
-            data.push(["", "", "", "TOTAL EXPECTED BILLED AMOUNT", "", s.totalPaid + s.totalDisc + Math.max(0, s.grandTotalDue)]);
+            data.push(["", "", "", "TOTAL EXPECTED BILLED AMOUNT", "", trueBilledAmount]);
             data.push(["", "", "", "TOTAL DISCOUNT GIVEN", "", s.totalDisc]);
-            data.push(["", "", "", "TOTAL PAID (CASH)", "", s.totalPaid]);
-            data.push(["", "", "", "UNPAID DUE AMOUNT", "", Math.max(0, s.grandTotalDue)]);
+            data.push(["", "", "", "TOTAL PAID (SETTLED VALUE)", "", s.totalPaid]);
+
+            if (s.walletBalance > 0) {
+                data.push(["", "", "", "WALLET BALANCE (ADVANCE)", "", s.walletBalance]);
+            }
+
+            if (s.grandTotalDue > 0) {
+                data.push(["", "", "", "UNPAID DUE AMOUNT", "", s.grandTotalDue]);
+            } else {
+                // 🟢 FIX: Excel ke status me bhi Advance dikhega
+                let statusText = s.walletBalance > 0 ? `ALL CLEAR (Advance: ₹${s.walletBalance})` : `ALL CLEAR`;
+                data.push(["", "", "", "OVERALL STATUS", "", statusText]);
+            }
 
             // 2. WORKBOOK CREATION
             const ws = XLSX.utils.aoa_to_sheet(data);
@@ -2582,7 +2656,7 @@
             closeBtn.style.background = "#0ea5e9";
             title.innerText = `WALLET HISTORY - ${s.name}`;
 
-            // 🟢 NAYA FIX: Fee collection 'ADVANCE' save karta hai, dono ko read karega ab
+            // NAYA FIX: Fee collection 'ADVANCE' save karta hai, dono ko read karega ab
             const walletTxns = (s.history || []).filter(h => h.type === 'WALLET_DEPOSIT' || h.type === 'ADVANCE' || h.headName === 'Advance');
 
             if (walletTxns.length === 0) {
