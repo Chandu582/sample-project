@@ -2598,11 +2598,10 @@
                         transportStart: document.getElementById('transportStart').value,
                         transportMonths: tMonths,  // <--- YE LINE ADD KARNI HAI
 
-                        // ✅ NAYI LINES: Bache ko current session me assign karne ke liye
+                        // ✅ ADMISSION SESSION (DO NOT overwrite activeSessions here!)
                         session: document.getElementById('admSessionSelect').value,
-                        activeSessions: [document.getElementById('admSessionSelect').value],
 
-                        // ✅ NAYI LINE: Admission ke time pehla session freeze kardo
+                        // ✅ Session meta for the selected dropdown session
                         [`sessionMeta_${document.getElementById('admSessionSelect').value}`]: {
                             class: document.getElementById('classSelect').value,
                             section: document.getElementById('sectionSelect').value,
@@ -2622,11 +2621,18 @@
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
 
+                    const selSession = document.getElementById('admSessionSelect').value;
+
                     if (editId) {
+                        // ✅ SAFELY add session to activeSessions without destroying promotion history
+                        data.activeSessions = firebase.firestore.FieldValue.arrayUnion(selSession);
                         await db.collection('students').doc(editId).update(data);
                         showToast("Student Updated Successfully", "success");
                         resetForm();
                     } else {
+                        // ✅ ONLY for new admission: initialize the full activeSessions array
+                        data.activeSessions = [selSession];
+
                         // 🟢 NAYA LOGIC: Save Data + Auto Generate Secure Account
                         data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                         data.authCreated = true; // Pehle hi true mark kar diya
@@ -2782,6 +2788,14 @@
                 document.getElementById('saveBtn').innerHTML = '<i class="fas fa-edit"></i> Update Record';
 
                 const setVal = (id, val) => { if (document.getElementById(id)) document.getElementById(id).value = val || ""; }
+
+                // ✅ POPULATE SESSION DROPDOWN (Latest active session nikalo)
+                let currentSession = s.session;
+                if (s.activeSessions && Array.isArray(s.activeSessions) && s.activeSessions.length > 0) {
+                    let sortedSessions = [...s.activeSessions].sort().reverse();
+                    currentSession = sortedSessions[0];
+                }
+                setVal('admSessionSelect', currentSession);
 
                 setVal('stesID', s.stesID);
                 setVal('admissionDate', s.admissionDate);

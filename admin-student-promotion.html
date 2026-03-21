@@ -1108,6 +1108,10 @@
                     };
 
                     revertData[`dues_${targetSession}`] = firebase.firestore.FieldValue.delete();
+                    
+                    // ✅ NEW LOGIC: Remove target session from activeSessions array and delete meta
+                    revertData['activeSessions'] = firebase.firestore.FieldValue.arrayRemove(targetSession);
+                    revertData[`sessionMeta_${targetSession}`] = firebase.firestore.FieldValue.delete();
 
                     batch.update(ref, revertData);
                     count++;
