@@ -911,11 +911,14 @@
             <div class="inp-group" style="flex: 1.5; min-width: 220px;">
                 <label>Actions</label>
                 <div style="display: flex; gap: 8px;">
+                    <button id="walletFilterBtn" onclick="toggleWalletFilter()" class="btn"
+                        style="background:#0ea5e9; flex: 1; white-space: nowrap; transition: 0.2s;">
+                        <i class="fas fa-wallet"></i> Wallet
+                    </button>
                     <button onclick="exportExcel()" class="btn"
                         style="background:#15803d; flex: 1; white-space: nowrap;">
                         <i class="fas fa-file-excel"></i> Excel
                     </button>
-
                 </div>
             </div>
 
@@ -1421,6 +1424,22 @@
 
         // --- UI RENDER FUNCTIONS ---
 
+        let walletOnly = false;
+        function toggleWalletFilter() {
+            walletOnly = !walletOnly;
+            const btn = document.getElementById('walletFilterBtn');
+            if(walletOnly) {
+                btn.style.background = "#0369a1";
+                btn.style.boxShadow = "inset 0 3px 5px rgba(0,0,0,0.2)";
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> Wallet Filter`;
+            } else {
+                btn.style.background = "#0ea5e9";
+                btn.style.boxShadow = "none";
+                btn.innerHTML = `<i class="fas fa-wallet"></i> Wallet`;
+            }
+            renderTable();
+        }
+
         function renderTable() {
             const fName = document.getElementById('fName').value.toLowerCase();
             const fClass = document.getElementById('fClass').value;
@@ -1433,7 +1452,8 @@
                 const matchName = s.name.toLowerCase().includes(fName) || String(s.stesID).toLowerCase().includes(fName);
                 const matchClass = fClass === "" || s.class === fClass;
                 const matchStatus = fStatus === "All" || (fStatus === "Pending" && s.grandTotalDue > 0) || (fStatus === "Clear" && s.grandTotalDue <= 0);
-                return matchName && matchClass && matchStatus;
+                const matchWallet = !walletOnly || (s.walletBalance > 0);
+                return matchName && matchClass && matchStatus && matchWallet;
             });
 
             if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="50" style="text-align:center; padding:20px;">No records found</td></tr>`; return; }
@@ -1732,43 +1752,29 @@
 
                 [...s.history].reverse().forEach(h => {
                     let rNo = h.receiptNo || ("N/A-" + Math.random());
-
                     if (!groupedModalHistory[rNo]) {
                         let dateStr = "-";
                         try {
-                            if (h.date) {
-                                if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString();
-                                else if (typeof h.date === "string") dateStr = parseDate(h.date);
+                            if (h.timestamp && h.timestamp.seconds) dateStr = new Date(h.timestamp.seconds * 1000).toLocaleDateString('en-GB');
+                            else if (h.date) {
+                                if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
+                                else if (typeof h.date === "string") dateStr = parseDate(h.date, 'en-GB');
                             }
                         } catch (e) { dateStr = "Error"; }
 
-                        groupedModalHistory[rNo] = {
-                            dateStr: dateStr,
-                            receiptNo: h.receiptNo || "-",
-                            descriptions: [],
-                            itemDisc: 0,
-                            explicitDisc: 0,
-                            cashAmount: 0
-                        };
+                        groupedModalHistory[rNo] = { dateStr, receiptNo: h.receiptNo || "-", itemsMap: {}, itemDisc: 0, explicitDisc: 0, cashAmount: 0 };
                         modalGroupOrder.push(rNo);
                     }
 
-                    let desc = h.headName || h.otherHead || h.description || "Fee Payment";
-
-                    // 🟢 NAYA FIX: History me saaf dikhega ki Wallet use hua hai
-                    if (h.paidViaWallet > 0) {
-                        desc += ` <span style="background:#dbeafe; color:#1d4ed8; padding:2px 4px; border-radius:4px; font-size:9px; font-weight:bold; margin-left:5px;">Wallet Used: ₹${h.paidViaWallet}</span>`;
-                    }
-
-                    let extras = [];
-                    if (h.months && h.months.length > 0) {
-                        let mStr = h.months.join(', ');
-                        if (!desc.includes(mStr)) extras.push(`Months: ${mStr}`);
-                    }
-                    if (h.transportMonths && h.transportMonths.length > 0) extras.push(`Trans: ${h.transportMonths.join(', ')}`);
-
-                    if (extras.length > 0) desc += ` [${extras.join(' | ')}]`;
-                    groupedModalHistory[rNo].descriptions.push(desc);
+                    let rawHead = h.headName || h.otherHead || h.description || "Fee Payment";
+                    let match = rawHead.match(/\s*\(([^)]*)\)\s*$/);
+                    let baseName = rawHead.replace(/\s*\([^)]*\)\s*$/, '').trim();
+                    if (h.paidViaWallet > 0) baseName += ` <span style="background:#dbeafe; color:#1d4ed8; padding:2px 4px; border-radius:4px; font-size:9px; font-weight:bold; margin-left:5px;">[Wallet Used: ₹${h.paidViaWallet}]</span>`;
+                    
+                    if (!groupedModalHistory[rNo].itemsMap[baseName]) groupedModalHistory[rNo].itemsMap[baseName] = new Set();
+                    
+                    let extMonths = (h.months && h.months.length > 0) ? h.months : (match ? match[1].split(',').map(m=>m.trim()) : []);
+                    extMonths.forEach(m => groupedModalHistory[rNo].itemsMap[baseName].add(m));
 
                     const headLower = (h.headName || '').toLowerCase();
                     if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
@@ -1783,29 +1789,35 @@
 
                 modalGroupOrder.forEach((rNo) => {
                     const g = groupedModalHistory[rNo];
-                    const descStr = g.descriptions.join('<br><span style="color:#cbd5e1;">+</span> ');
-                    let cashPaid = g.cashAmount || 0;
-                    let trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
-                    let grossAmount = cashPaid + trueDisc;
+                    const cashPaid = g.cashAmount || 0;
+                    const trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
+                    const grossAmount = cashPaid + trueDisc;
+
+                    let descArr = [];
+                    for(let head in g.itemsMap) {
+                        let mArr = Array.from(g.itemsMap[head]);
+                        if(mArr.length > 0) descArr.push(`${head} (${mArr.join(', ')})`);
+                        else descArr.push(head);
+                    }
+                    const finalDesc = descArr.join('<br><span style="color:#cbd5e1;">+</span> ');
 
                     modalTotalPaid += cashPaid;
                     modalTotalDiscount += trueDisc;
                     modalTotalAmount += grossAmount;
 
                     historyHtml += `
-                        <tr style="border-bottom:1px solid #f8fafc;">
-                            <td style="padding:6px;">
+                        <tr style="border-bottom:2px solid #cbd5e1;">
+                            <td style="padding:10px 6px;">
                                 <div style="font-weight:700; color:#334155;">${g.dateStr}</div>
                                 <div style="font-size:9px; color:#64748b; display:flex; align-items:center;">
-    #${g.receiptNo}
-    ${g.receiptNo !== '-' ? '<i class="fas fa-copy" onclick="copyText(\'' + g.receiptNo + '\')" style="margin-left:6px; cursor:pointer; color:#6366f1;" title="Copy Receipt No"></i>' : ''}
-</div>
-
+                                    #${g.receiptNo}
+                                    ${g.receiptNo !== '-' ? `<i class="fas fa-copy" onclick="copyText('${g.receiptNo}')" style="margin-left:6px; cursor:pointer; color:#6366f1;" title="Copy Receipt No"></i>` : ''}
+                                </div>
                             </td>
-                            <td style="padding:6px; color:#475569;">${descStr}</td>
-                            <td style="padding:6px; text-align:right; font-weight:700; color:#0f172a;">₹${grossAmount.toFixed(2)}</td>
-                            <td style="padding:6px; text-align:right; font-weight:700; color:#ef4444;">₹${trueDisc.toFixed(2)}</td>
-                            <td style="padding:6px; text-align:right; font-weight:800; color:#16a34a;">₹${cashPaid.toFixed(2)}</td>
+                            <td style="padding:10px 6px; color:#475569; line-height:1.5;">${finalDesc}</td>
+                            <td style="padding:10px 6px; text-align:right; font-weight:700; color:#0f172a;">₹${grossAmount.toFixed(2)}</td>
+                            <td style="padding:10px 6px; text-align:right; font-weight:700; color:#ef4444;">${trueDisc > 0 ? '₹' + trueDisc.toFixed(2) : '-'}</td>
+                            <td style="padding:10px 6px; text-align:right; font-weight:800; color:#16a34a;">₹${cashPaid.toFixed(2)}</td>
                         </tr>`;
                 });
                 historyHtml += `</tbody></table></div>`;
@@ -2306,13 +2318,14 @@
             doc.setFont("helvetica", "normal");
             doc.text("Affiliated to CBSE | Session: " + currentSession, marginLeft, 24);
 
-            // Title
             doc.setFontSize(14);
             doc.setTextColor(99, 102, 241); // Indigo
             doc.text("FEE STATEMENT", 195, 18, { align: "right" });
             doc.setFontSize(8);
             doc.setTextColor(100);
             doc.text("Date: " + new Date().toLocaleDateString(), 195, 24, { align: "right" });
+            doc.setTextColor(14, 165, 233); // Subtle blue notation
+            doc.text("(Printed from Office)", 195, 28, { align: "right" });
 
             // --- STUDENT DETAILS BOX ---
             doc.setDrawColor(200);
@@ -2345,45 +2358,36 @@
             if (s.history && s.history.length > 0) {
                 // Reverse array to show oldest first (Standard for statement)
                 const sortedHistory = [...s.history].reverse();
-
                 const groupedHistory = {};
                 let groupOrder = [];
 
+                const parseMyDate = (item) => {
+                    if (item.timestamp && item.timestamp.seconds) return new Date(item.timestamp.seconds * 1000).toLocaleDateString('en-GB');
+                    if (item.date) {
+                        if (item.date.seconds) return new Date(item.date.seconds * 1000).toLocaleDateString('en-GB');
+                        const d = new Date(item.date);
+                        if (!isNaN(d)) return d.toLocaleDateString('en-GB');
+                        return item.date;
+                    }
+                    return "-";
+                };
+
                 sortedHistory.forEach((h) => {
                     let rNo = h.receiptNo || ("N/A-" + Math.random());
-
                     if (!groupedHistory[rNo]) {
-                        // ✅ DATE FIX
-                        let dateStr = "-";
-                        if (h.date) {
-                            if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
-                            else if (typeof h.date === "string") dateStr = parseDate(h.date, 'en-GB');
-                        }
-                        groupedHistory[rNo] = {
-                            dateStr: dateStr,
-                            receiptNo: h.receiptNo || "-",
-                            descriptions: [],
-                            itemDisc: 0,
-                            explicitDisc: 0,
-                            cashAmount: 0
-                        };
+                        groupedHistory[rNo] = { dateStr: parseMyDate(h), receiptNo: h.receiptNo || "-", itemsMap: {}, itemDisc: 0, explicitDisc: 0, cashAmount: 0 };
                         groupOrder.push(rNo);
                     }
 
-                    // Clean Description
-                    let desc = h.headName || h.otherHead || h.description || "Fee Payment";
+                    let rawHead = h.headName || h.otherHead || h.description || "Fee Payment";
+                    let match = rawHead.match(/\s*\(([^)]*)\)\s*$/);
+                    let baseName = rawHead.replace(/\s*\([^)]*\)\s*$/, '').trim();
+                    if (h.paidViaWallet > 0) baseName += ` [Wallet Used]`;
 
-                    // 🟢 NAYA FIX: History me saaf dikhega ki Wallet use hua hai
-                    if (h.paidViaWallet > 0) {
-                        desc += ` [Wallet Used: Rs. ${h.paidViaWallet}]`;
-                    }
-
-                    let extras = [];
-                    if (h.months && h.months.length > 0) {
-                        let mStr = h.months.join(', ');
-                        if (!desc.includes(mStr)) desc += ` (${mStr})`;
-                    }
-                    groupedHistory[rNo].descriptions.push(desc);
+                    if (!groupedHistory[rNo].itemsMap[baseName]) groupedHistory[rNo].itemsMap[baseName] = new Set();
+                    
+                    let extMonths = (h.months && h.months.length > 0) ? h.months : (match ? match[1].split(',').map(m=>m.trim()) : []);
+                    extMonths.forEach(m => groupedHistory[rNo].itemsMap[baseName].add(m));
 
                     const headLower = (h.headName || '').toLowerCase();
                     if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
@@ -2398,20 +2402,25 @@
 
                 groupOrder.forEach((rNo, index) => {
                     const g = groupedHistory[rNo];
-                    const descStr = g.descriptions.join(' + ');
-                    let cashPaid = g.cashAmount || 0;
-                    let trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
-                    let grossAmount = cashPaid + trueDisc;
-
+                    const cashPaid = g.cashAmount || 0;
+                    const trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
                     totalStatementPaid += cashPaid;
                     totalStatementDiscount += trueDisc;
-                    totalStatementAmount += grossAmount;
+                    totalStatementAmount += (cashPaid + trueDisc);
+
+                    let descArr = [];
+                    for (let head in g.itemsMap) {
+                        let mArr = Array.from(g.itemsMap[head]);
+                        if (mArr.length > 0) descArr.push(`${head} (${mArr.join(', ')})`);
+                        else descArr.push(head);
+                    }
+                    let finalDesc = descArr.join(', ');
 
                     tableBody.push([
                         index + 1,
                         g.dateStr,
                         g.receiptNo,
-                        descStr,
+                        finalDesc,
                         "Cash/Online",
                         cashPaid.toFixed(2)
                     ]);
