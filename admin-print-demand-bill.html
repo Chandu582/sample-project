@@ -788,19 +788,32 @@
 
                     //  NAYA LOGIC: Sirf 'Active' AND 'Current Session' wale students ko hi list mein add karein
                     // 🟢 FIX 2: SMART SESSION FILTER (Handles missing or slightly different session names)
+                    // 🟢 FIX 2: STRICT SESSION FILTER (No extra students allowed)
                     sSnap.forEach(d => {
                         const studentData = d.data();
                         if (studentData.status === 'Active') {
-                            let stuSess = studentData.session || "";
-                            let currStartYear = currentSession.substring(0, 4); // Extract "2026"
+                            let stuSess = (studentData.session || "").trim();
+                            let isMatch = false;
 
-                            // Check: If exact match, OR contains start year, OR missing session (fallback for old data)
-                            if (stuSess === currentSession || stuSess.includes(currStartYear) || stuSess === "") {
+                            if (currentSession === "2025-2026") {
+                                // 1. Purane session ke liye: '2025-2026' ya blank wale allowed hain
+                                if (stuSess === "2025-2026" || stuSess === "2025-26" || stuSess === "") {
+                                    isMatch = true;
+                                }
+                            } else {
+                                // 2. Naye session (2026-2027 onwards) ke liye: STRICT MATCH zaroori hai! Blank NOT allowed.
+                                let currStartYear = currentSession.substring(0, 4); // jaise "2026"
+                                if (stuSess !== "" && (stuSess === currentSession || stuSess.includes(currStartYear))) {
+                                    isMatch = true;
+                                }
+                            }
+
+                            // Agar match hua, tabhi list me add karo
+                            if (isMatch) {
                                 allStudents.push({ id: d.id, ...studentData });
                             }
                         }
                     });
-
                     clsFeesMap[cls] = fSnap.exists ? fSnap.data() : {};
                 }
 
