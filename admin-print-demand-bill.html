@@ -803,8 +803,12 @@
                             } else {
                                 // 2. Naye session (2026-2027 onwards) ke liye: STRICT MATCH zaroori hai! Blank NOT allowed.
                                 let currStartYear = currentSession.substring(0, 4); // jaise "2026"
-                                if (stuSess !== "" && (stuSess === currentSession || stuSess.includes(currStartYear))) {
-                                    isMatch = true;
+                                let activeSessions = studentData.activeSessions || [];
+
+                                if (activeSessions.includes(currentSession)) {
+                                    isMatch = true; // Promoted and active in this session
+                                } else if (stuSess !== "" && (stuSess === currentSession || stuSess.startsWith(currStartYear + "-"))) {
+                                    isMatch = true; // Use startsWith to prevent "2025-2026" falsely matching "2026"
                                 }
                             }
 
