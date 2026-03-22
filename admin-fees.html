@@ -1436,6 +1436,7 @@
                 }
 
                 // C. Wallet Logic
+                // C. Wallet Logic
                 const wBadge = document.getElementById('walletBadge');
                 if (activeStu.walletBalance > 0) {
                     wBadge.style.display = 'block';
@@ -1444,11 +1445,25 @@
                     if (!document.getElementById('useWalletChk')) {
                         const div = document.createElement('div');
                         div.id = 'walletUseDiv';
-                        div.style = "background:#eff6ff; padding:10px; border-radius:8px; margin:10px 0; border:1px solid #bfdbfe; display:flex; align-items:center; gap:10px;";
-                        div.innerHTML = `<input type="checkbox" id="useWalletChk" style="width:18px; height:18px; cursor:pointer;" onchange="recalcAll()"><div><div style="font-size:12px; font-weight:bold; color:#1e40af;">Use Wallet Balance</div><div style="font-size:10px; color:#3b82f6;">Available: ₹${activeStu.walletBalance}</div></div>`;
+                        div.style = "background:#eff6ff; padding:10px; border-radius:8px; margin:10px 0; border:1px solid #bfdbfe; display:flex; justify-content:space-between; align-items:center; gap:10px;";
+                        div.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <input type="checkbox" id="useWalletChk" style="width:18px; height:18px; cursor:pointer;" onchange="recalcAll()">
+                                <div>
+                                    <div style="font-size:12px; font-weight:bold; color:#1e40af;">Use Wallet Balance</div>
+                                    <div style="font-size:10px; color:#3b82f6;">Available: ₹<span id="walletAvailAmt">${activeStu.walletBalance}</span></div>
+                                </div>
+                            </div>
+                            <button onclick="autoAdjustWalletMagic()" style="background:#2563eb; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                                <i class="fas fa-magic"></i> Auto-Adjust
+                            </button>
+                        `;
                         const payInp = document.getElementById('mPaying').parentElement;
                         sumBox.insertBefore(div, payInp);
-                    } else { document.getElementById('useWalletChk').checked = false; }
+                    } else { 
+                        document.getElementById('useWalletChk').checked = false; 
+                        document.getElementById('walletAvailAmt').innerText = activeStu.walletBalance;
+                    }
                 } else {
                     wBadge.style.display = 'none';
                     const wd = document.getElementById('walletUseDiv');
@@ -3329,6 +3344,60 @@ ${itemListStr}--------------------------------
                 window.location.replace("admin-login.html");
             }
         });
+
+
+
+
+
+
+
+          // --- 🟢 NEW: SMART WALLET AUTO-ADJUST MAGIC ---
+        window.autoAdjustWalletMagic = function() {
+            let wallet = activeStu.walletBalance || 0;
+            if(wallet <= 0) return alert("No Wallet Balance available!");
+
+            // 1. Un Due mahino ko dhoondo jo click hone ko taiyar hain
+            let btns = Array.from(document.querySelectorAll('.m-btn.due:not(.selected), .m-btn.partial:not(.selected)'));
+            
+            if(btns.length === 0) {
+                return alert("No pending monthly fees found to adjust!");
+            }
+
+            // 2. Ek-ek karke un mahinon par click karo jab tak wallet 0 na ho jaye
+            for(let btn of btns) {
+                if(wallet <= 0) break;
+                
+                let clickStr = btn.getAttribute('onclick');
+                if(clickStr) {
+                    // Code padh kar actual due amount extract karega
+                    let match = clickStr.match(/,\s*(\d+(?:\.\d+)?)\s*,/);
+                    if(match && match[1]) {
+                        let amt = Number(match[1]);
+                        btn.click(); // Month ko auto-select karega
+                        wallet -= amt; 
+                    }
+                }
+            }
+
+            // 3. Automatically "Use Wallet Balance" ko tick (✔) karega
+            let chk = document.getElementById('useWalletChk');
+            if(chk && !chk.checked) {
+                chk.checked = true;
+                recalcAll(); 
+            }
+
+            // 4. Force "Paying Amount" to 0 (Taki bache se extra cash print na ho jaye)
+            document.getElementById('mPaying').value = 0;
+            updateBalance();
+
+            alert("🪄 Magic Complete!\n\nWallet balance automatically pending months me distribute ho gaya hai.\n\n👉 Ab bas 'COLLECT FEES' par click kar dein!");
+        };  
+
+
+
+
+
+
 
     </script>
 
