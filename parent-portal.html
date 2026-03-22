@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="config.js"></script>
 
@@ -670,8 +672,10 @@
 
             <!-- Session Selector -->
             <div style="margin-bottom:12px;">
-                <label style="font-size:11px; font-weight:bold; color:#64748b; display:block; margin-bottom:4px;">📅 SESSION</label>
-                <select id="attSessionSelect" class="inp" onchange="onAttSessionChange()" style="font-weight:700; border-color:#6366f1; background:#eef2ff; color:#4338ca;">
+                <label style="font-size:11px; font-weight:bold; color:#64748b; display:block; margin-bottom:4px;">📅
+                    SESSION</label>
+                <select id="attSessionSelect" class="inp" onchange="onAttSessionChange()"
+                    style="font-weight:700; border-color:#6366f1; background:#eef2ff; color:#4338ca;">
                     <option>Loading...</option>
                 </select>
             </div>
@@ -713,7 +717,14 @@
         <div id="fees" class="section-card">
             <div class="sec-title">
                 <span><i class="fas fa-rupee-sign"></i> Fee Details</span>
-                <div style="display:flex; gap:5px;">
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <select id="feeSessionSelect" class="inp" onchange="onFeeSessionChange()"
+                        style="padding:4px; font-weight:700; border-color:#6366f1; background:#eef2ff; color:#4338ca; width:auto; border-radius:5px; margin-right:5px; cursor:pointer;">
+                        <option>Loading...</option>
+                    </select>
+                    <button onclick="downloadStudentPDF()" class="btn-icon"
+                        style="background:#334155; color:white; border:none; border-radius:5px; cursor:pointer;"><i
+                            class="fas fa-file-pdf"></i> PDF</button>
                     <button onclick="downloadStatement()" class="btn-icon"
                         style="background:var(--success); color:white; border:none; border-radius:5px; cursor:pointer;"><i
                             class="fas fa-file-excel"></i> Excel</button>
@@ -768,9 +779,10 @@
                 <table class="ledger-table">
                     <thead>
                         <tr>
-                            <th>Date/Receipt</th>
-                            <th>Description</th>
-                            <th style="text-align:right;">Amount</th>
+                            <th style="padding:10px; border-bottom:2px solid #e2e8f0;">Date / Receipt</th>
+                            <th style="padding:10px; border-bottom:2px solid #e2e8f0;">Description</th>
+                            <th style="padding:10px; text-align:right; border-bottom:2px solid #e2e8f0;">Dis.</th>
+                            <th style="padding:10px; text-align:right; border-bottom:2px solid #e2e8f0;">Paid</th>
                         </tr>
                     </thead>
                     <tbody id="feeHistoryBody"></tbody>
@@ -911,119 +923,141 @@
         // --- 1. LOAD DATA SEQUENCE (FIXED) ---
         async function initDashboard() {
             try {
-                // A. Get Current Session
-                const sessDoc = await db.collection('masterSettings').doc('sessions').get();
-                if (sessDoc.exists && sessDoc.data().list) {
-                    const list = sessDoc.data().list.sort().reverse();
-                    currentSession = list[0]; // Latest session by default
-
-                    // ✅ Populate attendance session dropdown
-                    const attSel = document.getElementById('attSessionSelect');
-                    attSel.innerHTML = list.map(s => `<option value="${s}">${s}</option>`).join('');
-                    attSel.value = currentSession; // Default: latest
-                }
-                document.getElementById('sessDisplay').innerText = `Session: ${currentSession}`;
-
-                // B. Get Fresh Student Data
+                // A. Get Fresh Student Data FIRST
                 const stuDoc = await db.collection('students').doc(user.id).get();
                 fullStudentData = stuDoc.data();
 
-                // UI Updates
+                // B. Get Master Sessions
+                const sessDoc = await db.collection('masterSettings').doc('sessions').get();
+                let globalList = [];
+                if (sessDoc.exists && sessDoc.data().list) {
+                    globalList = sessDoc.data().list.sort().reverse();
+                }
+
+                // C. Determine Allowed Sessions for Student
+                let allowedSessions = globalList;
+                if (fullStudentData.activeSessions && fullStudentData.activeSessions.length > 0) {
+                    allowedSessions = fullStudentData.activeSessions.sort().reverse();
+                } else if (fullStudentData.session) {
+                    allowedSessions = [fullStudentData.session];
+                }
+
+                // D. Set Default Current Session
+                currentSession = allowedSessions.length > 0 ? allowedSessions[0] : (globalList[0] || "2025-2026");
+
+                // E. Populate UI Dropdowns
+                const attSel = document.getElementById('attSessionSelect');
+                if (attSel) {
+                    attSel.innerHTML = globalList.map(s => `<option value="${s}">${s}</option>`).join('');
+                    attSel.value = currentSession;
+                }
+
+                const feeSel = document.getElementById('feeSessionSelect');
+                if (feeSel) {
+                    feeSel.innerHTML = allowedSessions.map(s => `<option value="${s}">${s}</option>`).join('');
+                    feeSel.value = currentSession;
+                }
+
+                document.getElementById('sessDisplay').innerText = `Session: ${currentSession}`;
+
+                // F. Update Primary Profile UI
                 document.getElementById('dName').innerText = fullStudentData.name;
                 document.getElementById('dClass').innerText = fullStudentData.class;
                 document.getElementById('dRoll').innerText = fullStudentData.roll;
                 document.getElementById('dSec').innerText = fullStudentData.section || 'A';
-                // --- YE LINE ADD KAREIN (Isse ID show hone lagega) ---
                 document.getElementById('dId').innerText = fullStudentData.stesID || "";
 
-                // --- YAHAN PASTE KAREIN (Part 1) ---
-
-                // Photo Logic
                 const imgEl = document.getElementById('dPhoto');
                 const fullImgEl = document.getElementById('fullSizeImg');
-
-                // Agar Student Data mein photo hai:
                 if (fullStudentData.photo) {
-                    imgEl.src = fullStudentData.photo;
-                    fullImgEl.src = fullStudentData.photo;
+                    imgEl.src = fullStudentData.photo; fullImgEl.src = fullStudentData.photo;
                 } else {
-                    // Agar photo nahi hai to Dummy Icon
-                    imgEl.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-                    fullImgEl.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                    imgEl.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; fullImgEl.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
                 }
 
-                // --- YAHAN KHATAM ---
+                // G. Load Session Specific Fees
+                loadFeeDataForSession();
 
-                // C. Load Fee Config (Rules)
-                const configDoc = await db.collection('masterSettings').doc(`feeConfig_${currentSession}`).get();
-                feeRules = configDoc.exists ? (configDoc.data().heads || []) : [];
-
-                // D. Load Class Structure
-                const structDoc = await db.collection('feeStructure').doc(`${currentSession}_${fullStudentData.class}`).get();
-                classFees = structDoc.exists ? structDoc.data() : {};
-
-                // E. LOAD TRANSPORT RATE (FIXED LOGIC)
-                if (fullStudentData.transportOpted) {
-                    // 1. Fetch all routes for this session
-                    const tQuery = await db.collection('transportStructure').where('session', '==', currentSession).get();
-
-                    // 2. Map banayein (exact matching ke liye)
-                    let transMap = {};
-                    tQuery.forEach(doc => {
-                        const d = doc.data();
-                        const rName = String(d.routeName || "").trim();
-                        const rRate = parseFloat(d.rate) || 0;
-
-                        if (rName) {
-                            transMap[rName] = rRate;
-                            transMap[rName.toLowerCase()] = rRate;
-
-                            if (rName.includes('_')) {
-                                const cleanName = rName.split('_')[1].trim();
-                                transMap[cleanName] = rRate;
-                                transMap[cleanName.toLowerCase()] = rRate;
-                            }
-                        }
-                    });
-
-                    // 3. Student ka route clean karein
-                    let stuRoute = (fullStudentData.transportRoute || "").trim();
-                    let stuRouteClean = stuRoute;
-                    if (stuRoute.includes('_')) {
-                        stuRouteClean = stuRoute.split('_')[1].trim();
-                    }
-
-                    // 4. Match karein
-                    if (transMap[stuRoute]) {
-                        transRate = transMap[stuRoute];
-                    } else if (transMap[stuRouteClean]) {
-                        transRate = transMap[stuRouteClean];
-                    } else if (transMap[stuRoute.toLowerCase()]) {
-                        transRate = transMap[stuRoute.toLowerCase()];
-                    } else if (transMap[stuRouteClean.toLowerCase()]) {
-                        transRate = transMap[stuRouteClean.toLowerCase()];
-                    } else {
-                        transRate = Number(fullStudentData.manualTransRate) || 0;
-                    }
-                    console.log("Transport Rate Loaded:", transRate);
-                }
-
-                // F. Load History & Set Dates
-                loadMyHistory();
-
-                // Set date range for current session
+                // Set initial dates for attendance
                 const sessParts = currentSession.split('-');
-                document.getElementById('attStart').value = `${sessParts[0]}-04-01`;
-                document.getElementById('attEnd').value = new Date().toISOString().split('T')[0];
+                if (document.getElementById('attStart')) document.getElementById('attStart').value = `${sessParts[0]}-04-01`;
+                if (document.getElementById('attEnd')) document.getElementById('attEnd').value = new Date().toISOString().split('T')[0];
 
             } catch (e) {
                 console.error("Init Error:", e);
             }
         }
 
+        async function loadFeeDataForSession() {
+            try {
+                document.getElementById('sessDisplay').innerText = `Session: ${currentSession}`;
+
+                // 1. Load Fee Config (Rules)
+                const configDoc = await db.collection('masterSettings').doc(`feeConfig_${currentSession}`).get();
+                feeRules = configDoc.exists ? (configDoc.data().heads || []) : [];
+
+                // 2. Override Class details for specifically selected old session if applicable
+                let targetClass = fullStudentData.class;
+                if (fullStudentData[`sessionMeta_${currentSession}`]) {
+                    targetClass = fullStudentData[`sessionMeta_${currentSession}`].class || targetClass;
+                }
+
+                // 3. Load Class Structure
+                const structDoc = await db.collection('feeStructure').doc(`${currentSession}_${targetClass}`).get();
+                classFees = structDoc.exists ? structDoc.data() : {};
+
+                // 4. LOAD TRANSPORT RATE
+                transRate = 0;
+                if (fullStudentData.transportOpted) {
+                    const tQuery = await db.collection('transportStructure').where('session', '==', currentSession).get();
+                    let transMap = {};
+                    tQuery.forEach(doc => {
+                        const d = doc.data();
+                        const rName = String(d.routeName || "").trim();
+                        if (rName) {
+                            transMap[rName] = parseFloat(d.rate) || 0;
+                            transMap[rName.toLowerCase()] = transMap[rName];
+                            if (rName.includes('_')) {
+                                const cleanName = rName.split('_')[1].trim();
+                                transMap[cleanName] = parseFloat(d.rate) || 0;
+                                transMap[cleanName.toLowerCase()] = transMap[cleanName];
+                            }
+                        }
+                    });
+
+                    let stuRoute = (fullStudentData.transportRoute || "").trim();
+                    let stuRouteClean = stuRoute.includes('_') ? stuRoute.split('_')[1].trim() : stuRoute;
+
+                    if (transMap[stuRoute]) transRate = transMap[stuRoute];
+                    else if (transMap[stuRouteClean]) transRate = transMap[stuRouteClean];
+                    else if (transMap[stuRoute.toLowerCase()]) transRate = transMap[stuRoute.toLowerCase()];
+                    else if (transMap[stuRouteClean.toLowerCase()]) transRate = transMap[stuRouteClean.toLowerCase()];
+                    else transRate = Number(fullStudentData.manualTransRate) || 0;
+                }
+
+                // 5. Load History
+                loadMyHistory();
+            } catch (e) {
+                console.error("Fee Data Load Error:", e);
+            }
+        }
+
+        function onFeeSessionChange() {
+            const sel = document.getElementById('feeSessionSelect');
+            if (sel && sel.value !== currentSession) {
+                currentSession = sel.value;
+                document.getElementById('dashPaid').innerText = `₹0`;
+                document.getElementById('dashPrevDue').innerText = `₹0`;
+                document.getElementById('feeHistoryBody').innerHTML = "<tr><td colspan='3' style='text-align:center;'>Loading...</td></tr>";
+                loadFeeDataForSession();
+            }
+        }
+
         // --- 2. HISTORY & DASHBOARD STATS ---
+        let historyUnsub = null;
         function loadMyHistory() {
-            db.collection('fees')
+            if (historyUnsub) historyUnsub();
+            historyUnsub = db.collection('fees')
                 .where('sid', '==', user.id)
                 .where('session', '==', currentSession) // Only current session for stats
                 .onSnapshot(snap => {
@@ -1035,27 +1069,92 @@
 
         function renderHistoryTable(data) {
             let html = "";
-            // Sort by Date Descending
-            data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+            if (!data || data.length === 0) {
+                document.getElementById('feeHistoryBody').innerHTML = "<tr><td colspan='4' style='text-align:center;'>No payments in this session.</td></tr>";
+                return;
+            }
 
-            data.forEach(f => {
-                let desc = f.headName || f.otherHead;
-                if (f.type === 'PAYMENT' && f.months) desc = `${f.headName} (${f.months.join(', ')})`;
+            const sortedHistory = [...data].reverse(); 
+            const groupedHistory = {};
+            let groupOrder = [];
 
-                html += `<tr>
-                <td><b style="color:#334155">${f.date}</b><br><small style="color:gray">${f.receiptNo}</small></td>
-                <td>${desc}</td>
-                <td style="text-align:right; font-weight:bold; color:#16a34a;">₹${f.paidAmount}</td>
-            </tr>`;
+            sortedHistory.forEach((h) => {
+                let rNo = h.receiptNo || ("N/A-" + Math.random());
+                if (!groupedHistory[rNo]) {
+                    let dateStr = "-";
+                    if (h.timestamp && h.timestamp.seconds) dateStr = new Date(h.timestamp.seconds * 1000).toLocaleDateString('en-GB');
+                    else if (h.date) {
+                        if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
+                        else {
+                            const d = new Date(h.date);
+                            if (!isNaN(d)) dateStr = d.toLocaleDateString('en-GB');
+                            else dateStr = h.date;
+                        }
+                    }
+                    groupedHistory[rNo] = { dateStr, receiptNo: h.receiptNo || "-", itemsMap: {}, itemDisc: 0, explicitDisc: 0, cashAmount: 0 };
+                    groupOrder.push(rNo);
+                }
+                let rawHead = h.headName || h.otherHead || h.description || "Fee Payment";
+                let match = rawHead.match(/\s*\(([^)]*)\)\s*$/);
+                let baseHead = rawHead.replace(/\s*\([^)]*\)\s*$/, '').trim();
+                
+                if (h.paidViaWallet > 0) baseHead += ` <span style="color:#2563eb; font-size:10px; font-weight:bold;">[Wallet: ₹${h.paidViaWallet}]</span>`;
+
+                if (!groupedHistory[rNo].itemsMap[baseHead]) groupedHistory[rNo].itemsMap[baseHead] = new Set();
+                
+                let extMonths = (h.months && h.months.length > 0) ? h.months : (match ? match[1].split(',').map(m=>m.trim()) : []);
+                extMonths.forEach(m => groupedHistory[rNo].itemsMap[baseHead].add(m));
+
+                const headLower = (h.headName || '').toLowerCase();
+                if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
+                    groupedHistory[rNo].explicitDisc += Number(h.paidAmount) || 0;
+                } else {
+                    const amt = Number(h.paidAmount) || 0;
+                    const disc = (Number(h.discountUsed) || 0) + (Number(h.discount) || 0);
+                    groupedHistory[rNo].itemDisc += disc;
+                    groupedHistory[rNo].cashAmount += amt;
+                }
             });
-            document.getElementById('feeHistoryBody').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No payments in this session.</td></tr>";
+
+            groupOrder.forEach((rNo) => {
+                const g = groupedHistory[rNo];
+                const cashPaid = g.cashAmount || 0;
+                const trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
+                
+                let descArr = [];
+                for (let head in g.itemsMap) {
+                    let mArr = Array.from(g.itemsMap[head]);
+                    if (mArr.length > 0) descArr.push(`${head} (${mArr.join(', ')})`);
+                    else descArr.push(head);
+                }
+                let finalDesc = descArr.join('<br><span style="color:#cbd5e1;">+</span> ');
+
+                let discHtml = trueDisc > 0 ? `<span style="color:#ef4444;">₹${trueDisc.toFixed(2)}</span>` : `<span style="color:gray;">-</span>`;
+
+                html += `<tr style="border-bottom: 2px solid #cbd5e1;">
+                    <td style="padding:10px 8px;"><b style="color:#334155">${g.dateStr}</b><br><small style="color:gray">${g.receiptNo}</small></td>
+                    <td style="padding:10px 8px; line-height:1.5;">${finalDesc}</td>
+                    <td style="padding:10px 8px; text-align:right; font-weight:bold;">${discHtml}</td>
+                    <td style="padding:10px 8px; text-align:right; font-weight:bold; color:#16a34a;">₹${cashPaid.toFixed(2)}</td>
+                </tr>`;
+            });
+            
+            document.getElementById('feeHistoryBody').innerHTML = html;
         }
 
         // --- UPDATED STATS FUNCTION (Admin Style) ---
         function calculateDashboardStats() {
             // 1. Basic Stats (Old Logic)
             const totalPaid = myPaidFees.reduce((sum, f) => sum + Number(f.paidAmount), 0);
-            const prevDue = Number(fullStudentData.previousDue || 0);
+
+            let prevDue = 0;
+            const sessionDueKey = `dues_${currentSession}`;
+            if (fullStudentData[sessionDueKey] !== undefined) {
+                prevDue = Number(fullStudentData[sessionDueKey]);
+            } else if (currentSession === "2025-2026") {
+                prevDue = Number(fullStudentData.previousDue || 0);
+            }
+
             document.getElementById('dashPaid').innerText = `₹${totalPaid}`;
             document.getElementById('dashPrevDue').innerText = `₹${prevDue}`;
 
@@ -1532,6 +1631,215 @@
             });
             const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Statement");
             XLSX.writeFile(wb, `${user.name}_Fee_Statement.xlsx`);
+        }
+
+        // =======================================================
+        // 🟢 PROFESSIONAL PDF EXPORT (COMPACT & FIXED DATE) 
+        // =======================================================
+        function downloadStudentPDF() {
+            const s = fullStudentData;
+            if (!s) return alert("Student data not fully loaded");
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const marginLeft = 10;
+            doc.setFillColor(248, 250, 252);
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setTextColor(51, 65, 85);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("ST. TERESA ENGLISH SCHOOL", marginLeft, 18);
+
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text("Affiliated to CBSE | Session: " + currentSession, marginLeft, 24);
+
+            doc.setFontSize(14);
+            doc.setTextColor(99, 102, 241);
+            doc.text("FEE STATEMENT", 195, 18, { align: "right" });
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text("Date: " + new Date().toLocaleDateString(), 195, 24, { align: "right" });
+            doc.setTextColor(236, 72, 153); // Subtle pink notation
+            doc.text("(Generated from Parent Portal)", 195, 28, { align: "right" });
+
+            doc.setDrawColor(200);
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(marginLeft, 30, 190, 20, 2, 2, 'FD');
+
+            doc.setFontSize(9);
+            doc.setTextColor(0);
+            doc.setFont("helvetica", "bold"); doc.text("Student Name:", 15, 38);
+            doc.setFont("helvetica", "normal"); doc.text((s.name || "").toUpperCase(), 45, 38);
+            doc.setFont("helvetica", "bold"); doc.text("Class/Sec:", 110, 38);
+            doc.setFont("helvetica", "normal"); doc.text(`${s.class} - ${s.section || 'A'}`, 135, 38);
+            doc.setFont("helvetica", "bold"); doc.text("Father Name:", 15, 45);
+            doc.setFont("helvetica", "normal"); doc.text((s.fatherName || '-').toUpperCase(), 45, 45);
+            doc.setFont("helvetica", "bold"); doc.text("Transport:", 110, 45);
+            doc.setFont("helvetica", "normal"); doc.text(s.transportRoute || 'No Transport', 135, 45);
+
+            let tableBody = [];
+            let totalStatementAmount = 0;
+            let totalStatementDiscount = 0;
+            let totalStatementPaid = 0;
+
+            if (myPaidFees && myPaidFees.length > 0) {
+                const sortedHistory = [...myPaidFees].reverse();
+                const groupedHistory = {};
+                let groupOrder = [];
+
+                sortedHistory.forEach((h) => {
+                    let rNo = h.receiptNo || ("N/A-" + Math.random());
+                    if (!groupedHistory[rNo]) {
+                        let dateStr = "-";
+                        if (h.timestamp && h.timestamp.seconds) dateStr = new Date(h.timestamp.seconds * 1000).toLocaleDateString('en-GB');
+                        else if (h.date) {
+                            if (h.date.seconds) dateStr = new Date(h.date.seconds * 1000).toLocaleDateString('en-GB');
+                            else {
+                                const d = new Date(h.date);
+                                if (!isNaN(d)) dateStr = d.toLocaleDateString('en-GB');
+                                else dateStr = h.date;
+                            }
+                        }
+                        groupedHistory[rNo] = { dateStr, receiptNo: h.receiptNo || "-", itemsMap: {}, itemDisc: 0, explicitDisc: 0, cashAmount: 0 };
+                        groupOrder.push(rNo);
+                    }
+                    
+                    let rawHead = h.headName || h.otherHead || h.description || "Fee Payment";
+                    let match = rawHead.match(/\s*\(([^)]*)\)\s*$/);
+                    let baseHead = rawHead.replace(/\s*\([^)]*\)\s*$/, '').trim();
+                    if (h.paidViaWallet > 0) baseHead += ` [Wallet Used]`;
+                    
+                    if (!groupedHistory[rNo].itemsMap[baseHead]) groupedHistory[rNo].itemsMap[baseHead] = new Set();
+                    let extMonths = (h.months && h.months.length > 0) ? h.months : (match ? match[1].split(',').map(m=>m.trim()) : []);
+                    extMonths.forEach(m => groupedHistory[rNo].itemsMap[baseHead].add(m));
+
+                    const headLower = (h.headName || '').toLowerCase();
+                    if (h.type === 'DISCOUNT' || headLower === 'discount' || headLower === 'concession') {
+                        groupedHistory[rNo].explicitDisc += Number(h.paidAmount) || 0;
+                    } else {
+                        const amt = Number(h.paidAmount) || 0;
+                        const disc = (Number(h.discountUsed) || 0) + (Number(h.discount) || 0);
+                        groupedHistory[rNo].itemDisc += disc;
+                        groupedHistory[rNo].cashAmount += amt;
+                    }
+                });
+
+                groupOrder.forEach((rNo, index) => {
+                    const g = groupedHistory[rNo];
+                    const cashPaid = g.cashAmount || 0;
+                    const trueDisc = Math.max((g.itemDisc || 0), (g.explicitDisc || 0));
+                    totalStatementPaid += cashPaid;
+                    totalStatementDiscount += trueDisc;
+                    totalStatementAmount += (cashPaid + trueDisc);
+                    let descArr = [];
+                    for (let head in g.itemsMap) {
+                        let mArr = Array.from(g.itemsMap[head]);
+                        if (mArr.length > 0) descArr.push(`${head} (${mArr.join(', ')})`);
+                        else descArr.push(head);
+                    }
+                    let finalDesc = descArr.join(', ');
+
+                    tableBody.push([index + 1, g.dateStr, g.receiptNo, finalDesc, "Cash/Online", cashPaid.toFixed(2)]);
+                });
+            }
+
+            // Calculate exact dues & exp like admin
+            let trueBilledAmount = 0;
+            let startMonthIdx = 0;
+            if (s.admissionDate) {
+                const parts = s.admissionDate.split('-');
+                const admYear = parseInt(parts[0]);
+                const admMonth = parseInt(parts[1]);
+                const sessStartYear = parseInt(currentSession.split('-')[0]);
+                if (admYear === sessStartYear) startMonthIdx = (admMonth >= 4) ? admMonth - 4 : 0;
+                else if (admYear > sessStartYear) startMonthIdx = (admMonth <= 3) ? admMonth + 8 : 99;
+            }
+            const todayIdx = (new Date().getMonth() >= 3) ? new Date().getMonth() - 3 : new Date().getMonth() + 9;
+            const stuCat = (s.admissionCategory || 'REGULAR').toUpperCase();
+            const fullMonthsArr = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
+
+            feeRules.forEach(head => {
+                const upperCats = (head.appTo || ['REGULAR']).map(c => c.toUpperCase());
+                if (!upperCats.includes(stuCat)) return;
+                const headData = classFees[head.name];
+                if (!headData) return;
+
+                if (head.type === 'MONTHLY' && typeof headData === 'object') {
+                    months.forEach((m, i) => { if (i <= todayIdx && i >= startMonthIdx) trueBilledAmount += (Number(headData[m]) || 0); });
+                } else if (head.type === 'MONTHLY') {
+                    let amt = Number(headData.Amount || headData || 0);
+                    let activeMonths = (todayIdx + 1) - startMonthIdx;
+                    if (activeMonths > 0) trueBilledAmount += amt * activeMonths;
+                } else {
+                    const validFrom = head.validFrom || 'Apr';
+                    const validIdx = monthMapIdx[validFrom] || 0;
+                    if (todayIdx >= validIdx && startMonthIdx <= validIdx) trueBilledAmount += Number(headData.Amount || headData || 0);
+                }
+            });
+
+            if (s.transportOpted) {
+                let optedMonths = s.transportMonths || months.concat(fullMonthsArr);
+                let tCount = 0;
+                months.forEach((m, i) => {
+                    const fullM = fullMonthsArr[i];
+                    if ((optedMonths.includes(m) || optedMonths.includes(fullM)) && i <= todayIdx && i >= startMonthIdx) tCount++;
+                });
+                trueBilledAmount += transRate * tCount;
+            }
+
+            let prevDue = 0;
+            const sessionDueKey = `dues_${currentSession}`;
+            if (s[sessionDueKey] !== undefined) prevDue = Number(s[sessionDueKey]);
+            else if (currentSession === "2025-2026") prevDue = Number(s.previousDue || 0);
+
+            // Compute late fee from DB records
+            let totalLatePaid = 0, extraPaid = 0;
+            myPaidFees.forEach(f => {
+                if (f.type === 'LATE' || f.headName === 'Late Fee') totalLatePaid += (Number(f.paidAmount) || 0);
+                if (f.type === 'ITEM') extraPaid += (Number(f.paidAmount) || 0);
+            });
+            // Approximate late fee expected is what was paid
+            let lateFeeExp = totalLatePaid;
+
+            trueBilledAmount += prevDue + lateFeeExp + extraPaid;
+            let grandTotalDue = trueBilledAmount - totalStatementPaid - totalStatementDiscount;
+            if (grandTotalDue < 0) grandTotalDue = 0;
+
+            let footerRows = [
+                ['', '', '', 'Total Expected Billed Amount', '', `Rs. ${trueBilledAmount.toFixed(2)}`],
+                ['', '', '', 'Total Discount Given', '', `Rs. ${totalStatementDiscount.toFixed(2)}`],
+                ['', '', '', 'Total Paid (Settled Value)', '', `Rs. ${totalStatementPaid.toFixed(2)}`]
+            ];
+
+            const walletActive = Number(s.walletBalance || 0);
+            if (walletActive > 0) footerRows.push(['', '', '', { content: 'Wallet Balance (Advance)', styles: { textColor: [3, 105, 161] } }, '', { content: `Rs. ${walletActive.toFixed(2)}`, styles: { textColor: [3, 105, 161] } }]);
+
+            if (grandTotalDue > 0) footerRows.push(['', '', '', { content: 'Unpaid Due Amount', styles: { textColor: [220, 38, 38] } }, '', { content: `Rs. ${grandTotalDue.toFixed(2)}`, styles: { textColor: [220, 38, 38] } }]);
+            else {
+                let statusText = walletActive > 0 ? `ALL CLEAR (Advance: Rs. ${walletActive.toFixed(2)})` : `ALL CLEAR`;
+                footerRows.push(['', '', '', { content: 'Overall Status', styles: { textColor: [22, 101, 52] } }, '', { content: statusText, styles: { textColor: [22, 101, 52] } }]);
+            }
+
+            doc.autoTable({
+                startY: 55,
+                head: [['Sr.', 'Date', 'Receipt #', 'Description', 'Mode', 'Amount (Rs.)']],
+                body: tableBody,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 1.5, valign: 'middle', lineColor: [200], lineWidth: 0.1 },
+                headStyles: { fillColor: [51, 65, 85], textColor: 255, fontStyle: 'bold', halign: 'center' },
+                columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 25, halign: 'center' }, 2: { cellWidth: 25, halign: 'center' }, 3: { cellWidth: 'auto' }, 4: { cellWidth: 25, halign: 'center' }, 5: { cellWidth: 25, halign: 'right', fontStyle: 'bold' } },
+                foot: footerRows,
+                footStyles: { fillColor: [240, 253, 244], textColor: [22, 101, 52], fontStyle: 'bold', halign: 'right' }
+            });
+
+            const finalY = doc.lastAutoTable.finalY + 15;
+            if (finalY > 270) doc.addPage();
+            doc.setFontSize(8); doc.setTextColor(0); doc.line(150, finalY, 200, finalY); doc.text("Authorized Signatory", 155, finalY + 5);
+
+            doc.save(`${s.name}_Statement.pdf`);
         }
 
         // --- UPDATED INIT DASHBOARD (WITH DEBUGGING LOGS) ---
