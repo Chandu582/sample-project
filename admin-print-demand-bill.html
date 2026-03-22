@@ -720,9 +720,24 @@
                 calculatedData = [];
 
                 // --- DATE LOGIC (Updated to Match Admin-Fees Logic) ---
+                // --- 🟢 FIX 1: SMART DATE LOGIC (For Future Session Advance Billing) ---
                 const dateObj = new Date();
-                // April = 0, ..., March = 11 logic for array index
-                const todayIdx = (dateObj.getMonth() >= 3) ? dateObj.getMonth() - 3 : dateObj.getMonth() + 9;
+                const realYear = dateObj.getFullYear();
+                const realMonth = dateObj.getMonth();
+                const sessStartYear = parseInt(currentSession.split('-')[0]); // e.g., 2026
+
+                let todayIdx = 0;
+                if (realYear < sessStartYear) {
+                    todayIdx = 0; // Future session (e.g. March 2026 for 2026-2027) -> Only bill for April
+                } else if (realYear === sessStartYear) {
+                    if (realMonth >= 3) todayIdx = realMonth - 3;
+                    else todayIdx = 0; // Jan-Feb-Mar before April starts
+                } else if (realYear === sessStartYear + 1) {
+                    if (realMonth <= 2) todayIdx = realMonth + 9;
+                    else todayIdx = 11; // Completely past session
+                } else {
+                    todayIdx = 11;
+                }
                 const currentDay = dateObj.getDate();
 
                 let allStudents = [];
@@ -772,11 +787,17 @@
 
 
                     //  NAYA LOGIC: Sirf 'Active' AND 'Current Session' wale students ko hi list mein add karein
+                    // 🟢 FIX 2: SMART SESSION FILTER (Handles missing or slightly different session names)
                     sSnap.forEach(d => {
                         const studentData = d.data();
-                        // Yahan humne check laga diya ki bache ka session bhi match hona chahiye
-                        if (studentData.status === 'Active' && studentData.session === currentSession) {
-                            allStudents.push({ id: d.id, ...studentData });
+                        if (studentData.status === 'Active') {
+                            let stuSess = studentData.session || "";
+                            let currStartYear = currentSession.substring(0, 4); // Extract "2026"
+
+                            // Check: If exact match, OR contains start year, OR missing session (fallback for old data)
+                            if (stuSess === currentSession || stuSess.includes(currStartYear) || stuSess === "") {
+                                allStudents.push({ id: d.id, ...studentData });
+                            }
                         }
                     });
 
